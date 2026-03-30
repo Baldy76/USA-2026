@@ -146,22 +146,34 @@ async function loadItinerary() {
 }
 
 function populateDropdown() {
-    const select = document.getElementById('family-selector');
-    select.innerHTML = '<option value="All">Show All Activities</option>';
+    const mainSelect = document.getElementById('family-selector');
+    const accSelect = document.getElementById('acc-family'); // New Accommodation Dropdown
+    
+    mainSelect.innerHTML = '<option value="All">Show All Activities</option>';
+    if (accSelect) accSelect.innerHTML = '';
     
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
     const allFamilies = new Set([...sheetFamilies, ...customFamilies]);
 
     allFamilies.forEach(family => {
-        const option = document.createElement('option');
-        option.value = family;
-        option.textContent = family;
-        select.appendChild(option);
+        // Main Filter
+        const option1 = document.createElement('option');
+        option1.value = family;
+        option1.textContent = family;
+        mainSelect.appendChild(option1);
+        
+        // Accommodation Filter
+        if (accSelect) {
+            const option2 = document.createElement('option');
+            option2.value = family;
+            option2.textContent = family;
+            accSelect.appendChild(option2);
+        }
     });
 
     const savedFamily = localStorage.getItem('savedFamilyFilter');
     if (savedFamily) {
-        select.value = savedFamily;
+        mainSelect.value = savedFamily;
     }
 }
 
@@ -180,6 +192,88 @@ function addCustomFamily() {
         }
         input.value = ''; 
     }
+}
+
+// ==========================================
+// 4. ACCOMMODATION LOGIC (NEW)
+// ==========================================
+function saveAccommodation() {
+    const city = document.getElementById('acc-city').value;
+    const family = document.getElementById('acc-family').value;
+    const address = document.getElementById('acc-address').value.trim();
+
+    if(!family || !address) { 
+        alert("Please select a family and enter an address."); 
+        return; 
+    }
+
+    let accData = JSON.parse(localStorage.getItem('accommodations')) || {};
+    if(!accData[city]) accData[city] = {};
+    
+    // Save the address mapped to the city and family
+    accData[city][family] = address;
+    localStorage.setItem('accommodations', JSON.stringify(accData));
+
+    // Show quick success message
+    const msg = document.getElementById('acc-save-msg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+    document.getElementById('acc-address').value = '';
+
+    renderAccommodations();
+}
+
+function renderAccommodations() {
+    const selectedFamily = document.getElementById('family-selector').value;
+    const accData = JSON.parse(localStorage.getItem('accommodations')) || {};
+
+    const cities = [
+        { id: 'la', key: 'LA' },
+        { id: 'utah', key: 'Utah' },
+        { id: 'vegas', key: 'Vegas' }
+    ];
+
+    cities.forEach(cityObj => {
+        const container = document.getElementById(`${cityObj.id}-home-card`);
+        if(!container) return;
+
+        let html = '';
+        const cityData = accData[cityObj.key] || {};
+
+        // If a specific family is selected, show their big blue "Take Me Home" button
+        if (selectedFamily !== 'All' && cityData[selectedFamily]) {
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cityData[selectedFamily])}`;
+            html = `
+                <div class="weather-pill" style="margin-bottom: 25px; background: var(--accent); color: white;" onclick="window.open('${mapLink}', '_blank')">
+                    <span style="font-size: 32px;">🏠</span>
+                    <div style="flex:1; text-align: left;">
+                        <strong style="font-size: 18px; display:block; color: white;">Take Me Home</strong>
+                        <small style="opacity:0.8; font-weight:700; color: white;">${selectedFamily} • Tap to Drive</small>
+                    </div>
+                    <div style="opacity:0.5; font-size:24px; font-weight: 900; color: white;">›</div>
+                </div>
+            `;
+        } 
+        // If "Show All" is selected, show smaller grey buttons for any family that has an address
+        else if (selectedFamily === 'All') {
+            for (const [fam, addr] of Object.entries(cityData)) {
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
+                html += `
+                    <div class="weather-pill" style="margin-bottom: 12px; background: var(--ios-grey); padding: 12px 20px;" onclick="window.open('${mapLink}', '_blank')">
+                        <span style="font-size: 24px;">🏠</span>
+                        <div style="flex:1; text-align: left;">
+                            <strong style="font-size: 15px; display:block; color: var(--text);">${fam} Home</strong>
+                            <small style="opacity:0.6; font-weight:700; color: var(--text);">Tap for directions</small>
+                        </div>
+                        <div style="opacity:0.3; font-size:20px; font-weight: 900; color: var(--text);">›</div>
+                    </div>
+                `;
+            }
+            if (html !== '') html += `<div style="margin-bottom: 25px;"></div>`; 
+        }
+
+        container.innerHTML = html;
+    });
 }
 
 function renderItinerary() {
@@ -224,9 +318,9 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+                // UPDATED: Using the absolute best, most reliable Maps Direction API
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
                 
-                // NEW STYLING: Soft layout, heavy radius, strong typography
                 const cardHtml = `
                     <li style="background: var(--card); margin-bottom: 20px; padding: 24px; border-radius: 24px; box-shadow: 0 8px 24px var(--shadow); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
@@ -281,6 +375,9 @@ function renderItinerary() {
     document.getElementById('vegas-itinerary').innerHTML = htmlVegas;
     document.getElementById('today-itinerary').innerHTML = htmlToday;
     document.getElementById('tomorrow-itinerary').innerHTML = htmlTomorrow;
+    
+    // Ensure accommodations update when the family filter changes!
+    renderAccommodations();
 }
 
 function updateFamilyFilter() {
@@ -290,7 +387,7 @@ function updateFamilyFilter() {
 }
 
 // ==========================================
-// 4. WEATHER ENGINE 
+// 5. WEATHER ENGINE 
 // ==========================================
 const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
@@ -386,7 +483,7 @@ async function initWeather() {
 }
 
 // ==========================================
-// 5. APP INITIALIZATION 
+// 6. APP INITIALIZATION 
 // ==========================================
 window.onload = () => {
     const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
@@ -400,7 +497,7 @@ window.onload = () => {
 };
 
 // ==========================================
-// 6. PWA & SERVICE WORKER LOGIC
+// 7. PWA & SERVICE WORKER LOGIC
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
