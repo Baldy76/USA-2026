@@ -39,6 +39,8 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
+            <div id="today-home-card"></div>
+
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
                 <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
@@ -89,7 +91,7 @@
 
             <div class="admin-card">
                 <h3>🏠 Accommodations</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your Airbnb/Hotel addresses for quick navigation. (Saves to this device).</p>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your Airbnb/Hotel addresses and dates. The active location will automatically appear on the Today page.</p>
                 
                 <label style="font-size: 14px; margin-bottom: 5px;">City:</label>
                 <select id="acc-city">
@@ -105,7 +107,18 @@
                 <label style="font-size: 14px; margin-bottom: 5px;">Address:</label>
                 <input type="text" id="acc-address" placeholder="e.g., 123 Hollywood Blvd" />
 
-                <button onclick="saveAccommodation()" class="action-btn">💾 Save Address</button>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 14px; margin-bottom: 5px;">Check-In:</label>
+                        <input type="date" id="acc-start" />
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 14px; margin-bottom: 5px;">Check-Out:</label>
+                        <input type="date" id="acc-end" />
+                    </div>
+                </div>
+
+                <button onclick="saveAccommodation()" class="action-btn" style="margin-top: 5px;">💾 Save Address</button>
                 <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Address Saved!</div>
             </div>
 
@@ -125,7 +138,7 @@
             <p style="font-size: 14px; font-weight: 700; opacity: 0.5; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                ULTIMATE PLANNER // v1.1.0
+                ULTIMATE PLANNER // v1.1.1
             </div>
         </section>
     </main>
