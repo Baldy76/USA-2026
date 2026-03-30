@@ -22,7 +22,6 @@
             <div id="la-home-card"></div>
             <div id="la-itinerary">
                 <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
             </div> 
         </section>
 
@@ -37,9 +36,9 @@
         </section>
 
         <section id="home" class="page">
+            <h2>Home</h2>
             
-            <div id="time-engine" style="margin-bottom: 24px;">
-                
+            <div id="time-engine" style="margin-bottom: 20px;">
                 <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
                     <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
                     <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
@@ -61,19 +60,6 @@
                         Loading Date...
                     </div>
                 </div>
-
-            </div>
-
-            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px;">
-                <div style="font-size: 36px;">💱</div>
-                <div style="flex: 1;">
-                    <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; margin-bottom: 4px;">Quick Converter</div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px;">
-                        <span style="font-weight: 900;">=</span>
-                        <strong id="gbp-output" style="color: var(--accent); font-size: 22px;">£0.00</strong>
-                    </div>
-                </div>
             </div>
 
             <div id="today-vault-display"></div>
@@ -88,30 +74,39 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px;">
+                <div style="font-size: 36px;">💱</div>
+                <div style="flex: 1;">
+                    <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase; margin-bottom: 4px;">Quick Converter</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px;">
+                        <span style="font-weight: 900;">=</span>
+                        <strong id="gbp-output" style="color: var(--accent); font-size: 22px;">£0.00</strong>
+                    </div>
+                </div>
+            </div>
+
             <div id="today-home-card"></div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; margin-top: 30px;">
                 <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
                 <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
             </div>
             
             <div id="today-view">
                 <div id="today-itinerary">
-                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
                 </div>
             </div>
 
             <div id="tomorrow-view" style="display: none;">
-                <div id="tomorrow-itinerary">Loading tomorrow's plans...</div>
+                <div id="tomorrow-itinerary">Loading...</div>
             </div>
         </section>
 
         <section id="weather-root" class="page" style="display: none;">
             <div id="WTH-dashboard">
-                <div class="empty-state">
-                    <span class="empty-icon">📡</span>
-                    <div class="empty-text">Syncing Radar...</div>
-                </div>
+                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
             </div>
         </section>
 
@@ -121,7 +116,7 @@
             </div>
             <div id="vegas-home-card"></div>
             <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
             </div>
         </section>
 
@@ -130,18 +125,14 @@
             
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Set your start date to see the countdown on the main page. Once the trip begins, dual clocks will automatically appear.</p>
                 <label style="font-size: 14px; margin-bottom: 5px;">Trip Start Date:</label>
                 <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
             </div>
 
             <div class="admin-card">
                 <h3>🧳 The Travel Vault</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Quick-access reference for flights & rentals. Appears on Today page.</p>
-                <label style="font-size: 14px; margin-bottom: 5px;">Flight Details:</label>
-                <textarea id="vault-flight" rows="3" placeholder="e.g. BA269 | Terminal 5 | Ref: X7Y8Z9"></textarea>
-                <label style="font-size: 14px; margin-bottom: 5px;">Rental Car Details:</label>
-                <textarea id="vault-car" rows="2" placeholder="e.g. Alamo LAX | Ref: 123456"></textarea>
+                <textarea id="vault-flight" rows="3" placeholder="Flight details..."></textarea>
+                <textarea id="vault-car" rows="2" placeholder="Rental details..."></textarea>
                 <button onclick="saveTravelVault()" class="action-btn">💾 Save Vault</button>
                 <div id="vault-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Vault Updated!</div>
             </div>
@@ -164,23 +155,19 @@
 
             <div class="admin-card">
                 <h3>🏠 Accommodations</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your stay details. Right-click an Airbnb image and select "Copy Image Address" for the picture!</p>
-                <label style="font-size: 14px; margin-bottom: 5px;">City:</label>
+                <label>City:</label>
                 <select id="acc-city"><option value="LA">Los Angeles</option><option value="Utah">Utah</option><option value="Vegas">Las Vegas</option></select>
-                <label style="font-size: 14px; margin-bottom: 5px;">Family:</label>
+                <label>Family:</label>
                 <select id="acc-family"></select>
-                <label style="font-size: 14px; margin-bottom: 5px;">Address:</label>
-                <input type="text" id="acc-address" placeholder="e.g., 123 Hollywood Blvd" />
+                <label>Address:</label>
+                <input type="text" id="acc-address" />
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 14px; margin-bottom: 5px;">Check-In:</label><input type="date" id="acc-start" /></div>
-                    <div style="flex: 1;"><label style="font-size: 14px; margin-bottom: 5px;">Check-Out:</label><input type="date" id="acc-end" /></div>
+                    <div style="flex: 1;"><label>Check-In:</label><input type="date" id="acc-start" /></div>
+                    <div style="flex: 1;"><label>Check-Out:</label><input type="date" id="acc-end" /></div>
                 </div>
-                <label style="font-size: 14px; margin-bottom: 5px;">Listing URL (Optional):</label>
-                <input type="url" id="acc-link" placeholder="e.g., https://airbnb.com/rooms/..." />
-                <label style="font-size: 14px; margin-bottom: 5px;">Image URL (Optional):</label>
-                <input type="url" id="acc-image" placeholder="Paste image address here..." />
-                <button onclick="saveAccommodation()" class="action-btn" style="margin-top: 5px;">💾 Save Details</button>
-                <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Saved Successfully!</div>
+                <label>Listing URL:</label><input type="url" id="acc-link" />
+                <label>Image URL:</label><input type="url" id="acc-image" />
+                <button onclick="saveAccommodation()" class="action-btn">💾 Save Details</button>
             </div>
 
             <div class="admin-card">
@@ -191,25 +178,24 @@
             
             <div class="admin-card">
                 <h3>App Maintenance</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Force the app to download the latest code.</p>
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
             <div class="version-control">
-                ULTIMATE PLANNER // v1.2.1
+                ULTIMATE PLANNER // v1.2.2
             </div>
         </section>
     </main>
 
     <nav class="bottom-nav">
+        <button onclick="showPage(event, 'home')" class="nav-btn active">
+            <span class="nav-icon">🏠</span><span>Home</span>
+        </button>
         <button onclick="showPage(event, 'la')" class="nav-btn">
             <span class="nav-icon">🌴</span><span>LA</span>
         </button>
         <button onclick="showPage(event, 'utah')" class="nav-btn">
             <span class="nav-icon">⛰️</span><span>Utah</span>
-        </button>
-        <button onclick="showPage(event, 'home')" class="nav-btn active">
-            <span class="nav-icon">📅</span><span>Today</span>
         </button>
         <button onclick="showPage(event, 'vegas')" class="nav-btn">
             <span class="nav-icon">🎲</span><span>Vegas</span>
