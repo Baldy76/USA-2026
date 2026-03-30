@@ -14,22 +14,63 @@
 <body class="light-mode">
 
     <main id="content">
+        
         <section id="la" class="page" style="display: none;">
-            <h2>Los Angeles</h2>
+            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1515896769750-31548ea180d6?auto=format&fit=crop&w=800&q=80');">
+                <h2>Los Angeles</h2>
+            </div>
             <div id="la-home-card"></div>
-            <div id="la-itinerary">Loading plans...</div> 
+            <div id="la-itinerary">
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+            </div> 
         </section>
 
         <section id="utah" class="page" style="display: none;">
-            <h2>Utah</h2>
+            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1527333656061-ca7adf608ae1?auto=format&fit=crop&w=800&q=80');">
+                <h2>Utah</h2>
+            </div>
             <div id="utah-home-card"></div>
-            <div id="utah-itinerary">Loading plans...</div>
+            <div id="utah-itinerary">
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+            </div>
         </section>
 
         <section id="home" class="page">
             <h2>Today</h2>
             <h3 id="today-date-display" style="color: var(--accent); margin-top: -15px; margin-bottom: 20px; font-weight: 800;"></h3>
             
+            <div id="time-engine" style="margin-bottom: 24px;">
+                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 20px; border-radius: 24px; text-align: center; font-size: 24px; font-weight: 900; box-shadow: 0 8px 24px var(--shadow);">
+                    -- Days to Go!
+                </div>
+                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 8px 24px var(--shadow); display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
+                        <div id="clock-uk" style="font-size: 28px; font-weight: 900; color: var(--accent);">--:--</div>
+                    </div>
+                    <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
+                        <div id="clock-local" style="font-size: 28px; font-weight: 900; color: var(--text);">--:--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px;">
+                <div style="font-size: 36px;">💱</div>
+                <div style="flex: 1;">
+                    <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; margin-bottom: 4px;">Quick Converter</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px;">
+                        <span style="font-weight: 900;">=</span>
+                        <strong id="gbp-output" style="color: var(--accent); font-size: 22px;">£0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div id="today-vault-display"></div>
+
             <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
@@ -48,7 +89,9 @@
             </div>
             
             <div id="today-view">
-                <div id="today-itinerary">Loading today's plans...</div>
+                <div id="today-itinerary">
+                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+                </div>
             </div>
 
             <div id="tomorrow-view" style="display: none;">
@@ -66,14 +109,35 @@
         </section>
 
         <section id="vegas" class="page" style="display: none;">
-            <h2>Las Vegas</h2>
+            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80');">
+                <h2>Las Vegas</h2>
+            </div>
             <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">Loading plans...</div>
+            <div id="vegas-itinerary">
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+            </div>
         </section>
 
         <section id="admin" class="page" style="display: none;">
             <h2>Admin</h2>
             
+            <div class="admin-card">
+                <h3>✈️ Trip Settings</h3>
+                <label style="font-size: 14px; margin-bottom: 5px;">Trip Start Date (For Countdown):</label>
+                <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
+            </div>
+
+            <div class="admin-card">
+                <h3>🧳 The Travel Vault</h3>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Quick-access reference for flights & rentals. Appears on Today page.</p>
+                <label style="font-size: 14px; margin-bottom: 5px;">Flight Details:</label>
+                <textarea id="vault-flight" rows="3" placeholder="e.g. BA269 | Terminal 5 | Ref: X7Y8Z9"></textarea>
+                <label style="font-size: 14px; margin-bottom: 5px;">Rental Car Details:</label>
+                <textarea id="vault-car" rows="2" placeholder="e.g. Alamo LAX | Ref: 123456"></textarea>
+                <button onclick="saveTravelVault()" class="action-btn">💾 Save Vault</button>
+                <div id="vault-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Vault Updated!</div>
+            </div>
+
             <div class="admin-card">
                 <h3>Theme Selection</h3>
                 <div class="theme-segmented-control">
@@ -93,45 +157,26 @@
             <div class="admin-card">
                 <h3>🏠 Accommodations</h3>
                 <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your stay details. Right-click an Airbnb image and select "Copy Image Address" for the picture!</p>
-                
                 <label style="font-size: 14px; margin-bottom: 5px;">City:</label>
-                <select id="acc-city">
-                    <option value="LA">Los Angeles</option>
-                    <option value="Utah">Utah</option>
-                    <option value="Vegas">Las Vegas</option>
-                </select>
-
+                <select id="acc-city"><option value="LA">Los Angeles</option><option value="Utah">Utah</option><option value="Vegas">Las Vegas</option></select>
                 <label style="font-size: 14px; margin-bottom: 5px;">Family:</label>
-                <select id="acc-family">
-                    </select>
-
+                <select id="acc-family"></select>
                 <label style="font-size: 14px; margin-bottom: 5px;">Address:</label>
                 <input type="text" id="acc-address" placeholder="e.g., 123 Hollywood Blvd" />
-
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 14px; margin-bottom: 5px;">Check-In:</label>
-                        <input type="date" id="acc-start" />
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 14px; margin-bottom: 5px;">Check-Out:</label>
-                        <input type="date" id="acc-end" />
-                    </div>
+                    <div style="flex: 1;"><label style="font-size: 14px; margin-bottom: 5px;">Check-In:</label><input type="date" id="acc-start" /></div>
+                    <div style="flex: 1;"><label style="font-size: 14px; margin-bottom: 5px;">Check-Out:</label><input type="date" id="acc-end" /></div>
                 </div>
-
                 <label style="font-size: 14px; margin-bottom: 5px;">Listing URL (Optional):</label>
                 <input type="url" id="acc-link" placeholder="e.g., https://airbnb.com/rooms/..." />
-
                 <label style="font-size: 14px; margin-bottom: 5px;">Image URL (Optional):</label>
                 <input type="url" id="acc-image" placeholder="Paste image address here..." />
-
                 <button onclick="saveAccommodation()" class="action-btn" style="margin-top: 5px;">💾 Save Details</button>
                 <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Saved Successfully!</div>
             </div>
 
             <div class="admin-card">
                 <h3>Add Custom Family Name</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Names added here only save to this device.</p>
                 <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
                 <button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button>
             </div>
@@ -142,34 +187,27 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <p style="font-size: 14px; font-weight: 700; opacity: 0.5; text-align: center;">Other logistics and bookings go here...</p>
-
             <div class="version-control">
-                ULTIMATE PLANNER // v1.1.6
+                ULTIMATE PLANNER // v1.2.0
             </div>
         </section>
     </main>
 
     <nav class="bottom-nav">
         <button onclick="showPage(event, 'la')" class="nav-btn">
-            <span class="nav-icon">🌴</span>
-            <span>LA</span>
+            <span class="nav-icon">🌴</span><span>LA</span>
         </button>
         <button onclick="showPage(event, 'utah')" class="nav-btn">
-            <span class="nav-icon">⛰️</span>
-            <span>Utah</span>
+            <span class="nav-icon">⛰️</span><span>Utah</span>
         </button>
         <button onclick="showPage(event, 'home')" class="nav-btn active">
-            <span class="nav-icon">📅</span>
-            <span>Today</span>
+            <span class="nav-icon">📅</span><span>Today</span>
         </button>
         <button onclick="showPage(event, 'vegas')" class="nav-btn">
-            <span class="nav-icon">🎲</span>
-            <span>Vegas</span>
+            <span class="nav-icon">🎲</span><span>Vegas</span>
         </button>
         <button onclick="showPage(event, 'admin')" class="nav-btn">
-            <span class="nav-icon">⚙️</span>
-            <span>Admin</span>
+            <span class="nav-icon">⚙️</span><span>Admin</span>
         </button>
     </nav>
 
