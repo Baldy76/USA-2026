@@ -47,7 +47,6 @@ function showPage(event, pageId) {
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     
-    // Safety check: only add 'active' if the clicked button is actually in the bottom nav
     if (event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
         event.currentTarget.classList.add('active');
     }
@@ -124,15 +123,18 @@ function toggleComplete(element) {
     }
 }
 
-const escapeHTML = (str) => {
-    if (!str) return "";
-    return String(str)
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'"); 
-};
+// BULLETPROOF ESCAPER: Uses a dictionary map. 100% immune to syntax crashing.
+function escapeHTML(str) {
+    if (!str) return '';
+    const htmlEntities = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    };
+    return String(str).replace(/[&<>"']/g, match => htmlEntities[match]);
+}
 
 // ==========================================
 // 2. DASHBOARD ENGINES
