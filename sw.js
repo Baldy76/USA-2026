@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.3.4';
+const CACHE_NAME = 'holiday-planner-v1.4.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -8,7 +8,11 @@ const ASSETS_TO_CACHE = [
     './la.jpg',
     './utah.jpg',
     './vegas.jpg',
-    './bg.jpg'
+    './bg.jpg',
+    './clear.jpg',
+    './clouds.jpg',
+    './rain.jpg',
+    './snow.jpg'
 ];
 
 self.addEventListener('install', event => {
@@ -32,7 +36,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     if (event.request.url.includes('docs.google.com') || 
         event.request.url.includes('openweathermap.org') ||
-        event.request.url.includes('frankfurter.app')) {
+        event.request.url.includes('frankfurter.app') ||
+        event.request.url.includes('flightaware.com')) {
         return; 
     }
     event.respondWith(
