@@ -4,7 +4,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f4f9;
     color: #333;
-    padding-bottom: 70px; /* Leaves space so the nav bar doesn't cover content */
+    padding-bottom: 70px;
 }
 
 /* Page Content Formatting */
@@ -38,8 +38,44 @@ body {
     transition: color 0.3s;
 }
 
-/* Active State for Navigation Buttons */
 .nav-btn.active {
-    color: #007bff; /* Blue color to show which tab is active */
+    color: #007bff;
     font-weight: bold;
+}
+
+/* Admin Card & Input Styling */
+.admin-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    text-align: left;
+}
+
+.admin-card label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.admin-card select, .admin-card input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.action-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
 }
