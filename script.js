@@ -1,7 +1,7 @@
 // 1. Core Itinerary Data
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv';
 
-// 2. NEW: Vault & Stays Data
+// 2. Vault & Stays Data
 const vaultUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv';
 
 let itineraryData = []; 
@@ -10,7 +10,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 0. RING-FENCE ERROR HANDLER
+// 0. RING-FENCE ERROR HANDLER & ESCAPER
 // ==========================================
 function safeRun(moduleName, func) {
     try { func(); } catch (error) { console.error(`[MODULE ISOLATED] Error in ${moduleName}:`, error); }
@@ -20,13 +20,17 @@ async function safeRunAsync(moduleName, func) {
     try { await func(); } catch (error) { console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error); }
 }
 
+// 100% BULLETPROOF ESCAPER: Uses standard HTML entities. Cannot cause syntax errors.
 const escapeHTML = (str) => {
     if (!str) return "";
-    const map = { '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' };
-    return String(str).replace(/[&<>"']/g, m => map[m]);
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;"); 
 };
 
-// Global Date Parser for accurate sorting across both spreadsheets
 function parseDateTime(dateStr, timeStr = '') {
     dateStr = dateStr ? dateStr.trim() : '';
     timeStr = timeStr ? timeStr.trim() : '';
@@ -35,14 +39,13 @@ function parseDateTime(dateStr, timeStr = '') {
     let d = new Date(`${dateStr} ${timeStr}`.trim());
     if (isNaN(d)) {
         const parts = dateStr.split(/[-/]/);
-        // Assumes DD/MM/YYYY format if Date.parse fails
         if (parts.length === 3) d = new Date(`${parts[2]}/${parts[1]}/${parts[0]} ${timeStr}`);
     }
     return isNaN(d) ? 0 : d.getTime();
 }
 
 // ==========================================
-// 1. THEME & NAVIGATION
+// 1. THEME & NEW SPA NAVIGATION ENGINE
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -52,7 +55,7 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    const activePage = document.querySelector('.page[style*="display: block"]')?.id || 'home';
+    const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
 
@@ -72,7 +75,31 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     if (meta) meta.content = metaColor;
 }
 
-function showPage(event, pageId) { safeRun('Navigation', () => {
+// USER'S PROVIDED NAVIGATION ENGINE
+window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
+    if (navigator.vibrate) navigator.vibrate(40); 
+
+    // Hide all pages by removing active class
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Make target visible
+    const targetPage = document.getElementById(pageId);
+    if(targetPage) { 
+        targetPage.classList.add('active'); 
+    }
+
+    // Update Nav Buttons
+    if (buttonId) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.getElementById(buttonId); 
+        if(activeBtn) activeBtn.classList.add('active');
+    }
+
+    // Update body theme colors dynamically
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
@@ -80,39 +107,7 @@ function showPage(event, pageId) { safeRun('Navigation', () => {
     else if (pageId === 'flights') document.body.classList.add('theme-flights');
     
     updateMetaThemeColor(pageId);
-
-    const buttons = document.querySelectorAll('.nav-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    if (event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
-        event.currentTarget.classList.add('active');
-    }
-
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-        page.style.display = 'none';
-        page.classList.remove('fade-in');
-    });
-
-    const activePage = document.getElementById(pageId);
-    if(activePage) {
-        activePage.style.display = 'block';
-        window.scrollTo(0, 0);
-        requestAnimationFrame(() => activePage.classList.add('fade-in'));
-    }
-})};
-
-function openWeatherPage() { safeRun('OpenWeather', () => {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => { page.style.display = 'none'; page.classList.remove('fade-in'); });
-    const buttons = document.querySelectorAll('.nav-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    const wPage = document.getElementById('weather-root');
-    if(wPage) {
-        wPage.style.display = 'block';
-        window.scrollTo(0, 0);
-        requestAnimationFrame(() => wPage.classList.add('fade-in'));
-    }
+    window.scrollTo(0,0); 
 })};
 
 function switchDayView(day) { safeRun('SwitchDay', () => {
@@ -122,18 +117,14 @@ function switchDayView(day) { safeRun('SwitchDay', () => {
     const btnTomorrow = document.getElementById('btn-show-tomorrow');
     if(!todayView || !tomorrowView) return;
 
-    todayView.classList.remove('fade-in'); tomorrowView.classList.remove('fade-in');
-
     if (day === 'today') {
         todayView.style.display = 'block'; tomorrowView.style.display = 'none';
         if(btnToday) { btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white'; }
         if(btnTomorrow) { btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)'; }
-        requestAnimationFrame(() => todayView.classList.add('fade-in'));
     } else {
         todayView.style.display = 'none'; tomorrowView.style.display = 'block';
         if(btnTomorrow) { btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white'; }
         if(btnToday) { btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)'; }
-        requestAnimationFrame(() => tomorrowView.classList.add('fade-in'));
     }
 })};
 
@@ -231,13 +222,11 @@ function saveTripSettings() { safeRun('SaveTrip', () => {
     updateTimeAndCountdown(); 
 })};
 
-
 // ==========================================
 // 3. MASTER CLOUD DATA ENGINE
 // ==========================================
 async function loadAllData() {
     try {
-        // Fetch BOTH Google Sheets at the exact same time for maximum speed
         const [itineraryRes, vaultRes] = await Promise.all([
             fetch(sheetUrl),
             fetch(vaultUrl)
@@ -246,7 +235,6 @@ async function loadAllData() {
         const itinData = await itineraryRes.text();
         const vData = await vaultRes.text();
 
-        // --- Parse Itinerary Sheet ---
         const iRows = itinData.split('\n').slice(1);
         itineraryData = iRows.filter(r => r.trim() !== '');
         itineraryData.sort((a, b) => {
@@ -263,7 +251,6 @@ async function loadAllData() {
             }
         });
 
-        // --- Parse Vault & Stays Sheet ---
         const vRows = vData.split('\n').slice(1);
         vaultAndStaysData = vRows.filter(r => r.trim() !== '');
         vaultAndStaysData.forEach(row => {
@@ -328,7 +315,6 @@ function renderTravelVault() { safeRun('RenderVault', () => {
     let html = '';
     let hasData = false;
 
-    // Auto-Sort all travel logistics chronologically by Date column!
     const sortedData = [...vaultAndStaysData].sort((a,b) => {
         const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
         const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -343,8 +329,6 @@ function renderTravelVault() { safeRun('RenderVault', () => {
         const type = cols[1].trim().toLowerCase();
         
         if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
-            
-            // --- RENDER FLIGHTS ---
             if (type === 'flight') {
                 hasData = true;
                 const date = escapeHTML(cols[2]?.trim());
@@ -378,7 +362,6 @@ function renderTravelVault() { safeRun('RenderVault', () => {
                     <div class="barcode"></div>
                 </div>`;
             } 
-            // --- RENDER CARS ---
             else if (type === 'car') {
                 hasData = true;
                 const pickupDate = escapeHTML(cols[2]?.trim());
@@ -414,7 +397,6 @@ function renderAccommodations() { safeRun('RenderAcc', () => {
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
 
     vaultAndStaysData.forEach(row => {
-        // Intelligent Regex completely stops CSV commas from breaking the layout
         const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
         if(cols.length < 2) return;
 
@@ -468,7 +450,7 @@ function renderAccommodations() { safeRun('RenderAcc', () => {
     const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
 })};
 
-function renderItinerary() {
+function renderItinerary() { safeRun('RenderItin', () => {
     const filter = document.getElementById('family-selector')?.value || 'All';
     let hLA = '', hUtah = '', hVegas = '', hToday = '', hTomorrow = '';
     let lLA = '', lUtah = '', lVegas = '';
@@ -515,8 +497,7 @@ function renderItinerary() {
     if(document.getElementById('vegas-itinerary')) document.getElementById('vegas-itinerary').innerHTML = hVegas || '<div class="empty-state">No activities</div>';
     if(document.getElementById('today-itinerary')) document.getElementById('today-itinerary').innerHTML = hToday || '<div class="empty-state"><span class="empty-icon">🏖️</span><div class="empty-text">Nothing Scheduled</div></div>';
     if(document.getElementById('tomorrow-itinerary')) document.getElementById('tomorrow-itinerary').innerHTML = hTomorrow || '<div class="empty-state"><span class="empty-icon">📅</span><div class="empty-text">No Plans Yet</div></div>';
-    
-}
+})};
 
 function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
@@ -583,13 +564,12 @@ async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
 }
 
 async function initWeather() {
-    // Default fallback to Los Angeles if GPS fails or hangs
     const fallbackLat = 34.0522, fallbackLon = -118.2437;
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude)); },
             (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
-            { timeout: 5000 }
+            { timeout: 5000 } 
         );
     } else {
         safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
@@ -613,10 +593,7 @@ window.onload = () => {
     
     safeRun('InitWeather', initWeather);
     safeRunAsync('InitCurrency', initLiveCurrency); 
-    safeRunAsync('InitDataEngine', loadAllData); // <--- BOOTS UP BOTH SPREADSHEETS
-    
-    const homeEl = document.getElementById('home');
-    if (homeEl) requestAnimationFrame(() => homeEl.classList.add('fade-in'));
+    safeRunAsync('InitDataEngine', loadAllData); 
 };
 
 if ('serviceWorker' in navigator) {
