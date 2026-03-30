@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.3.1';
+const CACHE_NAME = 'holiday-planner-v1.3.2';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -7,7 +7,8 @@ const ASSETS_TO_CACHE = [
     './manifest.json',
     './la.jpg',
     './utah.jpg',
-    './vegas.jpg'
+    './vegas.jpg',
+    './bg.jpg'
 ];
 
 self.addEventListener('install', event => {
