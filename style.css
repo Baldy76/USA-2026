@@ -25,33 +25,27 @@ body.dark-mode {
 body.theme-la { --accent: #ff9500; --accent-gradient: linear-gradient(135deg, #ff9500 0%, #ff5e3a 100%); }
 body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, #ff3b30 0%, #d11141 100%); }
 body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg, #af52de 0%, #5e5ce6 100%); }
+body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); }
 
 /* 2. General Styling */
 body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg); color: var(--text); padding-bottom: 140px; /* Extra padding for floating nav */
+    background-color: var(--bg); color: var(--text); padding-bottom: 120px; 
     transition: background-color 0.3s ease; position: relative;
 }
 
 body::before {
     content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--bg-image); background-size: cover; background-position: center;
-    opacity: 0.15; z-index: -1; pointer-events: none; 
+    opacity: 0.15; z-index: -1; pointer-events: none; transition: background-image 0.5s ease;
 }
 body.dark-mode::before { opacity: 0.06; }
 
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
 .page { padding: 20px; max-width: 600px; margin: 0 auto; }
 
-/* Smooth Page Transitions */
-.fade-in {
-    animation: fadeIn 0.2s ease-out forwards;
-    will-change: opacity, transform;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+.fade-in { animation: fadeIn 0.2s ease-out forwards; will-change: opacity, transform; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* 3. The Boarding Pass & Flight Tracker */
 .flight-card {
@@ -74,18 +68,24 @@ h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text);
 .plane-icon { flex: 1; position: relative; height: 2px; background: rgba(255,255,255,0.3); margin: 0 15px; }
 .plane-icon::after { content: '✈️'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 16px; }
 
+/* NEW: Boarding Pass Barcode */
+.barcode {
+    height: 30px; margin-top: 20px; border-radius: 4px; opacity: 0.6;
+    background: repeating-linear-gradient(to right, #fff, #fff 3px, transparent 3px, transparent 5px, #fff 5px, #fff 6px, transparent 6px, transparent 10px);
+}
+
 /* 4. Navigation */
 .bottom-nav {
-    position: fixed; bottom: 30px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around;
+    position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around;
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 15px 35px var(--shadow); padding: 12px 10px; border-radius: 40px; z-index: 1000;
+    border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 10px 30px var(--shadow); padding: 10px 5px; border-radius: 35px; z-index: 1000;
     transform: translateZ(0); 
 }
-body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px solid rgba(255,255,255,0.08); }
+body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px solid rgba(255,255,255,0.05); }
 .nav-btn {
-    background: transparent; border: none; color: var(--text); opacity: 0.5; font-size: 11px; font-weight: 800; cursor: pointer; padding: 8px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; border-radius: 25px;
+    background: transparent; border: none; color: var(--text); opacity: 0.5; font-size: 10px; font-weight: 800; cursor: pointer; padding: 6px 4px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; border-radius: 20px;
 }
-.nav-icon { font-size: 24px; margin-bottom: 2px; transition: transform 0.2s ease; }
+.nav-icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s ease; }
 .nav-btn.active { background: var(--accent-gradient); color: white; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); opacity: 1; }
 .nav-btn.active .nav-icon { transform: scale(1.1); }
 
