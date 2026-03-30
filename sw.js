@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.5.1';
+const CACHE_NAME = 'holiday-planner-v1.6.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -8,6 +8,7 @@ const ASSETS_TO_CACHE = [
     './la.jpg',
     './utah.jpg',
     './vegas.jpg',
+    './flights.jpg',
     './bg.jpg',
     './clear.jpg',
     './clouds.jpg',
