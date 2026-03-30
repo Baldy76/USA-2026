@@ -6,7 +6,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 1. THEME & UI HELPERS
+// 1. THEME & UI HELPERS (Fully Optimized)
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -16,44 +16,77 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    updateMetaThemeColor();
-}
-window.setThemeMode = (isDark) => { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); };
-
-function updateMetaThemeColor() {
-    setTimeout(() => {
-        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
-        const meta = document.getElementById('theme-meta'); 
-        if (meta && accentColor) meta.content = accentColor;
-    }, 50); 
+    
+    // Find what page we are on to set the top status bar color correctly
+    const activePage = document.querySelector('.page[style*="display: block"]')?.id || 'home';
+    updateMetaThemeColor(activePage, isDark);
 }
 
+window.setThemeMode = (isDark) => { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+};
+
+// PERFORMANCE FIX: Hardcoded colors instead of querying CSS to kill layout thrashing
+function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
+    let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
+    if (pageId === 'la') metaColor = '#ff9500';
+    else if (pageId === 'utah') metaColor = '#ff3b30';
+    else if (pageId === 'vegas') metaColor = '#af52de';
+    
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) meta.content = metaColor;
+}
+
+// PERFORMANCE FIX: requestAnimationFrame ensures butter-smooth tab switching
 function showPage(event, pageId) {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.style.display = 'none');
-    
-    const buttons = document.querySelectorAll('.nav-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById(pageId).style.display = 'block';
-    event.currentTarget.classList.add('active');
-    window.scrollTo(0,0);
-
-    // Apply Dynamic City Themes
+    // 1. Update Classes & Themes Instantly
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
     else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
     
-    updateMetaThemeColor();
+    updateMetaThemeColor(pageId);
+
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // 2. Hide old pages
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('fade-in');
+    });
+
+    // 3. Prep new page
+    const activePage = document.getElementById(pageId);
+    activePage.style.display = 'block';
+    window.scrollTo(0, 0);
+
+    // 4. Trigger GPU Animation Frame
+    requestAnimationFrame(() => {
+        activePage.classList.add('fade-in');
+    });
 }
 
 function openWeatherPage() {
     const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.style.display = 'none');
+    pages.forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('fade-in'); 
+    });
+    
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    document.getElementById('weather-root').style.display = 'block';
+    
+    const wPage = document.getElementById('weather-root');
+    wPage.style.display = 'block';
+    window.scrollTo(0, 0);
+    
+    requestAnimationFrame(() => {
+        wPage.classList.add('fade-in');
+    });
 }
 
 function switchDayView(day) {
@@ -61,14 +94,28 @@ function switchDayView(day) {
     const tomorrowView = document.getElementById('tomorrow-view');
     const btnToday = document.getElementById('btn-show-today');
     const btnTomorrow = document.getElementById('btn-show-tomorrow');
+    
+    todayView.classList.remove('fade-in');
+    tomorrowView.classList.remove('fade-in');
+
     if (day === 'today') {
-        todayView.style.display = 'block'; tomorrowView.style.display = 'none';
-        btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white';
-        btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)';
+        todayView.style.display = 'block'; 
+        tomorrowView.style.display = 'none';
+        btnToday.style.backgroundColor = 'var(--accent)'; 
+        btnToday.style.color = 'white';
+        btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; 
+        btnTomorrow.style.color = 'var(--text)';
+        
+        requestAnimationFrame(() => { todayView.classList.add('fade-in'); });
     } else {
-        todayView.style.display = 'none'; tomorrowView.style.display = 'block';
-        btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white';
-        btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)';
+        todayView.style.display = 'none'; 
+        tomorrowView.style.display = 'block';
+        btnTomorrow.style.backgroundColor = 'var(--accent)'; 
+        btnTomorrow.style.color = 'white';
+        btnToday.style.backgroundColor = 'var(--ios-grey)'; 
+        btnToday.style.color = 'var(--text)';
+        
+        requestAnimationFrame(() => { tomorrowView.classList.add('fade-in'); });
     }
 }
 
@@ -80,15 +127,14 @@ function toggleComplete(element) {
     }
 }
 
-// 100% BULLETPROOF HTML ESCAPER - Using double quotes to prevent syntax crashes.
 const escapeHTML = (str) => {
     if (!str) return "";
     return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;"); 
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'"); 
 };
 
 // ==========================================
@@ -372,7 +418,6 @@ function renderAccommodations() {
         const processCard = (f, acc) => {
             const address = acc.address || acc;
             const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-            // OFFICIAL GOOGLE MAPS LINK:
             const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
             
             const ui = `
@@ -436,7 +481,6 @@ function renderItinerary() {
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
-                // OFFICIAL GOOGLE MAPS LINK:
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 
@@ -515,7 +559,6 @@ async function initWeather() {
                 document.getElementById('hw-desc').innerText = d.weather[0].description; 
                 document.getElementById('hw-loc').innerText = `📍 ${d.name}`;
                 
-                // Dynamic Weather Backgrounds
                 const mainWeather = d.weather[0].main.toLowerCase();
                 let bgImage = 'bg.jpg'; 
                 if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
@@ -562,7 +605,7 @@ window.onload = () => {
     
     // Auto-trigger Home theme setup
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
-    updateMetaThemeColor();
+    updateMetaThemeColor('home');
     
     updateTimeAndCountdown();
     setInterval(updateTimeAndCountdown, 60000); 
@@ -573,8 +616,9 @@ window.onload = () => {
     
     const homeEl = document.getElementById('home');
     if (homeEl) {
-        void homeEl.offsetWidth;
-        homeEl.classList.add('fade-in');
+        requestAnimationFrame(() => {
+            homeEl.classList.add('fade-in');
+        });
     }
 };
 
