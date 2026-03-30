@@ -6,7 +6,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 1. THEME & UI HELPERS (Fully Optimized)
+// 1. THEME & UI HELPERS
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -17,7 +17,6 @@ function applyTheme(isDark) {
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
     
-    // Find what page we are on to set the top status bar color correctly
     const activePage = document.querySelector('.page[style*="display: block"]')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
@@ -27,7 +26,6 @@ window.setThemeMode = (isDark) => {
     localStorage.setItem('HolidayPlanner_Theme', isDark); 
 };
 
-// PERFORMANCE FIX: Hardcoded colors instead of querying CSS to kill layout thrashing
 function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
     if (pageId === 'la') metaColor = '#ff9500';
@@ -38,9 +36,7 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     if (meta) meta.content = metaColor;
 }
 
-// PERFORMANCE FIX: requestAnimationFrame ensures butter-smooth tab switching
 function showPage(event, pageId) {
-    // 1. Update Classes & Themes Instantly
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
@@ -50,21 +46,22 @@ function showPage(event, pageId) {
 
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    
+    // Safety check: only add 'active' if the clicked button is actually in the bottom nav
+    if (event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
+        event.currentTarget.classList.add('active');
+    }
 
-    // 2. Hide old pages
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => {
         page.style.display = 'none';
         page.classList.remove('fade-in');
     });
 
-    // 3. Prep new page
     const activePage = document.getElementById(pageId);
     activePage.style.display = 'block';
     window.scrollTo(0, 0);
 
-    // 4. Trigger GPU Animation Frame
     requestAnimationFrame(() => {
         activePage.classList.add('fade-in');
     });
@@ -603,7 +600,6 @@ async function initWeather() {
 window.onload = () => {
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
     
-    // Auto-trigger Home theme setup
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
     updateMetaThemeColor('home');
     
