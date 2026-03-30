@@ -16,11 +16,13 @@
     <main id="content">
         <section id="la" class="page" style="display: none;">
             <h2>Los Angeles</h2>
+            <div id="la-home-card"></div>
             <div id="la-itinerary">Loading plans...</div> 
         </section>
 
         <section id="utah" class="page" style="display: none;">
             <h2>Utah</h2>
+            <div id="utah-home-card"></div>
             <div id="utah-itinerary">Loading plans...</div>
         </section>
 
@@ -62,6 +64,7 @@
 
         <section id="vegas" class="page" style="display: none;">
             <h2>Las Vegas</h2>
+            <div id="vegas-home-card"></div>
             <div id="vegas-itinerary">Loading plans...</div>
         </section>
 
@@ -85,6 +88,28 @@
             </div>
 
             <div class="admin-card">
+                <h3>🏠 Accommodations</h3>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your Airbnb/Hotel addresses for quick navigation. (Saves to this device).</p>
+                
+                <label style="font-size: 14px; margin-bottom: 5px;">City:</label>
+                <select id="acc-city">
+                    <option value="LA">Los Angeles</option>
+                    <option value="Utah">Utah</option>
+                    <option value="Vegas">Las Vegas</option>
+                </select>
+
+                <label style="font-size: 14px; margin-bottom: 5px;">Family:</label>
+                <select id="acc-family">
+                    </select>
+
+                <label style="font-size: 14px; margin-bottom: 5px;">Address:</label>
+                <input type="text" id="acc-address" placeholder="e.g., 123 Hollywood Blvd" />
+
+                <button onclick="saveAccommodation()" class="action-btn">💾 Save Address</button>
+                <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Address Saved!</div>
+            </div>
+
+            <div class="admin-card">
                 <h3>Add Custom Family Name</h3>
                 <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Names added here only save to this device.</p>
                 <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
@@ -100,7 +125,7 @@
             <p style="font-size: 14px; font-weight: 700; opacity: 0.5; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                ULTIMATE PLANNER // v1.0.9
+                ULTIMATE PLANNER // v1.1.0
             </div>
         </section>
     </main>
