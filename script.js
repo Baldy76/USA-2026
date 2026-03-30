@@ -62,7 +62,6 @@ function switchDayView(day) {
     }
 }
 
-// NEW: Tap to Complete Activity
 function toggleComplete(element) {
     if(element.style.opacity === '0.5') {
         element.style.opacity = '1';
@@ -73,10 +72,10 @@ function toggleComplete(element) {
     }
 }
 
-// NEW: Currency Converter
+// Currency Converter
 function convertCurrency() {
     const usd = document.getElementById('usd-input').value;
-    const rate = 0.79; // Hardcoded static rate for offline reliability
+    const rate = 0.79; 
     if(usd) {
         const gbp = (usd * rate).toFixed(2);
         document.getElementById('gbp-output').innerText = `£${gbp}`;
@@ -85,35 +84,45 @@ function convertCurrency() {
     }
 }
 
-// NEW: Time & Countdown Engine
+// Time & Countdown Engine (REBUILT FOR RELIABILITY)
 function updateTimeAndCountdown() {
     const now = new Date();
     const savedStart = localStorage.getItem('tripStartDate');
     const cContainer = document.getElementById('countdown-display');
     const clockContainer = document.getElementById('dual-clocks');
 
+    // Get cleanly formatted current date
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString(undefined, options);
+    
+    // Inject date into the widgets
+    document.getElementById('cd-date').textContent = dateString;
+    document.getElementById('clock-date').textContent = dateString;
+
     if(savedStart) {
         document.getElementById('trip-start-date').value = savedStart;
         const tripDate = new Date(savedStart);
+        tripDate.setHours(0,0,0,0);
+        
         const diff = tripDate - now;
 
         if (diff > 0) {
             // Future trip: Show Countdown
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-            cContainer.innerHTML = `🚀 ${days} Days until Takeoff!`;
+            document.getElementById('cd-text').innerHTML = `🚀 ${days} Days until Takeoff!`;
             cContainer.style.display = 'block';
             clockContainer.style.display = 'none';
-            return; // Skip drawing clocks
+            return; 
         }
     } 
 
     // Trip has started (or no date set): Show Clocks
     cContainer.style.display = 'none';
-    clockContainer.style.display = 'flex';
+    clockContainer.style.display = 'block';
 
-    const ukTime = new Intl.DateTimeFormat('en-GB', { timeStyle: 'short', timeZone: 'Europe/London' }).format(now);
-    // Defaults to Pacific Time for LA/Vegas. 
-    const ptTime = new Intl.DateTimeFormat('en-GB', { timeStyle: 'short', timeZone: 'America/Los_Angeles' }).format(now);
+    // Bulletproof universal time formatting
+    const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
+    const ptTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' }).format(now);
     
     document.getElementById('clock-uk').innerText = ukTime;
     document.getElementById('clock-local').innerText = ptTime;
@@ -125,7 +134,7 @@ function saveTripSettings() {
     updateTimeAndCountdown();
 }
 
-// NEW: Travel Vault
+// Travel Vault
 function saveTravelVault() {
     const flight = document.getElementById('vault-flight').value;
     const car = document.getElementById('vault-car').value;
@@ -253,7 +262,6 @@ function addCustomFamily() {
 // ==========================================
 // 4. ACCOMMODATION LOGIC
 // ==========================================
-// [Accommodation functions remain the same as 1.1.5, slightly compressed for space]
 function saveAccommodation() {
     const city = document.getElementById('acc-city').value;
     const family = document.getElementById('acc-family').value;
@@ -346,8 +354,6 @@ function renderItinerary() {
     const selectedFamily = document.getElementById('family-selector').value;
     
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '', htmlTomorrow = '';
-    
-    // NEW: Tracking variables for Sticky Date Headers
     let lastDateLA = '', lastDateUtah = '', lastDateVegas = '';
     let todayCount = 0, tomorrowCount = 0;
     
@@ -379,7 +385,6 @@ function renderItinerary() {
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
                 const addressDisplayHtml = address ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${address}</span>` : '';
 
-                // NEW: Added onclick="toggleComplete(this)" for tap-to-complete
                 const cardHtml = `
                     <div style="background: var(--card); margin-bottom: 20px; padding: 24px; border-radius: 24px; box-shadow: 0 8px 24px var(--shadow); text-align: left; color: var(--text); transition: all 0.3s ease; cursor: pointer;" onclick="toggleComplete(this)">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
@@ -394,7 +399,6 @@ function renderItinerary() {
                     </div>
                 `;
 
-                // NEW: Inject Sticky Headers for City pages
                 if (location.toLowerCase().includes('la') || location.toLowerCase().includes('los angeles')) {
                     if(date !== lastDateLA) { htmlLA += `<div class="date-divider"><span class="sticky-date">${date}</span></div>`; lastDateLA = date; }
                     htmlLA += cardHtml;
@@ -439,9 +443,15 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
+// FINALLY FIXED AND SECURE: Using standard HTML entities to absolutely prevent JS breaks.
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '''); 
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;'); 
 };
 
 async function initWeather() { 
@@ -508,12 +518,9 @@ window.onload = () => {
     const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
     applyTheme(savedTheme);
 
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('today-date-display').textContent = new Date().toLocaleDateString(undefined, options);
-
     // Initialize New Features
     updateTimeAndCountdown();
-    setInterval(updateTimeAndCountdown, 60000); // Update clock every minute
+    setInterval(updateTimeAndCountdown, 60000); 
     renderTravelVault();
 
     initWeather();
