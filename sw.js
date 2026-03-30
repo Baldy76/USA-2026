@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.2.1';
+const CACHE_NAME = 'holiday-planner-v1.2.2';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -9,9 +9,7 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
     );
     self.skipWaiting(); 
 });
@@ -31,10 +29,7 @@ self.addEventListener('fetch', event => {
     if (event.request.url.includes('docs.google.com') || event.request.url.includes('openweathermap.org')) {
         return; 
     }
-
     event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            return cachedResponse || fetch(event.request);
-        })
+        caches.match(event.request).then(cachedResponse => cachedResponse || fetch(event.request))
     );
 });
