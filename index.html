@@ -163,11 +163,11 @@
             <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
                 <h2>Travel Details</h2>
             </div>
-            <div id="today-vault-display"></div>
+            <div id="flights-vault-display"></div>
             <div class="empty-state" id="empty-vault-state" style="display: none;">
-                <span class="empty-icon">✈️</span>
-                <div class="empty-text">No Flight Data</div>
-                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Add details in the Admin tab.</div>
+                <span class="empty-icon">☁️</span>
+                <div class="empty-text">No Travel Data</div>
+                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
             </div>
         </section>
 
@@ -189,51 +189,9 @@
             </div>
 
             <div class="admin-card">
-                <h3>🧳 The Travel Vault</h3>
-                <p style="opacity:0.6; font-size: 12px; margin-bottom: 10px;">Individual fields for your Digital Boarding Pass.</p>
-                
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 13px;">Departure:</label><input type="text" id="vault-dep" placeholder="e.g. LHR" /></div>
-                    <div style="flex: 1;"><label style="font-size: 13px;">Arrival:</label><input type="text" id="vault-arr" placeholder="e.g. LAX" /></div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 13px;">Airline Code:</label><input type="text" id="vault-airline" placeholder="e.g. BA" /></div>
-                    <div style="flex: 1;"><label style="font-size: 13px;">Flight No:</label><input type="text" id="vault-fnum" placeholder="e.g. 269" /></div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 13px;">Terminal/Gate:</label><input type="text" id="vault-term" placeholder="e.g. T5" /></div>
-                    <div style="flex: 1;"><label style="font-size: 13px;">Time:</label><input type="text" id="vault-time" placeholder="e.g. 14:30" /></div>
-                </div>
-
-                <label style="font-size: 14px; margin-top: 10px;">Rental Car Details:</label>
-                <textarea id="vault-car" rows="2" placeholder="Rental details..."></textarea>
-                <button onclick="saveTravelVault()" class="action-btn">💾 Save Vault</button>
-                <div id="vault-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Vault Updated!</div>
-            </div>
-
-            <div class="admin-card">
                 <h3>App Settings</h3>
                 <label>Select Your Family:</label>
                 <select id="family-selector" onchange="updateFamilyFilter()"></select>
-            </div>
-
-            <div class="admin-card">
-                <h3>🏠 Accommodations</h3>
-                <label>City:</label>
-                <select id="acc-city">
-                    <option value="LA">Los Angeles</option>
-                    <option value="Utah">Utah</option>
-                    <option value="Vegas">Las Vegas</option>
-                </select>
-                <label>Family:</label><select id="acc-family"></select>
-                <label>Address:</label><input type="text" id="acc-address" />
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Check-In:</label><input type="date" id="acc-start" /></div>
-                    <div style="flex: 1;"><label>Check-Out:</label><input type="date" id="acc-end" /></div>
-                </div>
-                <label>Listing URL:</label><input type="url" id="acc-link" />
-                <label>Image URL:</label><input type="url" id="acc-image" />
-                <button onclick="saveAccommodation()" class="action-btn">💾 Save Details</button>
             </div>
 
             <div class="admin-card">
@@ -247,7 +205,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.6.1</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.7.0</div>
         </section>
     </main>
 
