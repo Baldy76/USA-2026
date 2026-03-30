@@ -12,7 +12,7 @@ function applyTheme(isDark) {
     
     const meta = document.getElementById('theme-meta'); 
     if(meta) {
-        meta.content = isDark ? "#000000" : "#f2f2f7";
+        meta.content = isDark ? "#000000" : "#f0f2f5";
     }
     
     const btnLight = document.getElementById('btnLight'); 
@@ -224,20 +224,20 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // FIXED: Direct link to Google Maps Directions API
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
                 
+                // NEW STYLING: Soft layout, heavy radius, strong typography
                 const cardHtml = `
-                    <li style="background: var(--card); margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 8px; margin-bottom: 8px;">
-                            <strong>${date}</strong>
-                            <span style="background: var(--ios-grey); padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; color: var(--text);">${who}</span>
+                    <li style="background: var(--card); margin-bottom: 20px; padding: 24px; border-radius: 24px; box-shadow: 0 8px 24px var(--shadow); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
+                            <strong style="font-size: 16px; font-weight: 800;">${date}</strong>
+                            <span style="background: var(--ios-grey); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; color: var(--text);">${who}</span>
                         </div>
-                        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 8px;">
+                        <div style="font-size: 15px; font-weight: 700; opacity: 0.6; margin-bottom: 12px; line-height: 1.6;">
                             🕒 ${time} <br>
-                            📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: bold;">${location} (Get Directions)</a>
+                            📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 800;">${location} (Directions)</a>
                         </div>
-                        <div style="font-size: 16px;">${activity}</div>
+                        <div style="font-size: 18px; font-weight: 800; line-height: 1.4;">${activity}</div>
                     </li>
                 `;
 
@@ -265,13 +265,13 @@ function renderItinerary() {
     htmlVegas += '</ul>';
     
     if (todayCount === 0) {
-        htmlToday = '<p style="color: var(--text); opacity: 0.7;">No activities scheduled for today. Time to relax by the pool!</p>';
+        htmlToday = '<div class="empty-state"><span class="empty-icon">🏖️</span><div class="empty-text">Nothing Scheduled</div></div>';
     } else {
         htmlToday += '</ul>';
     }
     
     if (tomorrowCount === 0) {
-        htmlTomorrow = '<p style="color: var(--text); opacity: 0.7;">No activities scheduled for tomorrow yet.</p>';
+        htmlTomorrow = '<div class="empty-state"><span class="empty-icon">📅</span><div class="empty-text">No Plans Yet</div></div>';
     } else {
         htmlTomorrow += '</ul>';
     }
@@ -305,15 +305,14 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
-// FIXED: Properly formats HTML entities to prevent JavaScript syntax crashes!
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;"); 
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'"); 
 };
 
 async function initWeather() { 
@@ -359,14 +358,14 @@ async function initWeather() {
                     if(wDash) { 
                         wDash.innerHTML = `
                             <div class="WTH-hero">
-                                <div class="WTH-icon" style="font-size: 50px;">${currentIcon}</div>
+                                <div class="WTH-icon" style="font-size: 60px;">${currentIcon}</div>
                                 <div class="WTH-hero-temp">${temp}</div>
                                 <div class="WTH-hero-desc">${currentDesc}</div>
-                                <div style="font-size: 14px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;">
+                                <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
                                     📍 ${escapeHTML(data.name)}
                                 </div>
                             </div>
-                            <h3 class="ADM-hdr" style="margin: 25px 0 10px;">5-Day Forecast</h3>
+                            <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
                             ${forecastHtml}
                         `; 
                     }
