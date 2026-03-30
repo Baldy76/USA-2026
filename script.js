@@ -2,9 +2,41 @@
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv';
 
 let itineraryData = []; 
-let sheetFamilies = new Set(); // Stores unique families found in the Google Sheet
+let sheetFamilies = new Set(); 
 
-// 1. Navigation Logic
+// ==========================================
+// 1. THEME LOGIC (Dark/Light Mode)
+// ==========================================
+function applyTheme(isDark) {
+    document.body.classList.toggle('dark-mode', isDark);
+    
+    const meta = document.getElementById('theme-meta'); 
+    if(meta) {
+        meta.content = isDark ? "#000000" : "#f2f2f7";
+    }
+    
+    const btnLight = document.getElementById('btnLight'); 
+    const btnDark = document.getElementById('btnDark');
+    
+    if (btnLight && btnDark) {
+        if (isDark) { 
+            btnLight.classList.remove('active'); 
+            btnDark.classList.add('active'); 
+        } else { 
+            btnLight.classList.add('active'); 
+            btnDark.classList.remove('active'); 
+        }
+    }
+}
+
+window.setThemeMode = (isDark) => { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+};
+
+// ==========================================
+// 2. NAVIGATION LOGIC
+// ==========================================
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.style.display = 'none');
@@ -16,7 +48,9 @@ function showPage(event, pageId) {
     event.currentTarget.classList.add('active');
 }
 
-// 2. Fetch the Data from Google Sheets
+// ==========================================
+// 3. FETCH AND FILTER DATA
+// ==========================================
 async function loadItinerary() {
     try {
         const response = await fetch(sheetUrl);
@@ -25,7 +59,6 @@ async function loadItinerary() {
         const rows = data.split('\n').slice(1); 
         itineraryData = rows.filter(row => row.trim() !== ''); 
         
-        // Auto-detect families from the spreadsheet
         itineraryData.forEach(row => {
             const columns = row.split(',');
             if(columns.length >= 5) {
@@ -41,19 +74,15 @@ async function loadItinerary() {
         
     } catch (error) {
         console.error("Error loading data:", error);
-        document.getElementById('la-itinerary').innerHTML = "Failed to load itinerary. Please check your connection.";
+        document.getElementById('la-itinerary').innerHTML = "Failed to load itinerary.";
     }
 }
 
-// 3. Populate Dropdown with both Sheet data and Local Custom data
 function populateDropdown() {
     const select = document.getElementById('family-selector');
     select.innerHTML = '<option value="All">Show All Activities</option>';
     
-    // Get custom families saved on this device
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
-    
-    // Combine Sheet families and Custom families, avoiding duplicates
     const allFamilies = new Set([...sheetFamilies, ...customFamilies]);
 
     allFamilies.forEach(family => {
@@ -63,14 +92,12 @@ function populateDropdown() {
         select.appendChild(option);
     });
 
-    // Restore saved selection if it exists
     const savedFamily = localStorage.getItem('savedFamilyFilter');
     if (savedFamily) {
         select.value = savedFamily;
     }
 }
 
-// 4. Manual Custom Family Addition (Admin Page)
 function addCustomFamily() {
     const input = document.getElementById('new-family-name');
     const newName = input.value.trim();
@@ -81,19 +108,16 @@ function addCustomFamily() {
             customFamilies.push(newName);
             localStorage.setItem('customFamilies', JSON.stringify(customFamilies));
             populateDropdown();
-            // Automatically select the newly added family
             document.getElementById('family-selector').value = newName;
             updateFamilyFilter();
         }
-        input.value = ''; // Clear the input field
+        input.value = ''; 
     }
 }
 
-// 5. Filter and Display the Data across all city pages
 function renderItinerary() {
     const selectedFamily = document.getElementById('family-selector').value;
     
-    // Reset HTML strings for each city
     let htmlLA = '<ul style="list-style-type: none; padding: 0;">';
     let htmlUtah = '<ul style="list-style-type: none; padding: 0;">';
     let htmlVegas = '<ul style="list-style-type: none; padding: 0;">';
@@ -108,21 +132,20 @@ function renderItinerary() {
             const time = columns[3].trim();
             const who = columns[4].trim(); 
             
-            // THE MAGIC FILTER
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
+                // UPDATED: Now uses CSS variables for colors so the cards change in Dark Mode
                 const cardHtml = `
-                    <li style="background: #fff; margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">
+                    <li style="background: var(--card); margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 8px; margin-bottom: 8px;">
                             <strong>${date}</strong>
-                            <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; color: #475569;">${who}</span>
+                            <span style="background: var(--ios-grey); padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; color: var(--text);">${who}</span>
                         </div>
-                        <div style="font-size: 14px; color: #64748b; margin-bottom: 4px;">🕒 ${time}</div>
-                        <div style="font-size: 16px; color: #1e293b;">${activity}</div>
+                        <div style="font-size: 14px; opacity: 0.7; margin-bottom: 4px;">🕒 ${time}</div>
+                        <div style="font-size: 16px;">${activity}</div>
                     </li>
                 `;
 
-                // Sort the card into the correct city page based on the Location column
                 if (location.toLowerCase().includes('la') || location.toLowerCase().includes('los angeles')) {
                     htmlLA += cardHtml;
                 } else if (location.toLowerCase().includes('utah')) {
@@ -143,23 +166,27 @@ function renderItinerary() {
     document.getElementById('vegas-itinerary').innerHTML = htmlVegas;
 }
 
-// 6. Handle Dropdown Changes
 function updateFamilyFilter() {
     const selectedFamily = document.getElementById('family-selector').value;
     localStorage.setItem('savedFamilyFilter', selectedFamily);
     renderItinerary();
 }
 
-// 7. Start the App
+// ==========================================
+// 4. APP INITIALIZATION 
+// ==========================================
 window.onload = () => {
+    // Load theme preference first
+    const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
+    applyTheme(savedTheme);
+
+    // Then load the data
     loadItinerary();
 };
 
 // ==========================================
-// PWA & SERVICE WORKER LOGIC
+// 5. PWA & SERVICE WORKER LOGIC
 // ==========================================
-
-// Register the Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -168,17 +195,15 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// Handle the "Sync Updates" button
 function syncUpdates() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
             for (let registration of registrations) {
-                registration.update(); // Tells the browser to check sw.js for changes
+                registration.update(); 
             }
         });
         
         alert("Syncing updates! The app will now reload.");
-        // Force a hard reload from the server to bypass the cache
         window.location.reload(true); 
     } else {
         alert("Updating! The app will now reload.");
