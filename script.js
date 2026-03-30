@@ -233,7 +233,7 @@ function createAccCardHTML(fam, cityKey, acc) {
     const link = typeof acc === 'string' ? null : acc.link;
     const image = typeof acc === 'string' ? null : acc.image;
 
-    // UPDATED: Bulletproof Google Maps Directions URL
+    // PERFECTED MAPS LINK: Official cross-platform routing URL with proper variable injection
     const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
     
     let buttonsHtml = `<button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">🚗 Drive</button>`;
@@ -363,18 +363,15 @@ function renderItinerary() {
             const time = columns[3].trim();
             const who = columns[4].trim(); 
             
-            // NEW: Pull the exact address from the 6th column if it exists!
             const address = (columns.length >= 6 && columns[5].trim() !== '') ? columns[5].trim() : '';
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // If they provided a specific address, map to that. Otherwise, map to the Activity + City.
                 const searchLocation = address !== '' ? address : `${activity} ${location}`;
                 
-                // UPDATED: Bulletproof Google Maps Directions URL
+                // PERFECTED MAPS LINK: Official cross-platform routing URL with proper variable injection
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
                 
-                // If there's a specific address, show it neatly under the Get Directions link
                 const addressDisplayHtml = address ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${address}</span>` : '';
 
                 const cardHtml = `
@@ -458,14 +455,15 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
+// FIXED: Syntax error removed permanently by using proper string literals
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'"); 
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;'); 
 };
 
 async function initWeather() { 
