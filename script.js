@@ -1,28 +1,23 @@
-// Connected to your live Google Sheet!
+// 1. Core Itinerary Data
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv';
 
+// 2. NEW: Vault & Stays Data
+const vaultUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv';
+
 let itineraryData = []; 
+let vaultAndStaysData = [];
 let sheetFamilies = new Set(); 
 let liveExchangeRate = 1.27; 
 
 // ==========================================
 // 0. RING-FENCE ERROR HANDLER
 // ==========================================
-// This ensures one broken feature NEVER breaks the app.
 function safeRun(moduleName, func) {
-    try {
-        func();
-    } catch (error) {
-        console.error(`[MODULE ISOLATED] Error in ${moduleName}:`, error);
-    }
+    try { func(); } catch (error) { console.error(`[MODULE ISOLATED] Error in ${moduleName}:`, error); }
 }
 
 async function safeRunAsync(moduleName, func) {
-    try {
-        await func();
-    } catch (error) {
-        console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error);
-    }
+    try { await func(); } catch (error) { console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error); }
 }
 
 const escapeHTML = (str) => {
@@ -31,8 +26,23 @@ const escapeHTML = (str) => {
     return String(str).replace(/[&<>"']/g, m => map[m]);
 };
 
+// Global Date Parser for accurate sorting across both spreadsheets
+function parseDateTime(dateStr, timeStr = '') {
+    dateStr = dateStr ? dateStr.trim() : '';
+    timeStr = timeStr ? timeStr.trim() : '';
+    if(!dateStr) return 0;
+    
+    let d = new Date(`${dateStr} ${timeStr}`.trim());
+    if (isNaN(d)) {
+        const parts = dateStr.split(/[-/]/);
+        // Assumes DD/MM/YYYY format if Date.parse fails
+        if (parts.length === 3) d = new Date(`${parts[2]}/${parts[1]}/${parts[0]} ${timeStr}`);
+    }
+    return isNaN(d) ? 0 : d.getTime();
+}
+
 // ==========================================
-// 1. THEME & NAVIGATION (Core Module)
+// 1. THEME & NAVIGATION
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -221,125 +231,61 @@ function saveTripSettings() { safeRun('SaveTrip', () => {
     updateTimeAndCountdown(); 
 })};
 
-// ==========================================
-// 3. FLIGHT VAULT
-// ==========================================
-function saveTravelVault() { safeRun('SaveVault', () => {
-    const flight = {
-        dep: document.getElementById('vault-dep')?.value.trim() || '',
-        arr: document.getElementById('vault-arr')?.value.trim() || '',
-        airline: document.getElementById('vault-airline')?.value.trim().toUpperCase() || '',
-        fnum: document.getElementById('vault-fnum')?.value.trim() || '',
-        term: document.getElementById('vault-term')?.value.trim() || '',
-        time: document.getElementById('vault-time')?.value.trim() || ''
-    };
-    const car = document.getElementById('vault-car')?.value || '';
-    
-    localStorage.setItem('travelVault', JSON.stringify({flight, car}));
-    
-    const msg = document.getElementById('vault-save-msg');
-    if(msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2500); }
-    renderTravelVault();
-})};
-
-function renderTravelVault() { safeRun('RenderVault', () => {
-    const vault = JSON.parse(localStorage.getItem('travelVault')) || null;
-    const display = document.getElementById('today-vault-display');
-    const emptyState = document.getElementById('empty-vault-state');
-    if(!display) return;
-
-    if (vault && (vault.flight?.dep || vault.car)) {
-        if (emptyState) emptyState.style.display = 'none';
-        let f = vault.flight || { dep:'', arr:'', airline:'', fnum:'', term:'', time:'' };
-        const flightTime = f.time || f.ref || '';
-
-        ['dep','arr','airline','fnum','term'].forEach(key => {
-            const el = document.getElementById(`vault-${key}`);
-            if(el) el.value = f[key] || '';
-        });
-        const tEl = document.getElementById('vault-time'); if(tEl) tEl.value = flightTime;
-        const cEl = document.getElementById('vault-car'); if(cEl) cEl.value = vault.car || '';
-
-        let flightHtml = "";
-        if (f.dep || f.arr || f.fnum) {
-            const searchStr = (f.airline + f.fnum).replace(/\s+/g, '');
-            const trackerLink = searchStr ? `https://flightaware.com/live/flight/${searchStr}` : '#';
-            const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${escapeHTML(f.airline)} ${escapeHTML(f.fnum)} ↗</a>` : `${escapeHTML(f.airline)} ${escapeHTML(f.fnum)}`;
-
-            flightHtml = `
-            <div class="flight-card">
-                <div class="flight-header">
-                    <span class="flight-num">${linkHtml}</span>
-                    <span style="font-size:12px; font-weight:800; opacity:0.8;">TIME: ${escapeHTML(flightTime)}</span>
-                </div>
-                <div class="flight-path">
-                    <div class="path-node"><span>From</span><strong>${escapeHTML(f.dep)}</strong></div>
-                    <div class="plane-icon"></div>
-                    <div class="path-node"><span>To</span><strong>${escapeHTML(f.arr)}</strong></div>
-                </div>
-                <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
-                    <span>Terminal/Gate: ${escapeHTML(f.term) || "Check Screens"}</span>
-                </div>
-                <div class="barcode"></div>
-            </div>`;
-        }
-
-        display.innerHTML = `
-            ${flightHtml}
-            ${vault.car ? `<div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
-                <div style="font-size:11px; font-weight:800; opacity:0.5; text-transform:uppercase;">🚗 Rental Reference</div>
-                <div style="font-size:16px; font-weight:700; margin-top:5px; white-space: pre-wrap;">${escapeHTML(vault.car)}</div>
-            </div>` : ''}
-        `;
-    } else { 
-        display.innerHTML = ''; 
-        if (emptyState) emptyState.style.display = 'flex';
-    }
-})};
 
 // ==========================================
-// 4. DATA ENGINE (Sheets & Accommodations)
+// 3. MASTER CLOUD DATA ENGINE
 // ==========================================
-async function loadItinerary() {
+async function loadAllData() {
     try {
-        const response = await fetch(sheetUrl);
-        const data = await response.text();
-        const rows = data.split('\n').slice(1); 
-        let rawData = rows.filter(row => row.trim() !== ''); 
+        // Fetch BOTH Google Sheets at the exact same time for maximum speed
+        const [itineraryRes, vaultRes] = await Promise.all([
+            fetch(sheetUrl),
+            fetch(vaultUrl)
+        ]);
         
-        function parseDateTime(dateStr, timeStr) {
-            let d = new Date(`${dateStr || ''} ${timeStr || ''}`);
-            if (isNaN(d)) {
-                const parts = (dateStr||'').split(/[-/]/);
-                if (parts.length === 3) d = new Date(`${parts[2]}/${parts[1]}/${parts[0]} ${timeStr||''}`);
-            }
-            return isNaN(d) ? 0 : d.getTime();
-        }
+        const itinData = await itineraryRes.text();
+        const vData = await vaultRes.text();
 
-        rawData.sort((a, b) => {
-            const ca = a.split(','); const cb = b.split(',');
+        // --- Parse Itinerary Sheet ---
+        const iRows = itinData.split('\n').slice(1);
+        itineraryData = iRows.filter(r => r.trim() !== '');
+        itineraryData.sort((a, b) => {
+            const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+            const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
             if (ca.length < 5 || cb.length < 5) return 0;
             return parseDateTime(ca[0], ca[3]) - parseDateTime(cb[0], cb[3]);
         });
-
-        itineraryData = rawData;
+        
         itineraryData.forEach(row => {
-            const col = row.split(',');
+            const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
             if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') {
                 sheetFamilies.add(col[4].trim());
             }
         });
-        
+
+        // --- Parse Vault & Stays Sheet ---
+        const vRows = vData.split('\n').slice(1);
+        vaultAndStaysData = vRows.filter(r => r.trim() !== '');
+        vaultAndStaysData.forEach(row => {
+            const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+            if (col.length > 0 && col[0].trim().toLowerCase() !== 'everyone') {
+                sheetFamilies.add(col[0].trim());
+            }
+        });
+
         safeRun('PopulateDropdown', populateDropdown);
         safeRun('RenderItinerary', renderItinerary);
-    } catch (e) { console.error("[MODULE ISOLATED] Itinerary failed:", e); }
+        safeRun('RenderVault', renderTravelVault);
+        safeRun('RenderAcc', renderAccommodations);
+
+    } catch (e) { 
+        console.error("[MODULE ISOLATED] Master Cloud Fetch Failed:", e); 
+    }
 }
 
 function populateDropdown() {
     const mainSelect = document.getElementById('family-selector');
-    const accSelect = document.getElementById('acc-family'); 
     if(mainSelect) mainSelect.innerHTML = '<option value="All">Show All Activities</option>';
-    if (accSelect) accSelect.innerHTML = '';
     
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
     const allFamilies = new Set([...sheetFamilies, ...customFamilies]);
@@ -347,7 +293,6 @@ function populateDropdown() {
     allFamilies.forEach(f => {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f;
         if(mainSelect) mainSelect.appendChild(opt);
-        if (accSelect) accSelect.appendChild(opt.cloneNode(true));
     });
     
     const savedFamily = localStorage.getItem('savedFamilyFilter');
@@ -370,76 +315,158 @@ function addCustomFamily() { safeRun('AddFamily', () => {
     }
 })};
 
-function saveAccommodation() { safeRun('SaveAcc', () => {
-    const city = document.getElementById('acc-city')?.value;
-    const family = document.getElementById('acc-family')?.value;
-    const address = document.getElementById('acc-address')?.value.trim();
-    const start = document.getElementById('acc-start')?.value;
-    const end = document.getElementById('acc-end')?.value;
-    const link = document.getElementById('acc-link')?.value.trim();
-    const image = document.getElementById('acc-image')?.value.trim();
-    
-    if (!family || !address || !start || !end) { alert("Missing details!"); return; }
-    
-    let accData = JSON.parse(localStorage.getItem('accommodations')) || {};
-    if (!accData[city]) accData[city] = {};
-    accData[city][family] = { address, start, end, link, image };
-    localStorage.setItem('accommodations', JSON.stringify(accData));
-    
-    ['acc-address', 'acc-start', 'acc-end', 'acc-link', 'acc-image'].forEach(id => {
-        const el = document.getElementById(id); if(el) el.value = '';
+
+// ==========================================
+// 4. VAULT & ACCOMMODATION RENDERING
+// ==========================================
+function renderTravelVault() { safeRun('RenderVault', () => {
+    const filter = document.getElementById('family-selector')?.value || 'All';
+    const display = document.getElementById('flights-vault-display');
+    const emptyState = document.getElementById('empty-vault-state');
+    if(!display) return;
+
+    let html = '';
+    let hasData = false;
+
+    // Auto-Sort all travel logistics chronologically by Date column!
+    const sortedData = [...vaultAndStaysData].sort((a,b) => {
+        const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+        const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        return parseDateTime(ca[2]) - parseDateTime(cb[2]); 
     });
-    
-    renderAccommodations();
+
+    sortedData.forEach(row => {
+        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+        if(cols.length < 2) return;
+        
+        const fam = cols[0].trim();
+        const type = cols[1].trim().toLowerCase();
+        
+        if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
+            
+            // --- RENDER FLIGHTS ---
+            if (type === 'flight') {
+                hasData = true;
+                const date = escapeHTML(cols[2]?.trim());
+                const dep = escapeHTML(cols[3]?.trim());
+                const arr = escapeHTML(cols[4]?.trim());
+                const airline = escapeHTML(cols[5]?.trim().toUpperCase());
+                const fnum = escapeHTML(cols[6]?.trim());
+                const ftime = escapeHTML(cols[7]?.trim());
+                const term = escapeHTML(cols[8]?.trim());
+                const ref = escapeHTML(cols[9]?.trim());
+
+                const searchStr = (airline + fnum).replace(/\s+/g, '');
+                const trackerLink = searchStr ? `https://flightaware.com/live/flight/${searchStr}` : '#';
+                const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${airline} ${fnum} ↗</a>` : `${airline} ${fnum}`;
+
+                html += `
+                <div class="flight-card">
+                    <div class="flight-header">
+                        <span class="flight-num">${linkHtml}</span>
+                        <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${date} <br> TIME: ${ftime}</span>
+                    </div>
+                    <div class="flight-path">
+                        <div class="path-node"><span>From</span><strong>${dep}</strong></div>
+                        <div class="plane-icon"></div>
+                        <div class="path-node"><span>To</span><strong>${arr}</strong></div>
+                    </div>
+                    <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                        <span>Term/Gate: ${term || "Check Screens"}</span>
+                        <span>Ref: ${ref}</span>
+                    </div>
+                    <div class="barcode"></div>
+                </div>`;
+            } 
+            // --- RENDER CARS ---
+            else if (type === 'car') {
+                hasData = true;
+                const pickupDate = escapeHTML(cols[2]?.trim());
+                const dropoffDate = escapeHTML(cols[3]?.trim());
+                const company = escapeHTML(cols[4]?.trim());
+                const pickupLoc = escapeHTML(cols[5]?.trim());
+                const pickupTime = escapeHTML(cols[6]?.trim());
+                const dropoffTime = escapeHTML(cols[7]?.trim());
+                const dropoffLoc = escapeHTML(cols[8]?.trim());
+                const ref = escapeHTML(cols[9]?.trim());
+
+                html += `
+                <div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
+                    <div style="font-size:11px; font-weight:800; opacity:0.5; text-transform:uppercase;">🚗 ${company} Rental</div>
+                    <div style="font-size:16px; font-weight:700; margin-top:5px;">
+                        <div style="margin-bottom: 8px;"><strong>Pick-up:</strong><br>${pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${pickupDate} @ ${pickupTime}</span></div>
+                        <div style="margin-bottom: 8px;"><strong>Drop-off:</strong><br>${dropoffLoc || pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${dropoffDate} @ ${dropoffTime}</span></div>
+                        <span style="color: var(--accent); font-size:14px;">Ref: ${ref}</span>
+                    </div>
+                </div>`;
+            }
+        }
+    });
+
+    display.innerHTML = html;
+    if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
 })};
 
-function renderAccommodations() {
+function renderAccommodations() { safeRun('RenderAcc', () => {
     const filter = document.getElementById('family-selector')?.value || 'All';
-    const data = JSON.parse(localStorage.getItem('accommodations')) || {};
-    const cities = [{ id: 'la', key: 'LA' }, { id: 'utah', key: 'Utah' }, { id: 'vegas', key: 'Vegas' }];
     const today = new Date(); today.setHours(0,0,0,0);
-    let todayHtml = '';
+    
+    let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
 
-    cities.forEach(c => {
-        const container = document.getElementById(`${c.id}-home-card`);
-        if (!container) return;
-        
-        let cHtml = '';
-        const cityData = data[c.key] || {};
-        
-        const processCard = (f, acc) => {
-            const address = acc.address || acc;
-            const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+    vaultAndStaysData.forEach(row => {
+        // Intelligent Regex completely stops CSV commas from breaking the layout
+        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+        if(cols.length < 2) return;
+
+        const fam = cols[0].trim();
+        const type = cols[1].trim().toLowerCase();
+
+        if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
+            const checkIn = cols[2]?.trim();
+            const city = cols[3]?.trim();
+            const address = escapeHTML(cols[4]?.trim());
+            const checkOut = cols[5]?.trim();
+            const link = escapeHTML(cols[6]?.trim());
+            const imgUrl = escapeHTML(cols[7]?.trim());
+
+            const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(address)}`;
+            
             const ui = `
                 <div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
                     <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
-                        <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(f)} Stay</h3>
+                        <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3>
                     </div>
                     <div style="padding: 20px;">
-                        <div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${escapeHTML(address)}</div>
+                        <div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div>
                         <div style="display: flex; gap: 10px;">
                             <button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>
-                            ${acc.link ? `<button onclick="window.open('${acc.link}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}
+                            ${link ? `<button onclick="window.open('${link}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}
                         </div>
                     </div>
                 </div>`;
-            cHtml += ui;
-            if (acc.start && acc.end) {
-                const sDate = new Date(acc.start); const eDate = new Date(acc.end);
-                sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999);
-                if (today >= sDate && today <= eDate) todayHtml += ui;
-            }
-        };
+                
+            if(city.toLowerCase().includes('la')) htmlLA += ui;
+            else if(city.toLowerCase().includes('utah')) htmlUtah += ui;
+            else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
 
-        if (filter !== 'All' && cityData[filter]) processCard(filter, cityData[filter]);
-        else if (filter === 'All') Object.entries(cityData).forEach(([f, acc]) => processCard(f, acc));
-        container.innerHTML = cHtml;
+            if (checkIn && checkOut) {
+                let sDate = new Date(parseDateTime(checkIn));
+                let eDate = new Date(parseDateTime(checkOut));
+                sDate.setHours(0,0,0,0);
+                eDate.setHours(23,59,59,999);
+                if (today >= sDate && today <= eDate) {
+                    htmlToday += ui;
+                }
+            }
+        }
     });
-    
-    const todayCard = document.getElementById('today-home-card');
-    if (todayCard) todayCard.innerHTML = todayHtml;
-}
+
+    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA;
+    const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
+    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
+    const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
+})};
 
 function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All';
@@ -449,7 +476,7 @@ function renderItinerary() {
     const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
     
     itineraryData.forEach(row => {
-        const col = row.split(','); 
+        const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
         if(col.length >= 5) {
             const d = col[0].trim(); const loc = col[1].trim(); const act = col[2].trim();
             const time = col[3].trim(); const who = col[4].trim(); 
@@ -457,7 +484,7 @@ function renderItinerary() {
             
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(searchLoc)}`;
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 const cardHtml = `
                     <div class="admin-card" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;" onclick="toggleComplete(this)">
@@ -476,7 +503,7 @@ function renderItinerary() {
                 else if (loc.toLowerCase().includes('utah')) { if(d !== lUtah) { hUtah += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lUtah = d; } hUtah += cardHtml; }
                 else if (loc.toLowerCase().includes('vegas')) { if(d !== lVegas) { hVegas += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lVegas = d; } hVegas += cardHtml; }
                 
-                const isDateMatch = (s, target) => { let dt = new Date(s); if(isNaN(dt)) { const p = s.split(/[-/]/); dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); } return dt.toDateString() === target.toDateString(); };
+                const isDateMatch = (s, target) => { let dt = new Date(parseDateTime(s)); return dt.toDateString() === target.toDateString(); };
                 if (isDateMatch(d, today)) { hToday += cardHtml; tCount++; } 
                 else if (isDateMatch(d, tomorrow)) { hTomorrow += cardHtml; tmCount++; }
             }
@@ -489,13 +516,16 @@ function renderItinerary() {
     if(document.getElementById('today-itinerary')) document.getElementById('today-itinerary').innerHTML = hToday || '<div class="empty-state"><span class="empty-icon">🏖️</span><div class="empty-text">Nothing Scheduled</div></div>';
     if(document.getElementById('tomorrow-itinerary')) document.getElementById('tomorrow-itinerary').innerHTML = hTomorrow || '<div class="empty-state"><span class="empty-icon">📅</span><div class="empty-text">No Plans Yet</div></div>';
     
-    safeRun('RenderAcc', renderAccommodations);
 }
 
 function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
-    if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); }
+    if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
+    renderItinerary(); 
+    renderTravelVault();
+    renderAccommodations();
 })};
+
 
 // ==========================================
 // 5. WEATHER ENGINE (With Fallback)
@@ -559,7 +589,7 @@ async function initWeather() {
         navigator.geolocation.getCurrentPosition(
             (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude)); },
             (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
-            { timeout: 5000 } // 5 Second limit before fallback
+            { timeout: 5000 }
         );
     } else {
         safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
@@ -581,10 +611,9 @@ window.onload = () => {
         setInterval(updateTimeAndCountdown, 60000); 
     });
     
-    safeRun('InitVault', renderTravelVault);
     safeRun('InitWeather', initWeather);
     safeRunAsync('InitCurrency', initLiveCurrency); 
-    safeRunAsync('InitItinerary', loadItinerary);
+    safeRunAsync('InitDataEngine', loadAllData); // <--- BOOTS UP BOTH SPREADSHEETS
     
     const homeEl = document.getElementById('home');
     if (homeEl) requestAnimationFrame(() => homeEl.classList.add('fade-in'));
