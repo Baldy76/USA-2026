@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.0.9';
+const CACHE_NAME = 'holiday-planner-v1.1.1';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
