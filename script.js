@@ -201,6 +201,8 @@ function saveAccommodation() {
     const address = document.getElementById('acc-address').value.trim();
     const start = document.getElementById('acc-start').value;
     const end = document.getElementById('acc-end').value;
+    const link = document.getElementById('acc-link').value.trim();
+    const image = document.getElementById('acc-image').value.trim();
 
     if(!family || !address || !start || !end) { 
         alert("Please select a family, enter an address, and choose your dates."); 
@@ -210,8 +212,7 @@ function saveAccommodation() {
     let accData = JSON.parse(localStorage.getItem('accommodations')) || {};
     if(!accData[city]) accData[city] = {};
     
-    // Save address AND dates
-    accData[city][family] = { address, start, end };
+    accData[city][family] = { address, start, end, link, image };
     localStorage.setItem('accommodations', JSON.stringify(accData));
 
     const msg = document.getElementById('acc-save-msg');
@@ -221,8 +222,41 @@ function saveAccommodation() {
     document.getElementById('acc-address').value = '';
     document.getElementById('acc-start').value = '';
     document.getElementById('acc-end').value = '';
+    document.getElementById('acc-link').value = '';
+    document.getElementById('acc-image').value = '';
 
     renderAccommodations();
+}
+
+// Generates the beautiful visual card for a specific stay
+function createAccCardHTML(fam, cityKey, acc) {
+    const address = typeof acc === 'string' ? acc : acc.address;
+    const link = typeof acc === 'string' ? null : acc.link;
+    const image = typeof acc === 'string' ? null : acc.image;
+
+    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+    
+    let buttonsHtml = `<button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">🚗 Drive</button>`;
+    
+    if (link) {
+        buttonsHtml += `<button onclick="window.open('${link}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text); display: flex; align-items: center; justify-content: center; gap: 6px;">🌐 Listing</button>`;
+    }
+
+    const headerBg = image ? `url('${image}') center/cover` : `var(--accent)`;
+
+    return `
+        <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
+            <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
+                <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${fam} Stay</h3>
+            </div>
+            <div style="padding: 20px;">
+                <div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px; line-height: 1.4;">📍 ${address}</div>
+                <div style="display: flex; gap: 10px;">
+                    ${buttonsHtml}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderAccommodations() {
@@ -248,27 +282,12 @@ function renderAccommodations() {
 
         if (selectedFamily !== 'All' && cityData[selectedFamily]) {
             const acc = cityData[selectedFamily];
-            // Backwards compatibility if they saved an address before the date update
-            const address = typeof acc === 'string' ? acc : acc.address;
             const start = typeof acc === 'string' ? null : new Date(acc.start);
             const end = typeof acc === 'string' ? null : new Date(acc.end);
 
-            // Using the official, bulletproof Google Maps Directions URL scheme
-            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-            
-            const cardUI = `
-                <div class="weather-pill" style="margin-bottom: 25px; background: var(--accent); color: white;" onclick="window.open('${mapLink}', '_blank')">
-                    <span style="font-size: 32px;">🏠</span>
-                    <div style="flex:1; text-align: left;">
-                        <strong style="font-size: 18px; display:block; color: white;">Take Me Home</strong>
-                        <small style="opacity:0.8; font-weight:700; color: white;">${selectedFamily} • ${cityObj.key}</small>
-                    </div>
-                    <div style="opacity:0.5; font-size:24px; font-weight: 900; color: white;">›</div>
-                </div>
-            `;
+            const cardUI = createAccCardHTML(selectedFamily, cityObj.key, acc);
             cityHtml = cardUI;
 
-            // Check if it should appear on the TODAY page
             if (start && end) {
                 start.setHours(0,0,0,0);
                 end.setHours(23,59,59,999);
@@ -279,22 +298,10 @@ function renderAccommodations() {
         } 
         else if (selectedFamily === 'All') {
             for (const [fam, acc] of Object.entries(cityData)) {
-                const address = typeof acc === 'string' ? acc : acc.address;
                 const start = typeof acc === 'string' ? null : new Date(acc.start);
                 const end = typeof acc === 'string' ? null : new Date(acc.end);
 
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-                
-                const cardUI = `
-                    <div class="weather-pill" style="margin-bottom: 12px; background: var(--ios-grey); padding: 12px 20px;" onclick="window.open('${mapLink}', '_blank')">
-                        <span style="font-size: 24px;">🏠</span>
-                        <div style="flex:1; text-align: left;">
-                            <strong style="font-size: 15px; display:block; color: var(--text);">${fam} Home</strong>
-                            <small style="opacity:0.6; font-weight:700; color: var(--text);">${cityObj.key}</small>
-                        </div>
-                        <div style="opacity:0.3; font-size:20px; font-weight: 900; color: var(--text);">›</div>
-                    </div>
-                `;
+                const cardUI = createAccCardHTML(fam, cityObj.key, acc);
                 cityHtml += cardUI;
 
                 if (start && end) {
@@ -305,13 +312,11 @@ function renderAccommodations() {
                     }
                 }
             }
-            if (cityHtml !== '') cityHtml += `<div style="margin-bottom: 25px;"></div>`; 
         }
 
         container.innerHTML = cityHtml;
     });
 
-    // Populate the Today Page placeholder
     const todayContainer = document.getElementById('today-home-card');
     if (todayContainer) {
         todayContainer.innerHTML = todayHtml;
@@ -360,7 +365,6 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // FIXED: Perfected the Maps Direct link structure
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
                 
                 const cardHtml = `
