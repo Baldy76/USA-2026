@@ -130,9 +130,15 @@ h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text);
 .version-control { text-align: center; margin-top: 30px; font-size: 13px; font-weight: 800; color: var(--text); opacity: 0.3; padding-bottom: 40px; }
 .sync-btn { background-color: #34c759; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3); }
 
-/* 5. Heroes & Banners */
+/* 5. Heroes & Banners (UPDATED: Clearer images, less fade) */
 .city-hero { background-size: cover; background-position: center; border-radius: 32px; height: 200px; display: flex; align-items: flex-end; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px var(--shadow); }
-.city-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+.city-hero::after { 
+    content: ''; 
+    position: absolute; 
+    inset: 0; 
+    /* The fix: Dark only at the very bottom for text, completely clear at the top */
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 50%); 
+}
 .city-hero h2 { position: relative; z-index: 2; color: white; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-size: 38px; }
 
 .date-divider { position: sticky; top: 10px; z-index: 100; text-align: center; margin: 25px 0; }
