@@ -233,7 +233,6 @@ function createAccCardHTML(fam, cityKey, acc) {
     const link = typeof acc === 'string' ? null : acc.link;
     const image = typeof acc === 'string' ? null : acc.image;
 
-    // PERFECTED MAPS LINK: Official cross-platform routing URL with proper variable injection
     const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
     
     let buttonsHtml = `<button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">🚗 Drive</button>`;
@@ -369,7 +368,6 @@ function renderItinerary() {
                 
                 const searchLocation = address !== '' ? address : `${activity} ${location}`;
                 
-                // PERFECTED MAPS LINK: Official cross-platform routing URL with proper variable injection
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
                 
                 const addressDisplayHtml = address ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${address}</span>` : '';
@@ -455,7 +453,7 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
-// FIXED: Syntax error removed permanently by using proper string literals
+// FINALLY FIXED: Proper HTML entity injection to prevent crashing
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
@@ -469,6 +467,7 @@ const escapeHTML = (str) => {
 async function initWeather() { 
     const wDash = document.getElementById('WTH-dashboard');
     const hwDesc = document.getElementById('hw-desc');
+    const hwLoc = document.getElementById('hw-loc');
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -489,6 +488,7 @@ async function initWeather() {
                     if(hwIcon) hwIcon.innerText = currentIcon; 
                     if(hwTemp) hwTemp.innerText = temp; 
                     if(hwDesc) hwDesc.innerText = currentDesc;
+                    if(hwLoc) hwLoc.innerText = `📍 ${data.name}`;
 
                     const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
                     const fData = await fRes.json();
@@ -523,16 +523,19 @@ async function initWeather() {
                 } catch (e) { 
                     if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Weather Offline</div><div class="empty-sub">Check your connection to pull the radar.</div></div>`; 
                     if (hwDesc) hwDesc.innerText = "Weather unavailable";
+                    if (hwLoc) hwLoc.innerText = "📍 Offline";
                 } 
             },
             (err) => {
                 if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Denied</div><div class="empty-sub">Allow location access to view weather.</div></div>`;
                 if (hwDesc) hwDesc.innerText = "Location access denied";
+                if (hwLoc) hwLoc.innerText = "📍 GPS Denied";
             }
         );
     } else {
         if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Unavailable</div><div class="empty-sub">Your device does not support location tracking.</div></div>`;
         if (hwDesc) hwDesc.innerText = "GPS unavailable";
+        if (hwLoc) hwLoc.innerText = "📍 No GPS";
     }
 }
 
