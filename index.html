@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Holiday Planner 2026</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-mode">
@@ -47,15 +45,15 @@
                     <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
                         <div>
                             <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div>
+                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">--:--</div>
                         </div>
                         <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
                         <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 PS Time</div>
+                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
                             <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
                         </div>
                     </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px;">
+                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">
                         Loading Date...
                     </div>
                 </div>
@@ -66,7 +64,7 @@
             <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
-                    <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">📍 Locating...</div>
+                    <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s ease;">📍 Locating...</div>
                     <strong style="font-size: 18px; display:block; line-height: 1;" id="hw-temp">--°C</strong>
                     <small style="opacity:0.6; font-weight:800;" id="hw-desc">Syncing radar...</small>
                 </div>
@@ -84,6 +82,42 @@
                         <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px; background: rgba(255,255,255,0.2); border: none; color: white;">
                         <span style="font-weight: 900;">=</span>
                         <strong id="gbp-output" style="font-size: 22px;">£0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card" style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">🍽️ Tip & Split Calculator</div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 2;">
+                        <input type="number" id="bill-total" placeholder="Bill Total ($)" oninput="calculateTip()" style="margin: 0;">
+                    </div>
+                    <div style="flex: 1;">
+                        <select id="split-ways" onchange="calculateTip()" style="margin: 0; padding: 16px 10px;">
+                            <option value="1">1 Family</option>
+                            <option value="2" selected>2 Families</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="theme-segmented-control" style="margin-bottom: 15px;">
+                    <button class="segment tip-btn" data-tip="15" onclick="setTip(15, this)">15%</button>
+                    <button class="segment tip-btn active" data-tip="18" onclick="setTip(18, this)">18%</button>
+                    <button class="segment tip-btn" data-tip="20" onclick="setTip(20, this)">20%</button>
+                    <button class="segment tip-btn" data-tip="22" onclick="setTip(22, this)">22%</button>
+                </div>
+                
+                <div style="background: var(--bg); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Per Family (USD)</div>
+                        <div id="tip-usd" style="font-size: 24px; font-weight: 900; color: var(--text);">$0.00</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">In GBP</div>
+                        <div id="tip-gbp" style="font-size: 24px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">£0.00</div>
                     </div>
                 </div>
             </div>
@@ -148,7 +182,7 @@
                     <div style="flex: 1;"><label style="font-size: 13px;">Arrival:</label><input type="text" id="vault-arr" placeholder="e.g. LAX" /></div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 13px;">Airline:</label><input type="text" id="vault-airline" placeholder="e.g. BA" /></div>
+                    <div style="flex: 1;"><label style="font-size: 13px;">Airline Code:</label><input type="text" id="vault-airline" placeholder="e.g. BA" /></div>
                     <div style="flex: 1;"><label style="font-size: 13px;">Flight No:</label><input type="text" id="vault-fnum" placeholder="e.g. 269" /></div>
                 </div>
                 <div style="display: flex; gap: 10px;">
@@ -198,7 +232,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.3.4</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.4.0</div>
         </section>
     </main>
 
