@@ -28,6 +28,15 @@
             <h2>Today 📅</h2>
             <h3 id="today-date-display" style="color: var(--accent); margin-top: 0; margin-bottom: 15px;"></h3>
             
+            <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
+                <span style="font-size: 30px;" id="hw-icon">🌤️</span>
+                <div style="flex:1; text-align: left;">
+                    <strong style="font-size: 18px; display:block;" id="hw-temp">--°C</strong>
+                    <small style="opacity:0.6; font-weight:800;" id="hw-desc">Syncing radar...</small>
+                </div>
+                <div style="opacity:0.3; font-size:20px;">›</div>
+            </div>
+
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
                 <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
@@ -39,6 +48,15 @@
 
             <div id="tomorrow-view" style="display: none;">
                 <div id="tomorrow-itinerary">Loading tomorrow's plans...</div>
+            </div>
+        </section>
+
+        <section id="weather-root" class="page" style="display: none;">
+            <div id="WTH-dashboard">
+                <div class="empty-state">
+                    <span class="empty-icon">📡</span>
+                    <div class="empty-text">Syncing Radar...</div>
+                </div>
             </div>
         </section>
 
@@ -82,7 +100,7 @@
             <p style="font-size: 14px; opacity: 0.7; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                App Version: 1.0.4
+                App Version: 1.0.5
             </div>
         </section>
     </main>
