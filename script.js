@@ -41,7 +41,7 @@ async function loadItinerary() {
         
     } catch (error) {
         console.error("Error loading data:", error);
-        document.getElementById('la-itinerary').innerHTML = "Failed to load itinerary.";
+        document.getElementById('la-itinerary').innerHTML = "Failed to load itinerary. Please check your connection.";
     }
 }
 
@@ -154,3 +154,34 @@ function updateFamilyFilter() {
 window.onload = () => {
     loadItinerary();
 };
+
+// ==========================================
+// PWA & SERVICE WORKER LOGIC
+// ==========================================
+
+// Register the Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered successfully.', reg))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
+
+// Handle the "Sync Updates" button
+function syncUpdates() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+                registration.update(); // Tells the browser to check sw.js for changes
+            }
+        });
+        
+        alert("Syncing updates! The app will now reload.");
+        // Force a hard reload from the server to bypass the cache
+        window.location.reload(true); 
+    } else {
+        alert("Updating! The app will now reload.");
+        window.location.reload(true);
+    }
+}
