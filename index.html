@@ -137,8 +137,6 @@
                 </div>
             </div>
 
-            <div id="today-vault-display"></div>
-
             <button onclick="showPage(event, 'admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
                 ⚙️ Admin & Trip Settings
             </button>
@@ -158,6 +156,18 @@
             <div id="vegas-home-card"></div>
             <div id="vegas-itinerary">
                 <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
+            </div>
+        </section>
+
+        <section id="flights" class="page" style="display: none;">
+            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
+                <h2>Travel Details</h2>
+            </div>
+            <div id="today-vault-display"></div>
+            <div class="empty-state" id="empty-vault-state" style="display: none;">
+                <span class="empty-icon">✈️</span>
+                <div class="empty-text">No Flight Data</div>
+                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Add details in the Admin tab.</div>
             </div>
         </section>
 
@@ -237,15 +247,16 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.5.1</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.6.0</div>
         </section>
     </main>
 
     <nav class="bottom-nav">
-        <button onclick="showPage(event, 'home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button onclick="showPage(event, 'la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
         <button onclick="showPage(event, 'utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
+        <button onclick="showPage(event, 'home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button onclick="showPage(event, 'vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
+        <button onclick="showPage(event, 'flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
 
     <script src="script.js"></script>
