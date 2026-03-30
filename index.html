@@ -6,12 +6,12 @@
     <title>Super Holiday Planner 2026</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
+    <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="light-mode">
 
     <main id="content">
         <section id="la" class="page" style="display: none;">
@@ -39,6 +39,14 @@
             <h2>Admin ⚙️</h2>
             
             <div class="admin-card">
+                <h3>Theme Selection</h3>
+                <div class="theme-segmented-control">
+                    <button id="btnLight" class="segment active" onclick="setThemeMode(false)">☀️ Light</button>
+                    <button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button>
+                </div>
+            </div>
+            
+            <div class="admin-card">
                 <h3>App Settings</h3>
                 <label for="family-selector">Select Your Family:</label>
                 <select id="family-selector" onchange="updateFamilyFilter()">
@@ -48,21 +56,21 @@
 
             <div class="admin-card">
                 <h3>Add Custom Family Name</h3>
-                <p style="font-size: 12px; color: #666; margin-top: 0;">(Names added here only save to this specific device)</p>
+                <p style="font-size: 12px; opacity: 0.7; margin-top: 0;">(Names added here only save to this specific device)</p>
                 <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
                 <button onclick="addCustomFamily()" class="action-btn">Add to List</button>
             </div>
             
             <div class="admin-card">
                 <h3>App Maintenance</h3>
-                <p style="font-size: 12px; color: #666; margin-top: 0;">Tap below to force the app to download the latest code.</p>
+                <p style="font-size: 12px; opacity: 0.7; margin-top: 0;">Tap below to force the app to download the latest code.</p>
                 <button onclick="syncUpdates()" class="action-btn sync-btn">Sync Updates</button>
             </div>
 
-            <p style="font-size: 14px; color: #666; text-align: center;">Other logistics and bookings go here...</p>
+            <p style="font-size: 14px; opacity: 0.7; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                App Version: 1.0.1
+                App Version: 1.0.2
             </div>
         </section>
     </main>
