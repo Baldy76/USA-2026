@@ -3,7 +3,7 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweT
 
 let itineraryData = []; 
 let sheetFamilies = new Set(); 
-let liveExchangeRate = 0.79; // Default fallback
+let liveExchangeRate = 1.27; // Default fallback (Dollars per Pound)
 
 // ==========================================
 // 1. THEME LOGIC
@@ -62,25 +62,27 @@ function toggleComplete(element) {
     element.style.transform = (element.style.opacity === '0.5') ? 'scale(0.98)' : 'scale(1)';
 }
 
-// NEW: Live Currency Engine
+// UPDATED: Live Currency Engine (Dollars per Pound)
 async function initLiveCurrency() {
     try {
-        const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=GBP');
+        // Fetching GBP to USD rate
+        const response = await fetch('https://api.frankfurter.app/latest?from=GBP&to=USD');
         const data = await response.json();
-        if (data.rates && data.rates.GBP) {
-            liveExchangeRate = data.rates.GBP;
-            document.getElementById('live-rate-tag').innerText = `LIVE RATE: ${liveExchangeRate.toFixed(2)}`;
+        if (data.rates && data.rates.USD) {
+            liveExchangeRate = data.rates.USD;
+            document.getElementById('live-rate-tag').innerText = `RATE: £1 = $${liveExchangeRate.toFixed(2)}`;
             console.log("Live exchange rate updated:", liveExchangeRate);
         }
     } catch (error) {
         console.warn("Could not fetch live rate, using fallback.");
-        document.getElementById('live-rate-tag').innerText = `OFFLINE RATE: ${liveExchangeRate}`;
+        document.getElementById('live-rate-tag').innerText = `RATE: £1 = $${liveExchangeRate}`;
     }
 }
 
 function convertCurrency() {
     const usd = document.getElementById('usd-input').value;
-    document.getElementById('gbp-output').innerText = usd ? `£${(usd * liveExchangeRate).toFixed(2)}` : `£0.00`;
+    // Since rate is USD per GBP, to get GBP we divide: USD / (USD/GBP) = GBP
+    document.getElementById('gbp-output').innerText = usd ? `£${(usd / liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
 function updateTimeAndCountdown() {
@@ -234,8 +236,7 @@ function saveAccommodation() {
 function createAccCardHTML(fam, cityKey, acc) {
     const address = acc.address || acc;
     const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-    // FIXED: Maps Universal Link
-    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(address)}`;
+    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
     return `
         <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
             <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
@@ -306,8 +307,7 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 const searchLocation = address !== '' ? address : `${activity} ${location}`;
-                // FIXED: Maps Universal Link
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(searchLocation)}`;
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
                 const cardHtml = `
                     <div class="skel-card" style="text-align: left; transition: all 0.3s ease; cursor: pointer;" onclick="toggleComplete(this)">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
@@ -355,9 +355,10 @@ const getWeatherIcon = (code) => {
     const map = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; 
     return map[code] || '🌤️'; 
 };
+// SECURE HTML ESCAPE
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#39;'); 
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); 
 };
 
 async function initWeather() { 
@@ -392,7 +393,7 @@ window.onload = () => {
     setInterval(updateTimeAndCountdown, 60000); 
     renderTravelVault();
     initWeather();
-    initLiveCurrency(); // NEW: Trigger live rate fetch
+    initLiveCurrency(); 
     loadItinerary();
 };
 
