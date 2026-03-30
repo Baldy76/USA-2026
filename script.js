@@ -48,7 +48,18 @@ function showPage(event, pageId) {
     event.currentTarget.classList.add('active');
 }
 
-// NEW: Function to toggle between Today and Tomorrow views
+// Special handler for opening the weather tab from the pill
+function openWeatherPage() {
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.style.display = 'none');
+    
+    // Deselect all bottom nav buttons since we are on a sub-page
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById('weather-root').style.display = 'block';
+}
+
 function switchDayView(day) {
     const todayView = document.getElementById('today-view');
     const tomorrowView = document.getElementById('tomorrow-view');
@@ -153,15 +164,14 @@ function renderItinerary() {
     
     const today = new Date();
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1); // Calculate tomorrow's date
+    tomorrow.setDate(tomorrow.getDate() + 1); 
     
-    // Helper function to check if a spreadsheet date matches a target date
     function isSameDay(dateStr, targetDate) {
         let d = new Date(dateStr);
         if (isNaN(d)) {
             const parts = dateStr.split(/[-/]/);
             if (parts.length === 3) {
-                d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); // Fallback for DD/MM/YYYY
+                d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); 
             }
         }
         if (!isNaN(d)) {
@@ -182,7 +192,6 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // FIXED: Official Google Maps Directions API URL structure
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
                 
                 const cardHtml = `
@@ -207,7 +216,6 @@ function renderItinerary() {
                     htmlVegas += cardHtml;
                 }
                 
-                // Sort into Today or Tomorrow
                 if (isSameDay(date, today)) {
                     htmlToday += cardHtml;
                     todayCount++;
@@ -223,7 +231,6 @@ function renderItinerary() {
     htmlUtah += '</ul>';
     htmlVegas += '</ul>';
     
-    // Check counts and apply fallback messages if empty
     if (todayCount === 0) {
         htmlToday = '<p style="color: var(--text); opacity: 0.7;">No activities scheduled for today. Time to relax by the pool!</p>';
     } else {
@@ -250,41 +257,58 @@ function updateFamilyFilter() {
 }
 
 // ==========================================
-// 4. APP INITIALIZATION 
+// 4. WEATHER ENGINE 
 // ==========================================
-window.onload = () => {
-    const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
-    applyTheme(savedTheme);
+const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('today-date-display').textContent = new Date().toLocaleDateString(undefined, options);
-
-    loadItinerary();
+const getWeatherIcon = (code) => { 
+    const map = { 
+        '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', 
+        '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', 
+        '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', 
+        '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', 
+        '50d':'💨', '50n':'💨' 
+    }; 
+    return map[code] || '🌤️'; 
 };
 
-// ==========================================
-// 5. PWA & SERVICE WORKER LOGIC
-// ==========================================
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered successfully.', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+const escapeHTML = (str) => {
+    if (!str) return '';
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); 
+};
 
-function syncUpdates() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            for (let registration of registrations) {
-                registration.update(); 
-            }
-        });
-        
-        alert("Syncing updates! The app will now reload.");
-        window.location.reload(true); 
-    } else {
-        alert("Updating! The app will now reload.");
-        window.location.reload(true);
-    }
-}
+async function initWeather() { 
+    const wDash = document.getElementById('WTH-dashboard');
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => { 
+            try { 
+                // A. Fetch Current Weather for Pill
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
+                const data = await res.json(); 
+                
+                const temp = `${Math.round(data.main.temp)}°C`; 
+                const currentIcon = getWeatherIcon(data.weather[0].icon); 
+                const currentDesc = data.weather[0].description;
+                
+                const hwIcon = document.getElementById('hw-icon'); 
+                const hwTemp = document.getElementById('hw-temp'); 
+                const hwDesc = document.getElementById('hw-desc');
+                
+                if(hwIcon) hwIcon.innerText = currentIcon; 
+                if(hwTemp) hwTemp.innerText = temp; 
+                if(hwDesc) hwDesc.innerText = currentDesc;
+
+                // B. Fetch 5-Day Forecast
+                const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
+                const fData = await fRes.json();
+                
+                const dailyData = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5);
+                
+                let forecastHtml = dailyData.map(day => { 
+                    const dateObj = new Date(day.dt * 1000); 
+                    const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+                    return `
+                        <div class="WTH-card">
+                            <span class="WTH-day">${dayName}</span>
+                            <span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span>
