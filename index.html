@@ -69,7 +69,24 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
-            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; background: var(--accent-gradient); color: white; border: none;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; margin-top: 30px;">
+                <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
+                <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
+            </div>
+            
+            <div id="today-view">
+                <div id="today-itinerary">
+                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
+                </div>
+            </div>
+
+            <div id="tomorrow-view" style="display: none;">
+                <div id="tomorrow-itinerary">Loading...</div>
+            </div>
+
+            <div id="today-home-card" style="margin-top: 30px;"></div>
+
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; margin-top: 30px; background: var(--accent-gradient); color: white; border: none;">
                 <div style="font-size: 36px;">💱</div>
                 <div style="flex: 1;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -122,22 +139,10 @@
 
             <div id="today-vault-display"></div>
 
-            <div id="today-home-card"></div>
+            <button onclick="showPage(event, 'admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
+                ⚙️ Admin & Trip Settings
+            </button>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; margin-top: 30px;">
-                <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
-                <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
-            </div>
-            
-            <div id="today-view">
-                <div id="today-itinerary">
-                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-                </div>
-            </div>
-
-            <div id="tomorrow-view" style="display: none;">
-                <div id="tomorrow-itinerary">Loading...</div>
-            </div>
         </section>
 
         <section id="weather-root" class="page" style="display: none;">
@@ -232,7 +237,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.4.4</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.5.0</div>
         </section>
     </main>
 
@@ -241,7 +246,6 @@
         <button onclick="showPage(event, 'la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
         <button onclick="showPage(event, 'utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
         <button onclick="showPage(event, 'vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
-        <button onclick="showPage(event, 'admin')" class="nav-btn"><span class="nav-icon">⚙️</span><span>Admin</span></button>
     </nav>
 
     <script src="script.js"></script>
