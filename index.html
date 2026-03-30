@@ -91,7 +91,7 @@
 
             <div class="admin-card">
                 <h3>🏠 Accommodations</h3>
-                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your Airbnb/Hotel addresses and dates. The active location will automatically appear on the Today page.</p>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Save your stay details. Right-click an Airbnb image and select "Copy Image Address" for the picture!</p>
                 
                 <label style="font-size: 14px; margin-bottom: 5px;">City:</label>
                 <select id="acc-city">
@@ -118,8 +118,14 @@
                     </div>
                 </div>
 
-                <button onclick="saveAccommodation()" class="action-btn" style="margin-top: 5px;">💾 Save Address</button>
-                <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Address Saved!</div>
+                <label style="font-size: 14px; margin-bottom: 5px;">Listing URL (Optional):</label>
+                <input type="url" id="acc-link" placeholder="e.g., https://airbnb.com/rooms/..." />
+
+                <label style="font-size: 14px; margin-bottom: 5px;">Image URL (Optional):</label>
+                <input type="url" id="acc-image" placeholder="Paste image address here..." />
+
+                <button onclick="saveAccommodation()" class="action-btn" style="margin-top: 5px;">💾 Save Details</button>
+                <div id="acc-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Saved Successfully!</div>
             </div>
 
             <div class="admin-card">
@@ -138,7 +144,7 @@
             <p style="font-size: 14px; font-weight: 700; opacity: 0.5; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                ULTIMATE PLANNER // v1.1.1
+                ULTIMATE PLANNER // v1.1.2
             </div>
         </section>
     </main>
