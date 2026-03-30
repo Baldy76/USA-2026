@@ -35,7 +35,7 @@ window.setThemeMode = (isDark) => {
 };
 
 // ==========================================
-// 2. NAVIGATION LOGIC
+// 2. NAVIGATION & UI LOGIC
 // ==========================================
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
@@ -46,6 +46,30 @@ function showPage(event, pageId) {
 
     document.getElementById(pageId).style.display = 'block';
     event.currentTarget.classList.add('active');
+}
+
+// NEW: Function to toggle between Today and Tomorrow views
+function switchDayView(day) {
+    const todayView = document.getElementById('today-view');
+    const tomorrowView = document.getElementById('tomorrow-view');
+    const btnToday = document.getElementById('btn-show-today');
+    const btnTomorrow = document.getElementById('btn-show-tomorrow');
+
+    if (day === 'today') {
+        todayView.style.display = 'block';
+        tomorrowView.style.display = 'none';
+        btnToday.style.backgroundColor = 'var(--accent)';
+        btnToday.style.color = 'white';
+        btnTomorrow.style.backgroundColor = 'var(--ios-grey)';
+        btnTomorrow.style.color = 'var(--text)';
+    } else {
+        todayView.style.display = 'none';
+        tomorrowView.style.display = 'block';
+        btnTomorrow.style.backgroundColor = 'var(--accent)';
+        btnTomorrow.style.color = 'white';
+        btnToday.style.backgroundColor = 'var(--ios-grey)';
+        btnToday.style.color = 'var(--text)';
+    }
 }
 
 // ==========================================
@@ -121,6 +145,30 @@ function renderItinerary() {
     let htmlLA = '<ul style="list-style-type: none; padding: 0;">';
     let htmlUtah = '<ul style="list-style-type: none; padding: 0;">';
     let htmlVegas = '<ul style="list-style-type: none; padding: 0;">';
+    let htmlToday = '<ul style="list-style-type: none; padding: 0;">';
+    let htmlTomorrow = '<ul style="list-style-type: none; padding: 0;">';
+    
+    let todayCount = 0;
+    let tomorrowCount = 0;
+    
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1); // Calculate tomorrow's date
+    
+    // Helper function to check if a spreadsheet date matches a target date
+    function isSameDay(dateStr, targetDate) {
+        let d = new Date(dateStr);
+        if (isNaN(d)) {
+            const parts = dateStr.split(/[-/]/);
+            if (parts.length === 3) {
+                d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); // Fallback for DD/MM/YYYY
+            }
+        }
+        if (!isNaN(d)) {
+            return d.toDateString() === targetDate.toDateString();
+        }
+        return false;
+    }
     
     itineraryData.forEach(row => {
         const columns = row.split(','); 
@@ -134,14 +182,19 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // UPDATED: Now uses CSS variables for colors so the cards change in Dark Mode
+                // FIXED: Official Google Maps Directions API URL structure
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+                
                 const cardHtml = `
                     <li style="background: var(--card); margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 8px; margin-bottom: 8px;">
                             <strong>${date}</strong>
                             <span style="background: var(--ios-grey); padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; color: var(--text);">${who}</span>
                         </div>
-                        <div style="font-size: 14px; opacity: 0.7; margin-bottom: 4px;">🕒 ${time}</div>
+                        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 8px;">
+                            🕒 ${time} <br>
+                            📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: bold;">${location} (Get Directions)</a>
+                        </div>
                         <div style="font-size: 16px;">${activity}</div>
                     </li>
                 `;
@@ -153,6 +206,15 @@ function renderItinerary() {
                 } else if (location.toLowerCase().includes('vegas')) {
                     htmlVegas += cardHtml;
                 }
+                
+                // Sort into Today or Tomorrow
+                if (isSameDay(date, today)) {
+                    htmlToday += cardHtml;
+                    todayCount++;
+                } else if (isSameDay(date, tomorrow)) {
+                    htmlTomorrow += cardHtml;
+                    tomorrowCount++;
+                }
             }
         }
     });
@@ -161,9 +223,24 @@ function renderItinerary() {
     htmlUtah += '</ul>';
     htmlVegas += '</ul>';
     
+    // Check counts and apply fallback messages if empty
+    if (todayCount === 0) {
+        htmlToday = '<p style="color: var(--text); opacity: 0.7;">No activities scheduled for today. Time to relax by the pool!</p>';
+    } else {
+        htmlToday += '</ul>';
+    }
+    
+    if (tomorrowCount === 0) {
+        htmlTomorrow = '<p style="color: var(--text); opacity: 0.7;">No activities scheduled for tomorrow yet.</p>';
+    } else {
+        htmlTomorrow += '</ul>';
+    }
+    
     document.getElementById('la-itinerary').innerHTML = htmlLA;
     document.getElementById('utah-itinerary').innerHTML = htmlUtah;
     document.getElementById('vegas-itinerary').innerHTML = htmlVegas;
+    document.getElementById('today-itinerary').innerHTML = htmlToday;
+    document.getElementById('tomorrow-itinerary').innerHTML = htmlTomorrow;
 }
 
 function updateFamilyFilter() {
@@ -176,11 +253,12 @@ function updateFamilyFilter() {
 // 4. APP INITIALIZATION 
 // ==========================================
 window.onload = () => {
-    // Load theme preference first
     const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
     applyTheme(savedTheme);
 
-    // Then load the data
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('today-date-display').textContent = new Date().toLocaleDateString(undefined, options);
+
     loadItinerary();
 };
 
