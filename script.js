@@ -233,7 +233,7 @@ function createAccCardHTML(fam, cityKey, acc) {
     const link = typeof acc === 'string' ? null : acc.link;
     const image = typeof acc === 'string' ? null : acc.image;
 
-    // FIXED: Uses the proper Google Maps Directions API URL structure
+    // UPDATED: Bulletproof Google Maps Directions URL
     const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
     
     let buttonsHtml = `<button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">🚗 Drive</button>`;
@@ -363,11 +363,20 @@ function renderItinerary() {
             const time = columns[3].trim();
             const who = columns[4].trim(); 
             
+            // NEW: Pull the exact address from the 6th column if it exists!
+            const address = (columns.length >= 6 && columns[5].trim() !== '') ? columns[5].trim() : '';
+            
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // FIXED: Uses the absolute best, most reliable Maps Direction API
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+                // If they provided a specific address, map to that. Otherwise, map to the Activity + City.
+                const searchLocation = address !== '' ? address : `${activity} ${location}`;
                 
+                // UPDATED: Bulletproof Google Maps Directions URL
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
+                
+                // If there's a specific address, show it neatly under the Get Directions link
+                const addressDisplayHtml = address ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${address}</span>` : '';
+
                 const cardHtml = `
                     <li style="background: var(--card); margin-bottom: 20px; padding: 24px; border-radius: 24px; box-shadow: 0 8px 24px var(--shadow); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
@@ -376,7 +385,8 @@ function renderItinerary() {
                         </div>
                         <div style="font-size: 15px; font-weight: 700; opacity: 0.6; margin-bottom: 12px; line-height: 1.6;">
                             🕒 ${time} <br>
-                            📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 800;">${location} (Directions)</a>
+                            📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 800;">Get Directions</a>
+                            ${addressDisplayHtml}
                         </div>
                         <div style="font-size: 18px; font-weight: 800; line-height: 1.4;">${activity}</div>
                     </li>
@@ -448,15 +458,14 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
-// FIXED: Replaced bad quotes with proper safe HTML entities to completely avoid syntax errors.
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;"); 
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'"); 
 };
 
 async function initWeather() { 
