@@ -1,5 +1,5 @@
-// Replace this with the long CSV link from your Google Sheet
-const sheetUrl = 'PASTE_YOUR_GOOGLE_SHEETS_CSV_LINK_HERE';
+// Connected to your live Google Sheet!
+const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv';
 
 let itineraryData = []; 
 let sheetFamilies = new Set(); // Stores unique families found in the Google Sheet
