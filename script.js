@@ -3,6 +3,7 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweT
 
 let itineraryData = []; 
 let sheetFamilies = new Set(); 
+let liveExchangeRate = 0.79; // Default fallback
 
 // ==========================================
 // 1. THEME LOGIC
@@ -61,10 +62,25 @@ function toggleComplete(element) {
     element.style.transform = (element.style.opacity === '0.5') ? 'scale(0.98)' : 'scale(1)';
 }
 
+// NEW: Live Currency Engine
+async function initLiveCurrency() {
+    try {
+        const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=GBP');
+        const data = await response.json();
+        if (data.rates && data.rates.GBP) {
+            liveExchangeRate = data.rates.GBP;
+            document.getElementById('live-rate-tag').innerText = `LIVE RATE: ${liveExchangeRate.toFixed(2)}`;
+            console.log("Live exchange rate updated:", liveExchangeRate);
+        }
+    } catch (error) {
+        console.warn("Could not fetch live rate, using fallback.");
+        document.getElementById('live-rate-tag').innerText = `OFFLINE RATE: ${liveExchangeRate}`;
+    }
+}
+
 function convertCurrency() {
     const usd = document.getElementById('usd-input').value;
-    const rate = 0.79; 
-    document.getElementById('gbp-output').innerText = usd ? `£${(usd * rate).toFixed(2)}` : `£0.00`;
+    document.getElementById('gbp-output').innerText = usd ? `£${(usd * liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
 function updateTimeAndCountdown() {
@@ -115,8 +131,6 @@ function renderTravelVault() {
     const vault = JSON.parse(localStorage.getItem('travelVault')) || null;
     const display = document.getElementById('today-vault-display');
     if(vault && (vault.flight || vault.car)) {
-        document.getElementById('vault-flight').value = vault.flight || '';
-        document.getElementById('vault-car').value = vault.car || '';
         display.innerHTML = `
             <div class="admin-card" style="margin-bottom: 24px;">
                 <h3 style="margin-bottom: 15px;">🧳 The Travel Vault</h3>
@@ -220,7 +234,8 @@ function saveAccommodation() {
 function createAccCardHTML(fam, cityKey, acc) {
     const address = acc.address || acc;
     const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+    // FIXED: Maps Universal Link
+    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(address)}`;
     return `
         <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
             <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
@@ -291,7 +306,8 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 const searchLocation = address !== '' ? address : `${activity} ${location}`;
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLocation)}`;
+                // FIXED: Maps Universal Link
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(searchLocation)}`;
                 const cardHtml = `
                     <div class="skel-card" style="text-align: left; transition: all 0.3s ease; cursor: pointer;" onclick="toggleComplete(this)">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 12px; margin-bottom: 12px;">
@@ -362,8 +378,8 @@ async function initWeather() {
                     return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
                 }).join('');
                 if(wDash) wDash.innerHTML = `<div class="WTH-hero"><div class="WTH-icon" style="font-size: 60px;">${icon}</div><div class="WTH-hero-temp">${temp}</div><div class="WTH-hero-desc">${data.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(data.name)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
-            } catch (e) { document.getElementById('hw-loc').innerText = "📍 Offline"; } 
-        }, () => { document.getElementById('hw-loc').innerText = "📍 GPS Denied"; });
+            } catch (e) { if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; } 
+        }, () => { if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 GPS Denied"; });
     }
 }
 
@@ -376,6 +392,7 @@ window.onload = () => {
     setInterval(updateTimeAndCountdown, 60000); 
     renderTravelVault();
     initWeather();
+    initLiveCurrency(); // NEW: Trigger live rate fetch
     loadItinerary();
 };
 
