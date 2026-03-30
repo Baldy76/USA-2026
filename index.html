@@ -16,7 +16,7 @@
     <main id="content">
         
         <section id="la" class="page" style="display: none;">
-            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1515896769750-31548ea180d6?auto=format&fit=crop&w=800&q=80');">
+            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1580655328731-bc385a98ce1f?q=80&w=800&auto=format&fit=crop');">
                 <h2>Los Angeles</h2>
             </div>
             <div id="la-home-card"></div>
@@ -37,24 +37,31 @@
         </section>
 
         <section id="home" class="page">
-            <h2>Today</h2>
-            <h3 id="today-date-display" style="color: var(--accent); margin-top: -15px; margin-bottom: 20px; font-weight: 800;"></h3>
             
             <div id="time-engine" style="margin-bottom: 24px;">
-                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 20px; border-radius: 24px; text-align: center; font-size: 24px; font-weight: 900; box-shadow: 0 8px 24px var(--shadow);">
-                    -- Days to Go!
+                
+                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
+                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
+                    <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
                 </div>
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 8px 24px var(--shadow); display: flex; justify-content: space-around; text-align: center;">
-                    <div>
-                        <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                        <div id="clock-uk" style="font-size: 28px; font-weight: 900; color: var(--accent);">--:--</div>
+
+                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
+                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
+                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div>
+                        </div>
+                        <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
+                        <div>
+                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 PS Time</div>
+                            <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
+                        </div>
                     </div>
-                    <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
-                    <div>
-                        <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
-                        <div id="clock-local" style="font-size: 28px; font-weight: 900; color: var(--text);">--:--</div>
+                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px;">
+                        Loading Date...
                     </div>
                 </div>
+
             </div>
 
             <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px;">
@@ -109,7 +116,7 @@
         </section>
 
         <section id="vegas" class="page" style="display: none;">
-            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80');">
+            <div class="city-hero" style="background-image: url('https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800&auto=format&fit=crop');">
                 <h2>Las Vegas</h2>
             </div>
             <div id="vegas-home-card"></div>
@@ -123,7 +130,8 @@
             
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
-                <label style="font-size: 14px; margin-bottom: 5px;">Trip Start Date (For Countdown):</label>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Set your start date to see the countdown on the main page. Once the trip begins, dual clocks will automatically appear.</p>
+                <label style="font-size: 14px; margin-bottom: 5px;">Trip Start Date:</label>
                 <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
             </div>
 
@@ -188,7 +196,7 @@
             </div>
 
             <div class="version-control">
-                ULTIMATE PLANNER // v1.2.0
+                ULTIMATE PLANNER // v1.2.1
             </div>
         </section>
     </main>
