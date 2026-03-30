@@ -228,12 +228,12 @@ function saveAccommodation() {
     renderAccommodations();
 }
 
-// Generates the beautiful visual card for a specific stay
 function createAccCardHTML(fam, cityKey, acc) {
     const address = typeof acc === 'string' ? acc : acc.address;
     const link = typeof acc === 'string' ? null : acc.link;
     const image = typeof acc === 'string' ? null : acc.image;
 
+    // FIXED: Uses the proper Google Maps Directions API URL structure
     const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
     
     let buttonsHtml = `<button onclick="window.open('${mapLink}', '_blank')" class="action-btn" style="flex: 1; padding: 12px; font-size: 14px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">🚗 Drive</button>`;
@@ -365,6 +365,7 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
+                // FIXED: Uses the absolute best, most reliable Maps Direction API
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
                 
                 const cardHtml = `
@@ -447,14 +448,15 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
+// FIXED: Replaced bad quotes with proper safe HTML entities to completely avoid syntax errors.
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'"); 
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;"); 
 };
 
 async function initWeather() { 
