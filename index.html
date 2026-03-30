@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Holiday Planner 2026</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-mode">
@@ -20,9 +18,7 @@
                 <h2>Los Angeles</h2>
             </div>
             <div id="la-home-card"></div>
-            <div id="la-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div> 
+            <div id="la-itinerary"></div> 
         </section>
 
         <section id="utah" class="page" style="display: none;">
@@ -30,36 +26,15 @@
                 <h2>Utah</h2>
             </div>
             <div id="utah-home-card"></div>
-            <div id="utah-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div>
+            <div id="utah-itinerary"></div>
         </section>
 
         <section id="home" class="page">
             <h2>Home</h2>
             
             <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
-                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
-                    <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
-                </div>
-
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
-                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div>
-                        </div>
-                        <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 PS Time</div>
-                            <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
-                        </div>
-                    </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px;">
-                        Loading Date...
-                    </div>
-                </div>
+                <div id="countdown-display" style="display: none;"></div>
+                <div id="dual-clocks" style="display: none;"></div>
             </div>
 
             <div id="today-vault-display"></div>
@@ -74,17 +49,17 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
-            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px;">
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; background: var(--accent-gradient); color: white;">
                 <div style="font-size: 36px;">💱</div>
                 <div style="flex: 1;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">Quick Converter</div>
-                        <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: var(--ios-grey); padding: 2px 6px; border-radius: 6px; opacity: 0.7;">RATE: £1 = $1.27</div>
+                        <div style="font-size: 11px; font-weight: 900; opacity: 0.8; text-transform: uppercase;">Quick Converter</div>
+                        <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">RATE: --</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px;">
+                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px; background: rgba(255,255,255,0.2); border: none; color: white;">
                         <span style="font-weight: 900;">=</span>
-                        <strong id="gbp-output" style="color: var(--accent); font-size: 22px;">£0.00</strong>
+                        <strong id="gbp-output" style="font-size: 22px;">£0.00</strong>
                     </div>
                 </div>
             </div>
@@ -97,19 +72,11 @@
             </div>
             
             <div id="today-view">
-                <div id="today-itinerary">
-                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-                </div>
+                <div id="today-itinerary"></div>
             </div>
 
             <div id="tomorrow-view" style="display: none;">
-                <div id="tomorrow-itinerary">Loading...</div>
-            </div>
-        </section>
-
-        <section id="weather-root" class="page" style="display: none;">
-            <div id="WTH-dashboard">
-                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
+                <div id="tomorrow-itinerary"></div>
             </div>
         </section>
 
@@ -118,28 +85,12 @@
                 <h2>Las Vegas</h2>
             </div>
             <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-            </div>
+            <div id="vegas-itinerary"></div>
         </section>
 
         <section id="admin" class="page" style="display: none;">
             <h2>Admin</h2>
             
-            <div class="admin-card">
-                <h3>✈️ Trip Settings</h3>
-                <label style="font-size: 14px; margin-bottom: 5px;">Trip Start Date:</label>
-                <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
-            </div>
-
-            <div class="admin-card">
-                <h3>🧳 The Travel Vault</h3>
-                <textarea id="vault-flight" rows="3" placeholder="Flight details..."></textarea>
-                <textarea id="vault-car" rows="2" placeholder="Rental details..."></textarea>
-                <button onclick="saveTravelVault()" class="action-btn">💾 Save Vault</button>
-                <div id="vault-save-msg" style="color: #34c759; font-size: 14px; font-weight: 800; margin-top: 15px; text-align: center; display: none;">Vault Updated!</div>
-            </div>
-
             <div class="admin-card">
                 <h3>Theme Selection</h3>
                 <div class="theme-segmented-control">
@@ -147,65 +98,58 @@
                     <button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button>
                 </div>
             </div>
-            
+
+            <div class="admin-card">
+                <h3>✈️ Trip Settings</h3>
+                <label>Trip Start Date:</label>
+                <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
+            </div>
+
+            <div class="admin-card">
+                <h3>🧳 The Travel Vault</h3>
+                <p style="opacity:0.6; font-size: 12px; margin-bottom: 10px;">Format: [Departure] | [Arrival] | [Flight No] | [Terminal/Gate/Ref]</p>
+                <textarea id="vault-flight" rows="3" placeholder="LHR | LAX | BA269 | Terminal 5"></textarea>
+                <textarea id="vault-car" rows="2" placeholder="Rental details..."></textarea>
+                <button onclick="saveTravelVault()" class="action-btn">💾 Save Vault</button>
+            </div>
+
             <div class="admin-card">
                 <h3>App Settings</h3>
-                <label for="family-selector">Select Your Family:</label>
-                <select id="family-selector" onchange="updateFamilyFilter()">
-                    <option value="All">Show All Activities</option>
-                </select>
+                <label>Select Your Family:</label>
+                <select id="family-selector" onchange="updateFamilyFilter()"></select>
             </div>
 
             <div class="admin-card">
                 <h3>🏠 Accommodations</h3>
                 <label>City:</label>
                 <select id="acc-city"><option value="LA">Los Angeles</option><option value="Utah">Utah</option><option value="Vegas">Las Vegas</option></select>
-                <label>Family:</label>
-                <select id="acc-family"></select>
-                <label>Address:</label>
-                <input type="text" id="acc-address" />
+                <label>Family:</label><select id="acc-family"></select>
+                <label>Address:</label><input type="text" id="acc-address" />
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;"><label>Check-In:</label><input type="date" id="acc-start" /></div>
                     <div style="flex: 1;"><label>Check-Out:</label><input type="date" id="acc-end" /></div>
                 </div>
-                <label>Listing URL:</label><input type="url" id="acc-link" />
-                <label>Image URL:</label><input type="url" id="acc-image" />
                 <button onclick="saveAccommodation()" class="action-btn">💾 Save Details</button>
             </div>
 
             <div class="admin-card">
                 <h3>Add Custom Family Name</h3>
-                <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
+                <input type="text" id="new-family-name" />
                 <button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button>
             </div>
             
-            <div class="admin-card">
-                <h3>App Maintenance</h3>
-                <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
-            </div>
+            <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
 
-            <div class="version-control">
-                ULTIMATE PLANNER // v1.2.6
-            </div>
+            <div class="version-control">ULTIMATE PLANNER // v1.2.7</div>
         </section>
     </main>
 
     <nav class="bottom-nav">
-        <button onclick="showPage(event, 'home')" class="nav-btn active">
-            <span class="nav-icon">🏠</span><span>Home</span>
-        </button>
-        <button onclick="showPage(event, 'la')" class="nav-btn">
-            <span class="nav-icon">🌴</span><span>LA</span>
-        </button>
-        <button onclick="showPage(event, 'utah')" class="nav-btn">
-            <span class="nav-icon">⛰️</span><span>Utah</span>
-        </button>
-        <button onclick="showPage(event, 'vegas')" class="nav-btn">
-            <span class="nav-icon">🎲</span><span>Vegas</span>
-        </button>
-        <button onclick="showPage(event, 'admin')" class="nav-btn">
-            <span class="nav-icon">⚙️</span><span>Admin</span>
-        </button>
+        <button onclick="showPage(event, 'home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button onclick="showPage(event, 'la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
+        <button onclick="showPage(event, 'utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
+        <button onclick="showPage(event, 'vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
+        <button onclick="showPage(event, 'admin')" class="nav-btn"><span class="nav-icon">⚙️</span><span>Admin</span></button>
     </nav>
 
     <script src="script.js"></script>
