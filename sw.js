@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.6.0';
+const CACHE_NAME = 'holiday-planner-v1.6.1';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -17,9 +17,6 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
-    );
     self.skipWaiting(); 
 });
 
