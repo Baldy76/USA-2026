@@ -224,8 +224,8 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                // FIXED: Using the official Google Maps universal search parameter
-                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+                // FIXED: Direct link to Google Maps Directions API
+                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
                 
                 const cardHtml = `
                     <li style="background: var(--card); margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
@@ -305,10 +305,15 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
-// FIXED: Syntax error removed
+// FIXED: Properly formats HTML entities to prevent JavaScript syntax crashes!
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); 
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;"); 
 };
 
 async function initWeather() { 
@@ -316,7 +321,6 @@ async function initWeather() {
     const hwDesc = document.getElementById('hw-desc');
     
     if (navigator.geolocation) {
-        // FIXED: Added error handler for GPS denial
         navigator.geolocation.getCurrentPosition(
             async (pos) => { 
                 try { 
