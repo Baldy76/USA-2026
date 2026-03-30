@@ -86,17 +86,17 @@
 
             <div id="today-home-card" style="margin-top: 30px;"></div>
 
-            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; margin-top: 30px; background: var(--accent-gradient); color: white; border: none;">
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 20px; margin-bottom: 24px; margin-top: 30px; background: var(--accent-gradient); color: white; border: none;">
                 <div style="font-size: 36px;">💱</div>
                 <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div style="font-size: 11px; font-weight: 900; opacity: 0.8; text-transform: uppercase;">Quick Converter</div>
-                        <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">RATE: --</div>
+                        <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">RATE: --</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 10px; width: 100px; font-size: 18px; background: rgba(255,255,255,0.2); border: none; color: white;">
-                        <span style="font-weight: 900;">=</span>
-                        <strong id="gbp-output" style="font-size: 22px;">£0.00</strong>
+                        <input type="number" id="usd-input" placeholder="$ USD" oninput="convertCurrency()" style="margin: 0; padding: 12px; width: 100px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.4); border-radius: 12px; border: none; color: white; text-align: center; outline: none;">
+                        <span style="font-weight: 900; opacity: 0.8;">=</span>
+                        <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.4); padding: 12px 15px; border-radius: 12px; color: white; text-align: center; min-width: 70px;">£0.00</strong>
                     </div>
                 </div>
             </div>
@@ -207,7 +207,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.8.3</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.8.4</div>
         </section>
     </main>
 
