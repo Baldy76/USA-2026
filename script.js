@@ -20,15 +20,14 @@ async function safeRunAsync(moduleName, func) {
     try { await func(); } catch (error) { console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error); }
 }
 
-// 100% BULLETPROOF ESCAPER: Uses standard HTML entities. Cannot cause syntax errors.
 const escapeHTML = (str) => {
     if (!str) return "";
     return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;"); 
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'"); 
 };
 
 function parseDateTime(dateStr, timeStr = '') {
@@ -75,22 +74,18 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     if (meta) meta.content = metaColor;
 }
 
-// USER'S PROVIDED NAVIGATION ENGINE
 window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     if (navigator.vibrate) navigator.vibrate(40); 
 
-    // Hide all pages by removing active class
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
 
-    // Make target visible
     const targetPage = document.getElementById(pageId);
     if(targetPage) { 
         targetPage.classList.add('active'); 
     }
 
-    // Update Nav Buttons
     if (buttonId) {
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.classList.remove('active');
@@ -99,7 +94,6 @@ window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
         if(activeBtn) activeBtn.classList.add('active');
     }
 
-    // Update body theme colors dynamically
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
@@ -329,6 +323,7 @@ function renderTravelVault() { safeRun('RenderVault', () => {
         const type = cols[1].trim().toLowerCase();
         
         if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
+            
             if (type === 'flight') {
                 hasData = true;
                 const date = escapeHTML(cols[2]?.trim());
@@ -373,13 +368,15 @@ function renderTravelVault() { safeRun('RenderVault', () => {
                 const dropoffLoc = escapeHTML(cols[8]?.trim());
                 const ref = escapeHTML(cols[9]?.trim());
 
+                // UPDATED: Fixed header title to clearly say "Car Rental"
                 html += `
                 <div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
-                    <div style="font-size:11px; font-weight:800; opacity:0.5; text-transform:uppercase;">🚗 ${company} Rental</div>
-                    <div style="font-size:16px; font-weight:700; margin-top:5px;">
-                        <div style="margin-bottom: 8px;"><strong>Pick-up:</strong><br>${pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${pickupDate} @ ${pickupTime}</span></div>
-                        <div style="margin-bottom: 8px;"><strong>Drop-off:</strong><br>${dropoffLoc || pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${dropoffDate} @ ${dropoffTime}</span></div>
-                        <span style="color: var(--accent); font-size:14px;">Ref: ${ref}</span>
+                    <div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div>
+                    <div style="font-size:16px; font-weight:700; margin-top:10px;">
+                        <div style="margin-bottom: 12px;"><strong>Company:</strong> ${company}</div>
+                        <div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Pick-up:</strong><br>${pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${pickupDate} @ ${pickupTime}</span></div>
+                        <div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Drop-off:</strong><br>${dropoffLoc || pickupLoc}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${dropoffDate} @ ${dropoffTime}</span></div>
+                        <span style="color: var(--accent); font-size:14px;"><strong>Ref:</strong> ${ref}</span>
                     </div>
                 </div>`;
             }
