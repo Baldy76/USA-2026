@@ -92,15 +92,12 @@ async function loadItinerary() {
         const rows = data.split('\n').slice(1); 
         let rawData = rows.filter(row => row.trim() !== ''); 
         
-        // NEW: Date/Time parser to help our sort engine
         function parseDateTime(dateStr, timeStr) {
             dateStr = dateStr ? dateStr.trim() : '';
             timeStr = timeStr ? timeStr.trim() : '';
             
-            // Try standard US formatting first
             let d = new Date(`${dateStr} ${timeStr}`);
             
-            // If invalid, try UK formatting (DD/MM/YYYY)
             if (isNaN(d)) {
                 const parts = dateStr.split(/[-/]/);
                 if (parts.length === 3) {
@@ -108,7 +105,6 @@ async function loadItinerary() {
                 }
             }
             
-            // If still invalid, try just the date without the time
             if (isNaN(d)) {
                 d = new Date(dateStr);
                 if (isNaN(d)) {
@@ -121,7 +117,6 @@ async function loadItinerary() {
             return isNaN(d) ? 0 : d.getTime();
         }
 
-        // NEW: Sort the entire spreadsheet chronologically!
         rawData.sort((a, b) => {
             const colsA = a.split(',');
             const colsB = b.split(',');
@@ -229,7 +224,8 @@ function renderItinerary() {
             
             if (selectedFamily === 'All' || who.toLowerCase() === selectedFamily.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+                // FIXED: Using the official Google Maps universal search parameter
+                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
                 
                 const cardHtml = `
                     <li style="background: var(--card); margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
@@ -309,68 +305,80 @@ const getWeatherIcon = (code) => {
     return map[code] || '🌤️'; 
 };
 
+// FIXED: Syntax error removed
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'"); 
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); 
 };
 
 async function initWeather() { 
     const wDash = document.getElementById('WTH-dashboard');
+    const hwDesc = document.getElementById('hw-desc');
     
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => { 
-            try { 
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
-                const data = await res.json(); 
-                
-                const temp = `${Math.round(data.main.temp)}°C`; 
-                const currentIcon = getWeatherIcon(data.weather[0].icon); 
-                const currentDesc = data.weather[0].description;
-                
-                const hwIcon = document.getElementById('hw-icon'); 
-                const hwTemp = document.getElementById('hw-temp'); 
-                const hwDesc = document.getElementById('hw-desc');
-                
-                if(hwIcon) hwIcon.innerText = currentIcon; 
-                if(hwTemp) hwTemp.innerText = temp; 
-                if(hwDesc) hwDesc.innerText = currentDesc;
+        // FIXED: Added error handler for GPS denial
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => { 
+                try { 
+                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
+                    const data = await res.json(); 
+                    
+                    if (!data.weather) throw new Error("Weather data missing");
 
-                const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
-                const fData = await fRes.json();
-                
-                const dailyData = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5);
-                
-                let forecastHtml = dailyData.map(day => { 
-                    const dateObj = new Date(day.dt * 1000); 
-                    const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-                    return `
-                        <div class="WTH-card">
-                            <span class="WTH-day">${dayName}</span>
-                            <span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span>
-                            <span class="WTH-temps">${Math.round(day.main.temp)}°C</span>
-                        </div>`; 
-                }).join('');
-                
-                if(wDash) { 
-                    wDash.innerHTML = `
-                        <div class="WTH-hero">
-                            <div class="WTH-icon" style="font-size: 50px;">${currentIcon}</div>
-                            <div class="WTH-hero-temp">${temp}</div>
-                            <div class="WTH-hero-desc">${currentDesc}</div>
-                            <div style="font-size: 14px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;">
-                                📍 ${escapeHTML(data.name)}
+                    const temp = `${Math.round(data.main.temp)}°C`; 
+                    const currentIcon = getWeatherIcon(data.weather[0].icon); 
+                    const currentDesc = data.weather[0].description;
+                    
+                    const hwIcon = document.getElementById('hw-icon'); 
+                    const hwTemp = document.getElementById('hw-temp'); 
+                    
+                    if(hwIcon) hwIcon.innerText = currentIcon; 
+                    if(hwTemp) hwTemp.innerText = temp; 
+                    if(hwDesc) hwDesc.innerText = currentDesc;
+
+                    const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
+                    const fData = await fRes.json();
+                    
+                    const dailyData = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5);
+                    
+                    let forecastHtml = dailyData.map(day => { 
+                        const dateObj = new Date(day.dt * 1000); 
+                        const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+                        return `
+                            <div class="WTH-card">
+                                <span class="WTH-day">${dayName}</span>
+                                <span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span>
+                                <span class="WTH-temps">${Math.round(day.main.temp)}°C</span>
+                            </div>`; 
+                    }).join('');
+                    
+                    if(wDash) { 
+                        wDash.innerHTML = `
+                            <div class="WTH-hero">
+                                <div class="WTH-icon" style="font-size: 50px;">${currentIcon}</div>
+                                <div class="WTH-hero-temp">${temp}</div>
+                                <div class="WTH-hero-desc">${currentDesc}</div>
+                                <div style="font-size: 14px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;">
+                                    📍 ${escapeHTML(data.name)}
+                                </div>
                             </div>
-                        </div>
-                        <h3 class="ADM-hdr" style="margin: 25px 0 10px;">5-Day Forecast</h3>
-                        ${forecastHtml}
-                    `; 
-                }
-            } catch (e) { 
-                if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Weather Offline</div><div class="empty-sub">Check your connection to pull the radar.</div></div>`; 
-            } 
-        });
+                            <h3 class="ADM-hdr" style="margin: 25px 0 10px;">5-Day Forecast</h3>
+                            ${forecastHtml}
+                        `; 
+                    }
+                } catch (e) { 
+                    if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Weather Offline</div><div class="empty-sub">Check your connection to pull the radar.</div></div>`; 
+                    if (hwDesc) hwDesc.innerText = "Weather unavailable";
+                } 
+            },
+            (err) => {
+                if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Denied</div><div class="empty-sub">Allow location access to view weather.</div></div>`;
+                if (hwDesc) hwDesc.innerText = "Location access denied";
+            }
+        );
     } else {
-        if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Disabled</div><div class="empty-sub">Allow location access to view weather.</div></div>`;
+        if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Unavailable</div><div class="empty-sub">Your device does not support location tracking.</div></div>`;
+        if (hwDesc) hwDesc.innerText = "GPS unavailable";
     }
 }
 
