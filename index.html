@@ -26,8 +26,9 @@
 
         <section id="home" class="page">
             <h2>Today 📅</h2>
-            <p>Welcome to the 2026 Super Holiday Planner!</p>
-            <p>Use the navigation below to view our itineraries.</p>
+            <h3 id="today-date-display" style="color: var(--accent); margin-top: 0; margin-bottom: 20px;"></h3>
+            
+            <div id="today-itinerary">Loading today's plans...</div>
         </section>
 
         <section id="vegas" class="page" style="display: none;">
@@ -51,7 +52,7 @@
                 <label for="family-selector">Select Your Family:</label>
                 <select id="family-selector" onchange="updateFamilyFilter()">
                     <option value="All">Show All Activities</option>
-                    </select>
+                </select>
             </div>
 
             <div class="admin-card">
@@ -70,7 +71,7 @@
             <p style="font-size: 14px; opacity: 0.7; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                App Version: 1.0.2
+                App Version: 1.0.3
             </div>
         </section>
     </main>
