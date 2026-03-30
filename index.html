@@ -11,27 +11,44 @@
     <main id="content">
         <section id="la" class="page" style="display: none;">
             <h2>Los Angeles 🌴</h2>
-            <p>Ideas and itinerary for LA go here...</p>
+            <div id="la-itinerary">Loading plans...</div> 
         </section>
 
         <section id="utah" class="page" style="display: none;">
             <h2>Utah ⛰️</h2>
-            <p>Ideas and itinerary for Utah go here...</p>
+            <div id="utah-itinerary">Loading plans...</div>
         </section>
 
         <section id="home" class="page">
             <h2>Home 🏠</h2>
             <p>Welcome to the 2026 Super Holiday Planner!</p>
+            <p>Use the navigation below to view our itineraries.</p>
         </section>
 
         <section id="vegas" class="page" style="display: none;">
             <h2>Las Vegas 🎲</h2>
-            <p>Ideas and itinerary for Vegas go here...</p>
+            <div id="vegas-itinerary">Loading plans...</div>
         </section>
 
         <section id="admin" class="page" style="display: none;">
             <h2>Admin ⚙️</h2>
-            <p>Logistics, bookings, and settings go here...</p>
+            
+            <div class="admin-card">
+                <h3>App Settings</h3>
+                <label for="family-selector">Select Your Family:</label>
+                <select id="family-selector" onchange="updateFamilyFilter()">
+                    <option value="All">Show All Activities</option>
+                    </select>
+            </div>
+
+            <div class="admin-card">
+                <h3>Add Custom Family Name</h3>
+                <p style="font-size: 12px; color: #666; margin-top: 0;">(Note: Names added here only save to this specific device)</p>
+                <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
+                <button onclick="addCustomFamily()" class="action-btn">Add to List</button>
+            </div>
+            
+            <p>Other logistics and bookings go here...</p>
         </section>
     </main>
 
