@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.2.2';
+const CACHE_NAME = 'holiday-planner-v1.2.3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -26,7 +26,10 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.url.includes('docs.google.com') || event.request.url.includes('openweathermap.org')) {
+    // Bypass cache for APIs (Google, Weather, and Currency)
+    if (event.request.url.includes('docs.google.com') || 
+        event.request.url.includes('openweathermap.org') ||
+        event.request.url.includes('frankfurter.app')) {
         return; 
     }
     event.respondWith(
