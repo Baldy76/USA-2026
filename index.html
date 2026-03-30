@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')">
+            <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
                     <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s ease;">📍 Locating...</div>
@@ -106,12 +106,14 @@
                     <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">🍽️ Tip & Split Calculator</div>
                 </div>
                 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
                     <div style="flex: 2;">
-                        <input type="number" id="bill-total" placeholder="Bill Total ($)" oninput="calculateTip()" style="margin: 0;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
+                        <input type="number" id="bill-total" placeholder="0.00" oninput="calculateTip()" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: 2px solid var(--ios-grey); background: var(--bg); color: var(--text); outline: none;">
                     </div>
-                    <div style="flex: 1;">
-                        <select id="split-ways" onchange="calculateTip()" style="margin: 0; padding: 16px 10px;">
+                    <div style="flex: 1.5;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
+                        <select id="split-ways" onchange="calculateTip()" style="margin: 0; padding: 14px 10px; font-size: 16px; font-weight: 800; width: 100%; border-radius: 12px; border: 2px solid var(--ios-grey); background: var(--bg); color: var(--text); outline: none;">
                             <option value="1">1 Family</option>
                             <option value="2" selected>2 Families</option>
                         </select>
@@ -205,7 +207,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.8.0</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.8.1</div>
         </section>
     </main>
 
