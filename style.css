@@ -149,3 +149,63 @@ body {
 .sync-btn {
     background-color: #28a745; 
 }
+
+/* ==========================================
+   NEW: WEATHER ENGINE STYLES
+   ========================================== */
+
+/* Weather Pill (Dashboard) */
+.weather-pill { 
+    background: var(--card); 
+    margin: 0 0 20px 0; 
+    padding: 15px 20px; 
+    border-radius: 30px; 
+    border: 1px solid rgba(0,0,0,0.02); 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    cursor: pointer; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+    color: var(--text);
+    transition: transform 0.1s ease;
+}
+.weather-pill:active { transform: scale(0.96); }
+
+/* Full Weather Page Hero */
+.WTH-hero { 
+    background: var(--card); 
+    border: 4px solid var(--accent); 
+    padding: 40px 20px; 
+    border-radius: 40px; 
+    text-align: center; 
+    margin: 0 0 20px 0; 
+    box-shadow: 0 10px 25px rgba(0,122,255,0.1); 
+    color: var(--text);
+}
+.WTH-hero-temp { font-size: 70px; font-weight: 950; line-height: 1; margin: 10px 0; color: var(--accent); }
+.WTH-hero-desc { font-size: 18px; font-weight: 800; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px; }
+
+/* 5-Day Forecast Cards */
+.WTH-card { 
+    background: var(--card); 
+    margin: 0 0 15px 0; 
+    padding: 20px; 
+    border-radius: 25px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border: 1px solid rgba(0,0,0,0.02); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+    color: var(--text);
+}
+.WTH-day { font-size: 18px; font-weight: 900; width: 100px; text-align: left; }
+.WTH-icon { font-size: 30px; }
+.WTH-temps { font-size: 16px; font-weight: 800; color: var(--accent); text-align: right; }
+
+/* Empty/Loading State */
+.empty-state { text-align: center; padding: 50px 20px; opacity: 0.5; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text); }
+.empty-icon { font-size: 60px; display: block; margin-bottom: 15px; filter: grayscale(100%); opacity: 0.7; }
+.empty-text { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
+
+/* Small Header for the Forecast list */
+.ADM-hdr { margin: 0 0 15px; opacity: 0.5; font-size: 11px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: center; color: var(--text); }
