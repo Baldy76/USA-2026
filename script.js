@@ -20,7 +20,6 @@ async function safeRunAsync(moduleName, func) {
     try { await func(); } catch (error) { console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error); }
 }
 
-// 100% BULLETPROOF ESCAPER: Bypasses markdown parsers by concatenating strings.
 const escapeHTML = (str) => {
     if (!str) return "";
     return String(str)
@@ -218,50 +217,80 @@ function saveTripSettings() { safeRun('SaveTrip', () => {
 })};
 
 // ==========================================
-// 3. MASTER CLOUD DATA ENGINE
+// 3. MASTER CLOUD DATA ENGINE (WITH OFFLINE MODE)
 // ==========================================
 async function loadAllData() {
+    let itinData = '';
+    let vData = '';
+
     try {
+        // Attempt to fetch fresh data from Google
         const [itineraryRes, vaultRes] = await Promise.all([
             fetch(sheetUrl),
             fetch(vaultUrl)
         ]);
         
-        const itinData = await itineraryRes.text();
-        const vData = await vaultRes.text();
+        itinData = await itineraryRes.text();
+        vData = await vaultRes.text();
 
-        const iRows = itinData.split('\n').slice(1);
-        itineraryData = iRows.filter(r => r.trim() !== '');
-        itineraryData.sort((a, b) => {
-            const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-            const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-            if (ca.length < 5 || cb.length < 5) return 0;
-            return parseDateTime(ca[0], ca[3]) - parseDateTime(cb[0], cb[3]);
-        });
+        // Success! Save a backup copy to the phone's local storage
+        localStorage.setItem('offline_itinerary', itinData);
+        localStorage.setItem('offline_vault', vData);
+
+    } catch (e) { 
+        console.warn("[OFFLINE MODE] No internet connection. Loading backup data..."); 
         
-        itineraryData.forEach(row => {
-            const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-            if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') {
-                sheetFamilies.add(col[4].trim());
-            }
-        });
+        // If the fetch fails, grab the backup copies
+        itinData = localStorage.getItem('offline_itinerary') || '';
+        vData = localStorage.getItem('offline_vault') || '';
+        
+        // If there's no backup and no internet, show a warning and halt
+        if (!itinData && !vData) {
+            console.error("[OFFLINE MODE] No backup data found.");
+            return;
+        }
+    }
 
-        const vRows = vData.split('\n').slice(1);
-        vaultAndStaysData = vRows.filter(r => r.trim() !== '');
-        vaultAndStaysData.forEach(row => {
-            const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-            if (col.length > 0 && col[0].trim().toLowerCase() !== 'everyone') {
-                sheetFamilies.add(col[0].trim());
-            }
-        });
+    try {
+        // --- Process Itinerary Data ---
+        if (itinData) {
+            const iRows = itinData.split('\n').slice(1);
+            itineraryData = iRows.filter(r => r.trim() !== '');
+            itineraryData.sort((a, b) => {
+                const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+                const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+                if (ca.length < 5 || cb.length < 5) return 0;
+                return parseDateTime(ca[0], ca[3]) - parseDateTime(cb[0], cb[3]);
+            });
+            
+            itineraryData.forEach(row => {
+                const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+                if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') {
+                    sheetFamilies.add(col[4].trim());
+                }
+            });
+        }
 
+        // --- Process Vault Data ---
+        if (vData) {
+            const vRows = vData.split('\n').slice(1);
+            vaultAndStaysData = vRows.filter(r => r.trim() !== '');
+            vaultAndStaysData.forEach(row => {
+                const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+                if (col.length > 0 && col[0].trim().toLowerCase() !== 'everyone') {
+                    sheetFamilies.add(col[0].trim());
+                }
+            });
+        }
+
+        // --- Render Everything ---
         safeRun('PopulateDropdown', populateDropdown);
         safeRun('RenderItinerary', renderItinerary);
         safeRun('RenderVault', renderTravelVault);
         safeRun('RenderAcc', renderAccommodations);
 
-    } catch (e) { 
-        console.error("[MODULE ISOLATED] Master Cloud Fetch Failed:", e); 
+    } catch (parseError) { 
+        console.error("[MODULE ISOLATED] Data Parsing Failed:", parseError); 
     }
 }
 
