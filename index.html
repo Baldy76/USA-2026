@@ -13,7 +13,7 @@
 
     <main id="content">
         
-        <section id="la" class="page" style="display: none;">
+        <section id="la" class="page tab-content">
             <div class="city-hero" style="background-image: url('la.jpg');">
                 <h2>Los Angeles</h2>
             </div>
@@ -23,7 +23,7 @@
             </div> 
         </section>
 
-        <section id="utah" class="page" style="display: none;">
+        <section id="utah" class="page tab-content">
             <div class="city-hero" style="background-image: url('utah.jpg');">
                 <h2>Utah</h2>
             </div>
@@ -33,7 +33,7 @@
             </div>
         </section>
 
-        <section id="home" class="page">
+        <section id="home" class="page tab-content active">
             
             <div id="time-engine" style="margin-bottom: 20px;">
                 <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
+            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
                     <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s ease;">📍 Locating...</div>
@@ -74,7 +74,7 @@
                 <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
             </div>
             
-            <div id="today-view">
+            <div id="today-view" style="display: block;">
                 <div id="today-itinerary">
                     <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
                 </div>
@@ -137,19 +137,19 @@
                 </div>
             </div>
 
-            <button onclick="showPage(event, 'admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
+            <button onclick="openTab('admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
                 ⚙️ Admin & Trip Settings
             </button>
 
         </section>
 
-        <section id="weather-root" class="page" style="display: none;">
+        <section id="weather-root" class="page tab-content">
             <div id="WTH-dashboard">
                 <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
             </div>
         </section>
 
-        <section id="vegas" class="page" style="display: none;">
+        <section id="vegas" class="page tab-content">
             <div class="city-hero" style="background-image: url('vegas.jpg');">
                 <h2>Las Vegas</h2>
             </div>
@@ -159,7 +159,7 @@
             </div>
         </section>
 
-        <section id="flights" class="page" style="display: none;">
+        <section id="flights" class="page tab-content">
             <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
                 <h2>Travel Details</h2>
             </div>
@@ -171,7 +171,7 @@
             </div>
         </section>
 
-        <section id="admin" class="page" style="display: none;">
+        <section id="admin" class="page tab-content">
             <h2>Admin</h2>
             
             <div class="admin-card">
@@ -205,16 +205,16 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.7.0</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.8.0</div>
         </section>
     </main>
 
     <nav class="bottom-nav">
-        <button onclick="showPage(event, 'la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
-        <button onclick="showPage(event, 'utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
-        <button onclick="showPage(event, 'home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
-        <button onclick="showPage(event, 'vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
-        <button onclick="showPage(event, 'flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
+        <button id="nav-btn-la" onclick="openTab('la', 'nav-btn-la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
+        <button id="nav-btn-utah" onclick="openTab('utah', 'nav-btn-utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
+        <button id="nav-btn-home" onclick="openTab('home', 'nav-btn-home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button id="nav-btn-vegas" onclick="openTab('vegas', 'nav-btn-vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
+        <button id="nav-btn-flights" onclick="openTab('flights', 'nav-btn-flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
 
     <script src="script.js"></script>
