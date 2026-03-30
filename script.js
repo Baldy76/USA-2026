@@ -31,16 +31,18 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     if (pageId === 'la') metaColor = '#ff9500';
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
+    else if (pageId === 'flights') metaColor = '#0284c7';
     
     const meta = document.getElementById('theme-meta'); 
     if (meta) meta.content = metaColor;
 }
 
 function showPage(event, pageId) {
-    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
+    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
     else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
+    else if (pageId === 'flights') document.body.classList.add('theme-flights');
     
     updateMetaThemeColor(pageId);
 
@@ -123,15 +125,14 @@ function toggleComplete(element) {
     }
 }
 
-// BULLETPROOF ESCAPER: Uses a dictionary map. 100% immune to syntax crashing.
 function escapeHTML(str) {
     if (!str) return '';
     const htmlEntities = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '''
     };
     return String(str).replace(/[&<>"']/g, match => htmlEntities[match]);
 }
@@ -241,8 +242,11 @@ function saveTravelVault() {
 function renderTravelVault() {
     const vault = JSON.parse(localStorage.getItem('travelVault')) || null;
     const display = document.getElementById('today-vault-display');
+    const emptyState = document.getElementById('empty-vault-state');
     
-    if (vault) {
+    if (vault && (vault.flight.dep || vault.car)) {
+        if (emptyState) emptyState.style.display = 'none';
+
         let f = vault.flight;
         if (typeof f === 'string' || !f) f = { dep:'', arr:'', airline:'', fnum:'', term:'', time:'' };
 
@@ -254,7 +258,6 @@ function renderTravelVault() {
         document.getElementById('vault-fnum').value = f.fnum || '';
         document.getElementById('vault-term').value = f.term || '';
         document.getElementById('vault-time').value = flightTime;
-        
         document.getElementById('vault-car').value = vault.car || '';
 
         let flightHtml = "";
@@ -278,6 +281,7 @@ function renderTravelVault() {
                 <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
                     <span>Terminal/Gate: ${escapeHTML(f.term) || "Check Screens"}</span>
                 </div>
+                <div class="barcode"></div>
             </div>`;
         }
 
@@ -290,6 +294,7 @@ function renderTravelVault() {
         `;
     } else { 
         display.innerHTML = ''; 
+        if (emptyState) emptyState.style.display = 'flex';
     }
 }
 
@@ -602,7 +607,7 @@ async function initWeather() {
 window.onload = () => {
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
     
-    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
+    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
     updateMetaThemeColor('home');
     
     updateTimeAndCountdown();
