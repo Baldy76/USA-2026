@@ -80,14 +80,15 @@ function toggleComplete(element) {
     }
 }
 
+// 100% BULLETPROOF HTML ESCAPER - Using double quotes to prevent syntax crashes.
 const escapeHTML = (str) => {
-    if (!str) return '';
+    if (!str) return "";
     return String(str)
-        .replace(/&/g, '&')
-        .replace(/</g, '<')
-        .replace(/>/g, '>')
-        .replace(/"/g, '"')
-        .replace(/'/g, '''); 
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;"); 
 };
 
 // ==========================================
@@ -180,7 +181,7 @@ function saveTravelVault() {
         airline: document.getElementById('vault-airline').value.trim().toUpperCase(),
         fnum: document.getElementById('vault-fnum').value.trim(),
         term: document.getElementById('vault-term').value.trim(),
-        time: document.getElementById('vault-time').value.trim() // UPDATED
+        time: document.getElementById('vault-time').value.trim() 
     };
     const car = document.getElementById('vault-car').value;
     
@@ -200,7 +201,6 @@ function renderTravelVault() {
         let f = vault.flight;
         if (typeof f === 'string' || !f) f = { dep:'', arr:'', airline:'', fnum:'', term:'', time:'' };
 
-        // Safeguard to pull in old 'ref' data if they haven't re-saved yet
         const flightTime = f.time || f.ref || '';
 
         document.getElementById('vault-dep').value = f.dep || '';
@@ -372,6 +372,7 @@ function renderAccommodations() {
         const processCard = (f, acc) => {
             const address = acc.address || acc;
             const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
+            // OFFICIAL GOOGLE MAPS LINK:
             const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
             
             const ui = `
@@ -435,6 +436,7 @@ function renderItinerary() {
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
+                // OFFICIAL GOOGLE MAPS LINK:
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 
@@ -569,7 +571,6 @@ window.onload = () => {
     initLiveCurrency(); 
     loadItinerary();
     
-    // Initial fade in for home
     const homeEl = document.getElementById('home');
     if (homeEl) {
         void homeEl.offsetWidth;
