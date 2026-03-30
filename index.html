@@ -15,18 +15,18 @@
 
     <main id="content">
         <section id="la" class="page" style="display: none;">
-            <h2>Los Angeles 🌴</h2>
+            <h2>Los Angeles</h2>
             <div id="la-itinerary">Loading plans...</div> 
         </section>
 
         <section id="utah" class="page" style="display: none;">
-            <h2>Utah ⛰️</h2>
+            <h2>Utah</h2>
             <div id="utah-itinerary">Loading plans...</div>
         </section>
 
         <section id="home" class="page">
-            <h2>Today 📅</h2>
-            <h3 id="today-date-display" style="color: var(--accent); margin-top: 0; margin-bottom: 15px;"></h3>
+            <h2>Today</h2>
+            <h3 id="today-date-display" style="color: var(--accent); margin-top: -15px; margin-bottom: 20px; font-weight: 800;"></h3>
             
             <div id="home-weather-pill" class="weather-pill" onclick="openWeatherPage()">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
@@ -34,7 +34,7 @@
                     <strong style="font-size: 18px; display:block;" id="hw-temp">--°C</strong>
                     <small style="opacity:0.6; font-weight:800;" id="hw-desc">Syncing radar...</small>
                 </div>
-                <div style="opacity:0.3; font-size:20px;">›</div>
+                <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
@@ -61,12 +61,12 @@
         </section>
 
         <section id="vegas" class="page" style="display: none;">
-            <h2>Las Vegas 🎲</h2>
+            <h2>Las Vegas</h2>
             <div id="vegas-itinerary">Loading plans...</div>
         </section>
 
         <section id="admin" class="page" style="display: none;">
-            <h2>Admin ⚙️</h2>
+            <h2>Admin</h2>
             
             <div class="admin-card">
                 <h3>Theme Selection</h3>
@@ -86,31 +86,46 @@
 
             <div class="admin-card">
                 <h3>Add Custom Family Name</h3>
-                <p style="font-size: 12px; opacity: 0.7; margin-top: 0;">(Names added here only save to this specific device)</p>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Names added here only save to this device.</p>
                 <input type="text" id="new-family-name" placeholder="e.g., The Smiths" />
-                <button onclick="addCustomFamily()" class="action-btn">Add to List</button>
+                <button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button>
             </div>
             
             <div class="admin-card">
                 <h3>App Maintenance</h3>
-                <p style="font-size: 12px; opacity: 0.7; margin-top: 0;">Tap below to force the app to download the latest code.</p>
-                <button onclick="syncUpdates()" class="action-btn sync-btn">Sync Updates</button>
+                <p style="font-size: 13px; font-weight: 600; opacity: 0.6; margin-top: 0;">Force the app to download the latest code.</p>
+                <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <p style="font-size: 14px; opacity: 0.7; text-align: center;">Other logistics and bookings go here...</p>
+            <p style="font-size: 14px; font-weight: 700; opacity: 0.5; text-align: center;">Other logistics and bookings go here...</p>
 
             <div class="version-control">
-                App Version: 1.0.8
+                ULTIMATE PLANNER // v1.0.9
             </div>
         </section>
     </main>
 
     <nav class="bottom-nav">
-        <button onclick="showPage(event, 'la')" class="nav-btn">LA</button>
-        <button onclick="showPage(event, 'utah')" class="nav-btn">Utah</button>
-        <button onclick="showPage(event, 'home')" class="nav-btn active">Today</button>
-        <button onclick="showPage(event, 'vegas')" class="nav-btn">Vegas</button>
-        <button onclick="showPage(event, 'admin')" class="nav-btn">Admin</button>
+        <button onclick="showPage(event, 'la')" class="nav-btn">
+            <span class="nav-icon">🌴</span>
+            <span>LA</span>
+        </button>
+        <button onclick="showPage(event, 'utah')" class="nav-btn">
+            <span class="nav-icon">⛰️</span>
+            <span>Utah</span>
+        </button>
+        <button onclick="showPage(event, 'home')" class="nav-btn active">
+            <span class="nav-icon">📅</span>
+            <span>Today</span>
+        </button>
+        <button onclick="showPage(event, 'vegas')" class="nav-btn">
+            <span class="nav-icon">🎲</span>
+            <span>Vegas</span>
+        </button>
+        <button onclick="showPage(event, 'admin')" class="nav-btn">
+            <span class="nav-icon">⚙️</span>
+            <span>Admin</span>
+        </button>
     </nav>
 
     <script src="script.js"></script>
