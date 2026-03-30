@@ -48,12 +48,10 @@ function showPage(event, pageId) {
     event.currentTarget.classList.add('active');
 }
 
-// Special handler for opening the weather tab from the pill
 function openWeatherPage() {
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.style.display = 'none');
     
-    // Deselect all bottom nav buttons since we are on a sub-page
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
 
@@ -92,7 +90,46 @@ async function loadItinerary() {
         const data = await response.text();
         
         const rows = data.split('\n').slice(1); 
-        itineraryData = rows.filter(row => row.trim() !== ''); 
+        let rawData = rows.filter(row => row.trim() !== ''); 
+        
+        // NEW: Date/Time parser to help our sort engine
+        function parseDateTime(dateStr, timeStr) {
+            dateStr = dateStr ? dateStr.trim() : '';
+            timeStr = timeStr ? timeStr.trim() : '';
+            
+            // Try standard US formatting first
+            let d = new Date(`${dateStr} ${timeStr}`);
+            
+            // If invalid, try UK formatting (DD/MM/YYYY)
+            if (isNaN(d)) {
+                const parts = dateStr.split(/[-/]/);
+                if (parts.length === 3) {
+                    d = new Date(`${parts[2]}/${parts[1]}/${parts[0]} ${timeStr}`);
+                }
+            }
+            
+            // If still invalid, try just the date without the time
+            if (isNaN(d)) {
+                d = new Date(dateStr);
+                if (isNaN(d)) {
+                    const parts = dateStr.split(/[-/]/);
+                    if (parts.length === 3) {
+                        d = new Date(`${parts[2]}/${parts[1]}/${parts[0]}`);
+                    }
+                }
+            }
+            return isNaN(d) ? 0 : d.getTime();
+        }
+
+        // NEW: Sort the entire spreadsheet chronologically!
+        rawData.sort((a, b) => {
+            const colsA = a.split(',');
+            const colsB = b.split(',');
+            if (colsA.length < 5 || colsB.length < 5) return 0;
+            return parseDateTime(colsA[0], colsA[3]) - parseDateTime(colsB[0], colsB[3]);
+        });
+
+        itineraryData = rawData;
         
         itineraryData.forEach(row => {
             const columns = row.split(',');
@@ -274,7 +311,7 @@ const getWeatherIcon = (code) => {
 
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); 
+    return String(str).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'"); 
 };
 
 async function initWeather() { 
@@ -283,7 +320,6 @@ async function initWeather() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => { 
             try { 
-                // A. Fetch Current Weather for Pill
                 const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
                 const data = await res.json(); 
                 
@@ -299,7 +335,6 @@ async function initWeather() {
                 if(hwTemp) hwTemp.innerText = temp; 
                 if(hwDesc) hwDesc.innerText = currentDesc;
 
-                // B. Fetch 5-Day Forecast
                 const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${W_API_KEY}&units=metric`); 
                 const fData = await fRes.json();
                 
@@ -312,3 +347,70 @@ async function initWeather() {
                         <div class="WTH-card">
                             <span class="WTH-day">${dayName}</span>
                             <span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span>
+                            <span class="WTH-temps">${Math.round(day.main.temp)}°C</span>
+                        </div>`; 
+                }).join('');
+                
+                if(wDash) { 
+                    wDash.innerHTML = `
+                        <div class="WTH-hero">
+                            <div class="WTH-icon" style="font-size: 50px;">${currentIcon}</div>
+                            <div class="WTH-hero-temp">${temp}</div>
+                            <div class="WTH-hero-desc">${currentDesc}</div>
+                            <div style="font-size: 14px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;">
+                                📍 ${escapeHTML(data.name)}
+                            </div>
+                        </div>
+                        <h3 class="ADM-hdr" style="margin: 25px 0 10px;">5-Day Forecast</h3>
+                        ${forecastHtml}
+                    `; 
+                }
+            } catch (e) { 
+                if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Weather Offline</div><div class="empty-sub">Check your connection to pull the radar.</div></div>`; 
+            } 
+        });
+    } else {
+        if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📍</span><div class="empty-text">GPS Disabled</div><div class="empty-sub">Allow location access to view weather.</div></div>`;
+    }
+}
+
+// ==========================================
+// 5. APP INITIALIZATION 
+// ==========================================
+window.onload = () => {
+    const savedTheme = localStorage.getItem('HolidayPlanner_Theme') === 'true';
+    applyTheme(savedTheme);
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('today-date-display').textContent = new Date().toLocaleDateString(undefined, options);
+
+    initWeather();
+    loadItinerary();
+};
+
+// ==========================================
+// 6. PWA & SERVICE WORKER LOGIC
+// ==========================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered successfully.', reg))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
+
+function syncUpdates() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+                registration.update(); 
+            }
+        });
+        
+        alert("Syncing updates! The app will now reload.");
+        window.location.reload(true); 
+    } else {
+        alert("Updating! The app will now reload.");
+        window.location.reload(true);
+    }
+}
