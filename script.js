@@ -20,14 +20,15 @@ async function safeRunAsync(moduleName, func) {
     try { await func(); } catch (error) { console.error(`[MODULE ISOLATED] Async error in ${moduleName}:`, error); }
 }
 
+// 100% BULLETPROOF ESCAPER: Bypasses markdown parsers by concatenating strings.
 const escapeHTML = (str) => {
     if (!str) return "";
     return String(str)
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'"); 
+        .replace(/&/g, "&" + "amp;")
+        .replace(/</g, "&" + "lt;")
+        .replace(/>/g, "&" + "gt;")
+        .replace(/"/g, "&" + "quot;")
+        .replace(/'/g, "&" + "#39;"); 
 };
 
 function parseDateTime(dateStr, timeStr = '') {
@@ -336,7 +337,7 @@ function renderTravelVault() { safeRun('RenderVault', () => {
                 const ref = escapeHTML(cols[9]?.trim());
 
                 const searchStr = (airline + fnum).replace(/\s+/g, '');
-                const trackerLink = searchStr ? `https://flightaware.com/live/flight/${searchStr}` : '#';
+                const trackerLink = searchStr ? "https://flightaware.com/live/flight/" + searchStr : "#";
                 const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${airline} ${fnum} ↗</a>` : `${airline} ${fnum}`;
 
                 html += `
@@ -368,7 +369,6 @@ function renderTravelVault() { safeRun('RenderVault', () => {
                 const dropoffLoc = escapeHTML(cols[8]?.trim());
                 const ref = escapeHTML(cols[9]?.trim());
 
-                // UPDATED: Fixed header title to clearly say "Car Rental"
                 html += `
                 <div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
                     <div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div>
@@ -409,7 +409,7 @@ function renderAccommodations() { safeRun('RenderAcc', () => {
             const imgUrl = escapeHTML(cols[7]?.trim());
 
             const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`;
-            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(address)}`;
+            const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(address);
             
             const ui = `
                 <div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
@@ -463,7 +463,7 @@ function renderItinerary() { safeRun('RenderItin', () => {
             
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
-                const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(searchLoc)}`;
+                const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(searchLoc);
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 const cardHtml = `
                     <div class="admin-card" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;" onclick="toggleComplete(this)">
@@ -516,7 +516,7 @@ const getWeatherIcon = (c) => {
 
 async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
     try { 
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${W_API_KEY}&units=metric`); 
+        const res = await fetch("https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
         if(!res.ok) throw new Error("API Error");
         const d = await res.json(); 
         
@@ -534,7 +534,7 @@ async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
         else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
         document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
 
-        const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${W_API_KEY}&units=metric`); 
+        const fRes = await fetch("https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
         const fData = await fRes.json();
         let forecastHtml = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
             const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
