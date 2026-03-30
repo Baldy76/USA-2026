@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Holiday Planner 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main id="content">
+        <section id="la" class="page" style="display: none;">
+            <h2>Los Angeles 🌴</h2>
+            <p>Ideas and itinerary for LA go here...</p>
+        </section>
+
+        <section id="utah" class="page" style="display: none;">
+            <h2>Utah ⛰️</h2>
+            <p>Ideas and itinerary for Utah go here...</p>
+        </section>
+
+        <section id="home" class="page">
+            <h2>Home 🏠</h2>
+            <p>Welcome to the 2026 Super Holiday Planner!</p>
+        </section>
+
+        <section id="vegas" class="page" style="display: none;">
+            <h2>Las Vegas 🎲</h2>
+            <p>Ideas and itinerary for Vegas go here...</p>
+        </section>
+
+        <section id="admin" class="page" style="display: none;">
+            <h2>Admin ⚙️</h2>
+            <p>Logistics, bookings, and settings go here...</p>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <button onclick="showPage(event, 'la')" class="nav-btn">LA</button>
+        <button onclick="showPage(event, 'utah')" class="nav-btn">Utah</button>
+        <button onclick="showPage(event, 'home')" class="nav-btn active">Home</button>
+        <button onclick="showPage(event, 'vegas')" class="nav-btn">Vegas</button>
+        <button onclick="showPage(event, 'admin')" class="nav-btn">Admin</button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
