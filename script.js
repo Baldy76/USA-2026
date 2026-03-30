@@ -11,36 +11,22 @@ let liveExchangeRate = 1.27;
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     const meta = document.getElementById('theme-meta'); 
-    if (meta) {
-        meta.content = isDark ? "#0b0e14" : "#f2f2f7";
-    }
+    if (meta) { meta.content = isDark ? "#0b0e14" : "#f2f2f7"; }
     
     const btnLight = document.getElementById('btnLight'); 
     const btnDark = document.getElementById('btnDark');
-    
     if (btnLight && btnDark) {
-        if (isDark) { 
-            btnLight.classList.remove('active'); 
-            btnDark.classList.add('active'); 
-        } else { 
-            btnLight.classList.add('active'); 
-            btnDark.classList.remove('active'); 
-        }
+        if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
+        else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
 }
-
-window.setThemeMode = (isDark) => { 
-    applyTheme(isDark); 
-    localStorage.setItem('HolidayPlanner_Theme', isDark); 
-};
+window.setThemeMode = (isDark) => { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); };
 
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.style.display = 'none');
-    
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
     document.getElementById(pageId).style.display = 'block';
     event.currentTarget.classList.add('active');
     window.scrollTo(0,0);
@@ -49,10 +35,8 @@ function showPage(event, pageId) {
 function openWeatherPage() {
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.style.display = 'none');
-    
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
     document.getElementById('weather-root').style.display = 'block';
 }
 
@@ -61,43 +45,29 @@ function switchDayView(day) {
     const tomorrowView = document.getElementById('tomorrow-view');
     const btnToday = document.getElementById('btn-show-today');
     const btnTomorrow = document.getElementById('btn-show-tomorrow');
-    
     if (day === 'today') {
-        todayView.style.display = 'block'; 
-        tomorrowView.style.display = 'none';
-        btnToday.style.backgroundColor = 'var(--accent)'; 
-        btnToday.style.color = 'white';
-        btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; 
-        btnTomorrow.style.color = 'var(--text)';
+        todayView.style.display = 'block'; tomorrowView.style.display = 'none';
+        btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white';
+        btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)';
     } else {
-        todayView.style.display = 'none'; 
-        tomorrowView.style.display = 'block';
-        btnTomorrow.style.backgroundColor = 'var(--accent)'; 
-        btnTomorrow.style.color = 'white';
-        btnToday.style.backgroundColor = 'var(--ios-grey)'; 
-        btnToday.style.color = 'var(--text)';
+        todayView.style.display = 'none'; tomorrowView.style.display = 'block';
+        btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white';
+        btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)';
     }
 }
 
 function toggleComplete(element) {
     if (element.style.opacity === '0.5') {
-        element.style.opacity = '1';
-        element.style.transform = 'scale(1)';
+        element.style.opacity = '1'; element.style.transform = 'scale(1)';
     } else {
-        element.style.opacity = '0.5';
-        element.style.transform = 'scale(0.98)';
+        element.style.opacity = '0.5'; element.style.transform = 'scale(0.98)';
     }
 }
 
-// AUDITED: Replaced error-prone quote replacements with absolutely safe HTML entity codes.
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;'); 
+    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
+        .replace(/"/g, '"').replace(/'/g, '''); 
 };
 
 // ==========================================
@@ -137,22 +107,17 @@ function updateTimeAndCountdown() {
         const tripDate = new Date(savedStart);
         tripDate.setHours(0,0,0,0);
         const diff = tripDate - now;
-        
         if (diff > 0) {
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
             document.getElementById('cd-text').innerHTML = `🚀 ${days} Days to Go!`;
-            cContainer.style.display = 'block'; 
-            clockContainer.style.display = 'none';
+            cContainer.style.display = 'block'; clockContainer.style.display = 'none';
             return; 
         }
     } 
     
-    cContainer.style.display = 'none'; 
-    clockContainer.style.display = 'block';
-    
+    cContainer.style.display = 'none'; clockContainer.style.display = 'block';
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
     const ptTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' }).format(now);
-    
     document.getElementById('clock-uk').innerText = ukTime;
     document.getElementById('clock-local').innerText = ptTime;
 }
@@ -162,11 +127,19 @@ function saveTripSettings() {
     updateTimeAndCountdown(); 
 }
 
+// UPDATED: Save 6 individual flight fields
 function saveTravelVault() {
-    localStorage.setItem('travelVault', JSON.stringify({
-        flight: document.getElementById('vault-flight').value,
-        car: document.getElementById('vault-car').value
-    }));
+    const flight = {
+        dep: document.getElementById('vault-dep').value.trim(),
+        arr: document.getElementById('vault-arr').value.trim(),
+        airline: document.getElementById('vault-airline').value.trim(),
+        fnum: document.getElementById('vault-fnum').value.trim(),
+        term: document.getElementById('vault-term').value.trim(),
+        ref: document.getElementById('vault-ref').value.trim()
+    };
+    const car = document.getElementById('vault-car').value;
+    
+    localStorage.setItem('travelVault', JSON.stringify({flight, car}));
     
     const msg = document.getElementById('vault-save-msg');
     msg.style.display = 'block'; 
@@ -174,31 +147,42 @@ function saveTravelVault() {
     renderTravelVault();
 }
 
+// UPDATED: Render beautiful Boarding Pass from individual fields
 function renderTravelVault() {
     const vault = JSON.parse(localStorage.getItem('travelVault')) || null;
     const display = document.getElementById('today-vault-display');
     
-    if (vault && (vault.flight || vault.car)) {
-        document.getElementById('vault-flight').value = vault.flight || '';
+    if (vault) {
+        // Populate inputs if data exists (handles legacy string data wipe elegantly)
+        let f = vault.flight;
+        if (typeof f === 'string' || !f) f = { dep:'', arr:'', airline:'', fnum:'', term:'', ref:'' };
+
+        document.getElementById('vault-dep').value = f.dep || '';
+        document.getElementById('vault-arr').value = f.arr || '';
+        document.getElementById('vault-airline').value = f.airline || '';
+        document.getElementById('vault-fnum').value = f.fnum || '';
+        document.getElementById('vault-term').value = f.term || '';
+        document.getElementById('vault-ref').value = f.ref || '';
+        
         document.getElementById('vault-car').value = vault.car || '';
 
-        const fParts = (vault.flight || "").split('|').map(s => s.trim());
         let flightHtml = "";
         
-        if (fParts.length >= 3) {
+        // Only draw the boarding pass if they have entered at least Dep and Arr
+        if (f.dep || f.arr || f.fnum) {
             flightHtml = `
             <div class="flight-card">
                 <div class="flight-header">
-                    <span class="flight-num">FLIGHT ${escapeHTML(fParts[2])}</span>
-                    <span style="font-size:12px; font-weight:800; opacity:0.8;">BOARDING PASS</span>
+                    <span class="flight-num">${escapeHTML(f.airline)} ${escapeHTML(f.fnum)}</span>
+                    <span style="font-size:12px; font-weight:800; opacity:0.8;">REF: ${escapeHTML(f.ref)}</span>
                 </div>
                 <div class="flight-path">
-                    <div class="path-node"><span>From</span><strong>${escapeHTML(fParts[0])}</strong></div>
+                    <div class="path-node"><span>From</span><strong>${escapeHTML(f.dep)}</strong></div>
                     <div class="plane-icon"></div>
-                    <div class="path-node"><span>To</span><strong>${escapeHTML(fParts[1])}</strong></div>
+                    <div class="path-node"><span>To</span><strong>${escapeHTML(f.arr)}</strong></div>
                 </div>
-                <div style="margin-top:15px; font-size:13px; font-weight:700; opacity:0.9; text-align:center;">
-                    ${escapeHTML(fParts[3]) || "Check terminal for gate info"}
+                <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                    <span>Terminal/Gate: ${escapeHTML(f.term) || "Check Screens"}</span>
                 </div>
             </div>`;
         }
@@ -207,7 +191,7 @@ function renderTravelVault() {
             ${flightHtml}
             ${vault.car ? `<div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
                 <div style="font-size:11px; font-weight:800; opacity:0.5; text-transform:uppercase;">🚗 Rental Reference</div>
-                <div style="font-size:16px; font-weight:700; margin-top:5px;">${escapeHTML(vault.car)}</div>
+                <div style="font-size:16px; font-weight:700; margin-top:5px; white-space: pre-wrap;">${escapeHTML(vault.car)}</div>
             </div>` : ''}
         `;
     } else { 
@@ -222,15 +206,12 @@ async function loadItinerary() {
     try {
         const response = await fetch(sheetUrl);
         const data = await response.text();
-        
-        // AUDITED: Better regex splitting handles normal CSV parsing safely.
         const rows = data.split('\n').slice(1); 
         let rawData = rows.filter(row => row.trim() !== ''); 
         
         function parseDateTime(dateStr, timeStr) {
             dateStr = dateStr ? dateStr.trim() : '';
             timeStr = timeStr ? timeStr.trim() : '';
-            
             let d = new Date(`${dateStr} ${timeStr}`);
             if (isNaN(d)) {
                 const parts = dateStr.split(/[-/]/);
@@ -240,8 +221,7 @@ async function loadItinerary() {
         }
 
         rawData.sort((a, b) => {
-            const ca = a.split(','); 
-            const cb = b.split(',');
+            const ca = a.split(','); const cb = b.split(',');
             if (ca.length < 5 || cb.length < 5) return 0;
             return parseDateTime(ca[0], ca[3]) - parseDateTime(cb[0], cb[3]);
         });
@@ -253,18 +233,14 @@ async function loadItinerary() {
                 sheetFamilies.add(col[4].trim());
             }
         });
-        
         populateDropdown();
         renderItinerary();
-    } catch (e) { 
-        console.error(e); 
-    }
+    } catch (e) { console.error(e); }
 }
 
 function populateDropdown() {
     const mainSelect = document.getElementById('family-selector');
     const accSelect = document.getElementById('acc-family'); 
-    
     mainSelect.innerHTML = '<option value="All">Show All Activities</option>';
     if (accSelect) accSelect.innerHTML = '';
     
@@ -272,9 +248,7 @@ function populateDropdown() {
     const allFamilies = new Set([...sheetFamilies, ...customFamilies]);
     
     allFamilies.forEach(f => {
-        const opt = document.createElement('option'); 
-        opt.value = f; 
-        opt.textContent = f;
+        const opt = document.createElement('option'); opt.value = f; opt.textContent = f;
         mainSelect.appendChild(opt);
         if (accSelect) accSelect.appendChild(opt.cloneNode(true));
     });
@@ -310,22 +284,15 @@ function saveAccommodation() {
     const link = document.getElementById('acc-link').value.trim();
     const image = document.getElementById('acc-image').value.trim();
     
-    if (!family || !address || !start || !end) { 
-        alert("Missing details!"); return; 
-    }
+    if (!family || !address || !start || !end) { alert("Missing details!"); return; }
     
     let accData = JSON.parse(localStorage.getItem('accommodations')) || {};
     if (!accData[city]) accData[city] = {};
-    
     accData[city][family] = { address, start, end, link, image };
     localStorage.setItem('accommodations', JSON.stringify(accData));
     
-    document.getElementById('acc-address').value = ''; 
-    document.getElementById('acc-start').value = '';
-    document.getElementById('acc-end').value = ''; 
-    document.getElementById('acc-link').value = ''; 
-    document.getElementById('acc-image').value = '';
-    
+    document.getElementById('acc-address').value = ''; document.getElementById('acc-start').value = '';
+    document.getElementById('acc-end').value = ''; document.getElementById('acc-link').value = ''; document.getElementById('acc-image').value = '';
     renderAccommodations();
 }
 
@@ -333,10 +300,7 @@ function renderAccommodations() {
     const filter = document.getElementById('family-selector').value;
     const data = JSON.parse(localStorage.getItem('accommodations')) || {};
     const cities = [{ id: 'la', key: 'LA' }, { id: 'utah', key: 'Utah' }, { id: 'vegas', key: 'Vegas' }];
-    
-    const today = new Date(); 
-    today.setHours(0,0,0,0);
-    
+    const today = new Date(); today.setHours(0,0,0,0);
     let todayHtml = '';
 
     cities.forEach(c => {
@@ -349,11 +313,10 @@ function renderAccommodations() {
         const processCard = (f, acc) => {
             const address = acc.address || acc;
             const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-            // AUDITED: Perfect Maps URL Format
             const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
             
             const ui = `
-                <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
+                <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15);">
                     <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
                         <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(f)} Stay</h3>
                     </div>
@@ -365,26 +328,17 @@ function renderAccommodations() {
                         </div>
                     </div>
                 </div>`;
-                
             cHtml += ui;
             
             if (acc.start && acc.end) {
-                const sDate = new Date(acc.start);
-                const eDate = new Date(acc.end);
-                sDate.setHours(0,0,0,0);
-                eDate.setHours(23,59,59,999);
-                if (today >= sDate && today <= eDate) {
-                    todayHtml += ui;
-                }
+                const sDate = new Date(acc.start); const eDate = new Date(acc.end);
+                sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999);
+                if (today >= sDate && today <= eDate) todayHtml += ui;
             }
         };
 
-        if (filter !== 'All' && cityData[filter]) {
-            processCard(filter, cityData[filter]);
-        } else if (filter === 'All') {
-            Object.entries(cityData).forEach(([f, acc]) => processCard(f, acc));
-        }
-        
+        if (filter !== 'All' && cityData[filter]) processCard(filter, cityData[filter]); 
+        else if (filter === 'All') Object.entries(cityData).forEach(([f, acc]) => processCard(f, acc));
         container.innerHTML = cHtml;
     });
     
@@ -394,31 +348,21 @@ function renderAccommodations() {
 
 function renderItinerary() {
     const filter = document.getElementById('family-selector').value;
-    
     let hLA = '', hUtah = '', hVegas = '', hToday = '', hTomorrow = '';
     let lLA = '', lUtah = '', lVegas = '';
     let tCount = 0, tmCount = 0;
-    
-    const today = new Date(); 
-    const tomorrow = new Date(); 
-    tomorrow.setDate(tomorrow.getDate() + 1); 
+    const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
     
     itineraryData.forEach(row => {
         const col = row.split(','); 
         if(col.length >= 5) {
-            const d = col[0].trim(); 
-            const loc = col[1].trim(); 
-            const act = col[2].trim();
-            const time = col[3].trim(); 
-            const who = col[4].trim(); 
+            const d = col[0].trim(); const loc = col[1].trim(); const act = col[2].trim();
+            const time = col[3].trim(); const who = col[4].trim(); 
             const addr = (col.length >= 6) ? col[5].trim() : '';
             
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
-                
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
-                // AUDITED: Perfect Maps URL Format
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
-                
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 
                 const cardHtml = `
@@ -447,10 +391,7 @@ function renderItinerary() {
                 
                 const isDateMatch = (s, target) => { 
                     let dt = new Date(s); 
-                    if(isNaN(dt)) { 
-                        const p = s.split(/[-/]/); 
-                        dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); 
-                    } 
+                    if(isNaN(dt)) { const p = s.split(/[-/]/); dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); } 
                     return dt.toDateString() === target.toDateString(); 
                 };
                 
@@ -469,10 +410,7 @@ function renderItinerary() {
     renderAccommodations();
 }
 
-function updateFamilyFilter() { 
-    localStorage.setItem('savedFamilyFilter', document.getElementById('family-selector').value); 
-    renderItinerary(); 
-}
+function updateFamilyFilter() { localStorage.setItem('savedFamilyFilter', document.getElementById('family-selector').value); renderItinerary(); }
 
 // ==========================================
 // 5. WEATHER ENGINE & INIT
@@ -505,7 +443,7 @@ async function initWeather() {
                 }).join('');
                 
                 if (wDash) wDash.innerHTML = `
-                    <div class="WTH-hero">
+                    <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
                         <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
                         <div class="WTH-hero-temp">${Math.round(d.main.temp)}°C</div>
                         <div class="WTH-hero-desc">${d.weather[0].description}</div>
