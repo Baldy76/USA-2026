@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v1.0.6';
+const CACHE_NAME = 'holiday-planner-v1.0.7';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -28,7 +28,6 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // IMPORTANT: Bypass cache for BOTH Google Sheets and OpenWeatherMap APIs
     if (event.request.url.includes('docs.google.com') || event.request.url.includes('openweathermap.org')) {
         return; 
     }
