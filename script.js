@@ -6,7 +6,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 1. THEME & UI HELPERS
+// 1. THEME & UI HELPERS (Optimized for Speed)
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -16,44 +16,69 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    updateMetaThemeColor();
 }
-window.setThemeMode = (isDark) => { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); };
+window.setThemeMode = (isDark) => { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+    
+    // Quick Meta Color Update
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) {
+        if (document.body.classList.contains('theme-la')) meta.content = '#ff9500';
+        else if (document.body.classList.contains('theme-utah')) meta.content = '#ff3b30';
+        else if (document.body.classList.contains('theme-vegas')) meta.content = '#af52de';
+        else meta.content = isDark ? "#0b0e14" : "#f2f2f7";
+    }
+};
 
-function updateMetaThemeColor() {
-    setTimeout(() => {
-        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
-        const meta = document.getElementById('theme-meta'); 
-        if (meta && accentColor) meta.content = accentColor;
-    }, 50); 
-}
-
+// PERFORMANCE FIX: Added fade-in animation and removed layout thrashing
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.style.display = 'none');
+    pages.forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('fade-in'); 
+    });
     
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     
-    document.getElementById(pageId).style.display = 'block';
+    const activePage = document.getElementById(pageId);
+    activePage.style.display = 'block';
+    
+    // Trigger tiny reflow to restart the smooth fade animation
+    void activePage.offsetWidth; 
+    activePage.classList.add('fade-in');
+
     event.currentTarget.classList.add('active');
     window.scrollTo(0,0);
 
-    // Apply Dynamic City Themes
+    // Apply Dynamic City Themes instantly (no getComputedStyle delay)
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
-    if (pageId === 'la') document.body.classList.add('theme-la');
-    else if (pageId === 'utah') document.body.classList.add('theme-utah');
-    else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
+    let metaColor = document.body.classList.contains('dark-mode') ? '#0b0e14' : '#f2f2f7';
+
+    if (pageId === 'la') { document.body.classList.add('theme-la'); metaColor = '#ff9500'; }
+    else if (pageId === 'utah') { document.body.classList.add('theme-utah'); metaColor = '#ff3b30'; }
+    else if (pageId === 'vegas') { document.body.classList.add('theme-vegas'); metaColor = '#af52de'; }
+    else { metaColor = '#007aff'; }
     
-    updateMetaThemeColor();
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) meta.content = metaColor;
 }
 
 function openWeatherPage() {
     const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.style.display = 'none');
+    pages.forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('fade-in'); 
+    });
+    
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    document.getElementById('weather-root').style.display = 'block';
+    
+    const wPage = document.getElementById('weather-root');
+    wPage.style.display = 'block';
+    void wPage.offsetWidth; 
+    wPage.classList.add('fade-in');
 }
 
 function switchDayView(day) {
@@ -61,14 +86,20 @@ function switchDayView(day) {
     const tomorrowView = document.getElementById('tomorrow-view');
     const btnToday = document.getElementById('btn-show-today');
     const btnTomorrow = document.getElementById('btn-show-tomorrow');
+    
+    todayView.classList.remove('fade-in');
+    tomorrowView.classList.remove('fade-in');
+
     if (day === 'today') {
         todayView.style.display = 'block'; tomorrowView.style.display = 'none';
         btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white';
         btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)';
+        void todayView.offsetWidth; todayView.classList.add('fade-in');
     } else {
         todayView.style.display = 'none'; tomorrowView.style.display = 'block';
         btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white';
         btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)';
+        void tomorrowView.offsetWidth; tomorrowView.classList.add('fade-in');
     }
 }
 
@@ -84,11 +115,11 @@ function toggleComplete(element) {
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;'); 
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+        .replace(/'/g, '''); 
 };
 
 // ==========================================
@@ -282,9 +313,7 @@ async function loadItinerary() {
         
         populateDropdown();
         renderItinerary();
-    } catch (e) { 
-        console.error(e); 
-    }
+    } catch (e) { console.error(e); }
 }
 
 function populateDropdown() {
@@ -323,7 +352,7 @@ function addCustomFamily() {
 }
 
 // ==========================================
-// 4. ACCOMMODATION & ITINERARY LOGIC
+// 4. ACCOMMODATION LOGIC
 // ==========================================
 function saveAccommodation() {
     const city = document.getElementById('acc-city').value;
@@ -369,11 +398,10 @@ function renderAccommodations() {
         const processCard = (f, acc) => {
             const address = acc.address || acc;
             const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
-            // PERFECTED: Using the official Google Maps Directions API URL
             const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
             
             const ui = `
-                <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
+                <div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
                     <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
                         <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(f)} Stay</h3>
                     </div>
@@ -433,7 +461,6 @@ function renderItinerary() {
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
-                // PERFECTED: Using the official Google Maps Directions API URL
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 
@@ -531,9 +558,9 @@ async function initWeather() {
                 }).join('');
                 
                 if (wDash) wDash.innerHTML = `
-                    <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+                    <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
                         <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
-                        <div class="WTH-hero-temp">${Math.round(d.main.temp)}°C</div>
+                        <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
                         <div class="WTH-hero-desc">${d.weather[0].description}</div>
                         <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
                             📍 ${escapeHTML(d.name)}
@@ -556,12 +583,20 @@ async function initWeather() {
 // ==========================================
 window.onload = () => {
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
+    
+    // Auto-trigger Home theme setup
+    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
+    updateMetaThemeColor();
+    
     updateTimeAndCountdown();
     setInterval(updateTimeAndCountdown, 60000); 
     renderTravelVault();
     initWeather();
     initLiveCurrency(); 
     loadItinerary();
+    
+    // Initial fade in for home
+    document.getElementById('home').classList.add('fade-in');
 };
 
 if ('serviceWorker' in navigator) {
