@@ -6,7 +6,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 1. THEME & UI HELPERS (Optimized for Speed)
+// 1. THEME & UI HELPERS
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -16,69 +16,44 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
+    updateMetaThemeColor();
 }
-window.setThemeMode = (isDark) => { 
-    applyTheme(isDark); 
-    localStorage.setItem('HolidayPlanner_Theme', isDark); 
-    
-    // Quick Meta Color Update
-    const meta = document.getElementById('theme-meta'); 
-    if (meta) {
-        if (document.body.classList.contains('theme-la')) meta.content = '#ff9500';
-        else if (document.body.classList.contains('theme-utah')) meta.content = '#ff3b30';
-        else if (document.body.classList.contains('theme-vegas')) meta.content = '#af52de';
-        else meta.content = isDark ? "#0b0e14" : "#f2f2f7";
-    }
-};
+window.setThemeMode = (isDark) => { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); };
 
-// PERFORMANCE FIX: Added fade-in animation and removed layout thrashing
+function updateMetaThemeColor() {
+    setTimeout(() => {
+        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+        const meta = document.getElementById('theme-meta'); 
+        if (meta && accentColor) meta.content = accentColor;
+    }, 50); 
+}
+
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-        page.style.display = 'none';
-        page.classList.remove('fade-in'); 
-    });
+    pages.forEach(page => page.style.display = 'none');
     
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     
-    const activePage = document.getElementById(pageId);
-    activePage.style.display = 'block';
-    
-    // Trigger tiny reflow to restart the smooth fade animation
-    void activePage.offsetWidth; 
-    activePage.classList.add('fade-in');
-
+    document.getElementById(pageId).style.display = 'block';
     event.currentTarget.classList.add('active');
     window.scrollTo(0,0);
 
-    // Apply Dynamic City Themes instantly (no getComputedStyle delay)
+    // Apply Dynamic City Themes
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
-    let metaColor = document.body.classList.contains('dark-mode') ? '#0b0e14' : '#f2f2f7';
-
-    if (pageId === 'la') { document.body.classList.add('theme-la'); metaColor = '#ff9500'; }
-    else if (pageId === 'utah') { document.body.classList.add('theme-utah'); metaColor = '#ff3b30'; }
-    else if (pageId === 'vegas') { document.body.classList.add('theme-vegas'); metaColor = '#af52de'; }
-    else { metaColor = '#007aff'; }
+    if (pageId === 'la') document.body.classList.add('theme-la');
+    else if (pageId === 'utah') document.body.classList.add('theme-utah');
+    else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
     
-    const meta = document.getElementById('theme-meta'); 
-    if (meta) meta.content = metaColor;
+    updateMetaThemeColor();
 }
 
 function openWeatherPage() {
     const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-        page.style.display = 'none';
-        page.classList.remove('fade-in'); 
-    });
-    
+    pages.forEach(page => page.style.display = 'none');
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
-    const wPage = document.getElementById('weather-root');
-    wPage.style.display = 'block';
-    void wPage.offsetWidth; 
-    wPage.classList.add('fade-in');
+    document.getElementById('weather-root').style.display = 'block';
 }
 
 function switchDayView(day) {
@@ -86,20 +61,14 @@ function switchDayView(day) {
     const tomorrowView = document.getElementById('tomorrow-view');
     const btnToday = document.getElementById('btn-show-today');
     const btnTomorrow = document.getElementById('btn-show-tomorrow');
-    
-    todayView.classList.remove('fade-in');
-    tomorrowView.classList.remove('fade-in');
-
     if (day === 'today') {
         todayView.style.display = 'block'; tomorrowView.style.display = 'none';
         btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white';
         btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)';
-        void todayView.offsetWidth; todayView.classList.add('fade-in');
     } else {
         todayView.style.display = 'none'; tomorrowView.style.display = 'block';
         btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white';
         btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)';
-        void tomorrowView.offsetWidth; tomorrowView.classList.add('fade-in');
     }
 }
 
@@ -111,7 +80,6 @@ function toggleComplete(element) {
     }
 }
 
-// 100% BULLETPROOF HTML ESCAPER - Will absolutely never crash JavaScript.
 const escapeHTML = (str) => {
     if (!str) return '';
     return String(str)
@@ -212,7 +180,7 @@ function saveTravelVault() {
         airline: document.getElementById('vault-airline').value.trim().toUpperCase(),
         fnum: document.getElementById('vault-fnum').value.trim(),
         term: document.getElementById('vault-term').value.trim(),
-        ref: document.getElementById('vault-ref').value.trim()
+        time: document.getElementById('vault-time').value.trim() // UPDATED
     };
     const car = document.getElementById('vault-car').value;
     
@@ -230,14 +198,18 @@ function renderTravelVault() {
     
     if (vault) {
         let f = vault.flight;
-        if (typeof f === 'string' || !f) f = { dep:'', arr:'', airline:'', fnum:'', term:'', ref:'' };
+        if (typeof f === 'string' || !f) f = { dep:'', arr:'', airline:'', fnum:'', term:'', time:'' };
+
+        // Safeguard to pull in old 'ref' data if they haven't re-saved yet
+        const flightTime = f.time || f.ref || '';
 
         document.getElementById('vault-dep').value = f.dep || '';
         document.getElementById('vault-arr').value = f.arr || '';
         document.getElementById('vault-airline').value = f.airline || '';
         document.getElementById('vault-fnum').value = f.fnum || '';
         document.getElementById('vault-term').value = f.term || '';
-        document.getElementById('vault-ref').value = f.ref || '';
+        document.getElementById('vault-time').value = flightTime;
+        
         document.getElementById('vault-car').value = vault.car || '';
 
         let flightHtml = "";
@@ -251,7 +223,7 @@ function renderTravelVault() {
             <div class="flight-card">
                 <div class="flight-header">
                     <span class="flight-num">${linkHtml}</span>
-                    <span style="font-size:12px; font-weight:800; opacity:0.8;">REF: ${escapeHTML(f.ref)}</span>
+                    <span style="font-size:12px; font-weight:800; opacity:0.8;">TIME: ${escapeHTML(flightTime)}</span>
                 </div>
                 <div class="flight-path">
                     <div class="path-node"><span>From</span><strong>${escapeHTML(f.dep)}</strong></div>
@@ -313,7 +285,9 @@ async function loadItinerary() {
         
         populateDropdown();
         renderItinerary();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+    }
 }
 
 function populateDropdown() {
@@ -596,7 +570,11 @@ window.onload = () => {
     loadItinerary();
     
     // Initial fade in for home
-    document.getElementById('home').classList.add('fade-in');
+    const homeEl = document.getElementById('home');
+    if (homeEl) {
+        void homeEl.offsetWidth;
+        homeEl.classList.add('fade-in');
+    }
 };
 
 if ('serviceWorker' in navigator) {
