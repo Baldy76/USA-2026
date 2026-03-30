@@ -29,7 +29,7 @@ body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg,
 /* 2. General Styling */
 body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg); color: var(--text); padding-bottom: 120px; 
+    background-color: var(--bg); color: var(--text); padding-bottom: 140px; /* Extra padding for floating nav */
     transition: background-color 0.3s ease; position: relative;
 }
 
@@ -37,14 +37,13 @@ body::before {
     content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--bg-image); background-size: cover; background-position: center;
     opacity: 0.15; z-index: -1; pointer-events: none; 
-    /* Removed heavy transition here to fix lag */
 }
 body.dark-mode::before { opacity: 0.06; }
 
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
 .page { padding: 20px; max-width: 600px; margin: 0 auto; }
 
-/* PERFORMANCE FIX: Snappier, lighter animation */
+/* Smooth Page Transitions */
 .fade-in {
     animation: fadeIn 0.2s ease-out forwards;
     will-change: opacity, transform;
@@ -77,12 +76,12 @@ h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text);
 
 /* 4. Navigation */
 .bottom-nav {
-    position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around;
+    position: fixed; bottom: 30px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around;
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 10px 30px var(--shadow); padding: 10px; border-radius: 35px; z-index: 1000;
-    transform: translateZ(0); /* Hardware Acceleration */
+    border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 15px 35px var(--shadow); padding: 12px 10px; border-radius: 40px; z-index: 1000;
+    transform: translateZ(0); 
 }
-body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px solid rgba(255,255,255,0.05); }
+body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px solid rgba(255,255,255,0.08); }
 .nav-btn {
     background: transparent; border: none; color: var(--text); opacity: 0.5; font-size: 11px; font-weight: 800; cursor: pointer; padding: 8px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; border-radius: 25px;
 }
@@ -94,7 +93,7 @@ body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px sol
 .admin-card, .skel-card, .weather-pill, .WTH-hero, .WTH-card, #countdown-display, #dual-clocks {
     background: var(--card); border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); text-align: left; border: 1px solid rgba(255,255,255,0.3); 
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
-    transform: translateZ(0); /* Hardware Acceleration to stop lag */
+    transform: translateZ(0); 
 }
 body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-pill, body.dark-mode .WTH-hero, body.dark-mode .WTH-card, body.dark-mode #countdown-display, body.dark-mode #dual-clocks { border: 1px solid rgba(255,255,255,0.05); }
 .admin-card { padding: 24px; }
