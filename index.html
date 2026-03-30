@@ -44,7 +44,7 @@
                     <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
                 </div>
 
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
+                <div id="dual-clocks" style="display: none; padding: 24px 20px;">
                     <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
                         <div>
                             <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
@@ -74,7 +74,7 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
-            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; background: var(--accent-gradient); color: white;">
+            <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 15px 20px; margin-bottom: 24px; background: var(--accent-gradient); color: white; border: none;">
                 <div style="font-size: 36px;">💱</div>
                 <div style="flex: 1;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -93,7 +93,7 @@
 
             <div style="display: flex; gap: 10px; margin-bottom: 20px; margin-top: 30px;">
                 <button id="btn-show-today" class="action-btn" style="flex: 1;" onclick="switchDayView('today')">Today</button>
-                <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
+                <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background: rgba(229, 229, 234, 0.4); color: var(--text);" onclick="switchDayView('tomorrow')">Tomorrow</button>
             </div>
             
             <div id="today-view">
@@ -185,7 +185,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.3.1</div>
+            <div class="version-control">ULTIMATE PLANNER // v1.3.2</div>
         </section>
     </main>
 
