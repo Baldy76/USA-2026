@@ -6,7 +6,7 @@ let sheetFamilies = new Set();
 let liveExchangeRate = 1.27; 
 
 // ==========================================
-// 1. THEME & UI HELPERS (Now with City Themes)
+// 1. THEME & UI HELPERS
 // ==========================================
 function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -25,19 +25,21 @@ function updateMetaThemeColor() {
         const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
         const meta = document.getElementById('theme-meta'); 
         if (meta && accentColor) meta.content = accentColor;
-    }, 50); // Small delay to let CSS variables transition
+    }, 50); 
 }
 
 function showPage(event, pageId) {
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.style.display = 'none');
+    
     const buttons = document.querySelectorAll('.nav-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
+    
     document.getElementById(pageId).style.display = 'block';
     event.currentTarget.classList.add('active');
     window.scrollTo(0,0);
 
-    // NEW: Apply Dynamic City Themes
+    // Apply Dynamic City Themes
     document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas');
     if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
@@ -78,16 +80,20 @@ function toggleComplete(element) {
     }
 }
 
+// 100% BULLETPROOF HTML ESCAPER - Will absolutely never crash JavaScript.
 const escapeHTML = (str) => {
     if (!str) return '';
-    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '''); 
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;'); 
 };
 
 // ==========================================
-// 2. DASHBOARD ENGINES (Vault, Currencies, Tipping)
+// 2. DASHBOARD ENGINES
 // ==========================================
-
-// --- NEW: Tip & Split Calculator ---
 let currentTipPercent = 18;
 
 function setTip(percent, btnElement) {
@@ -103,13 +109,11 @@ function calculateTip() {
     
     const totalWithTip = billTotal * (1 + (currentTipPercent / 100));
     const perFamilyUsd = totalWithTip / splitWays;
-    // liveExchangeRate is USD per GBP. So USD / Rate = GBP.
     const perFamilyGbp = perFamilyUsd / liveExchangeRate; 
     
     document.getElementById('tip-usd').innerText = `$${perFamilyUsd.toFixed(2)}`;
     document.getElementById('tip-gbp').innerText = `£${perFamilyGbp.toFixed(2)}`;
 }
-// -----------------------------------
 
 async function initLiveCurrency() {
     try {
@@ -145,19 +149,22 @@ function updateTimeAndCountdown() {
         const tripDate = new Date(savedStart);
         tripDate.setHours(0,0,0,0);
         const diff = tripDate - now;
+        
         if (diff > 0) {
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
             document.getElementById('cd-text').innerHTML = `🚀 ${days} Days to Go!`;
-            cContainer.style.display = 'block'; clockContainer.style.display = 'none';
+            cContainer.style.display = 'block'; 
+            clockContainer.style.display = 'none';
             return; 
         }
     } 
     
-    cContainer.style.display = 'none'; clockContainer.style.display = 'block';
+    cContainer.style.display = 'none'; 
+    clockContainer.style.display = 'block';
     
-    // Explicitly fallback to LA/Vegas PT timezone if not explicitly set by the device context
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
     const ptTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' }).format(now);
+    
     document.getElementById('clock-uk').innerText = ukTime;
     document.getElementById('clock-local').innerText = ptTime;
 }
@@ -205,8 +212,6 @@ function renderTravelVault() {
         let flightHtml = "";
         
         if (f.dep || f.arr || f.fnum) {
-            // NEW: Generate the Live Flight Tracker Link
-            // Removes spaces from airline/fnum to build a clean string like "BA269"
             const searchStr = (f.airline + f.fnum).replace(/\s+/g, '');
             const trackerLink = searchStr ? `https://flightaware.com/live/flight/${searchStr}` : '#';
             const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${escapeHTML(f.airline)} ${escapeHTML(f.fnum)} ↗</a>` : `${escapeHTML(f.airline)} ${escapeHTML(f.fnum)}`;
@@ -270,17 +275,22 @@ async function loadItinerary() {
         itineraryData = rawData;
         itineraryData.forEach(row => {
             const col = row.split(',');
-            if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') sheetFamilies.add(col[4].trim());
+            if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') {
+                sheetFamilies.add(col[4].trim());
+            }
         });
         
         populateDropdown();
         renderItinerary();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+    }
 }
 
 function populateDropdown() {
     const mainSelect = document.getElementById('family-selector');
     const accSelect = document.getElementById('acc-family'); 
+    
     mainSelect.innerHTML = '<option value="All">Show All Activities</option>';
     if (accSelect) accSelect.innerHTML = '';
     
@@ -313,7 +323,7 @@ function addCustomFamily() {
 }
 
 // ==========================================
-// 4. ACCOMMODATION LOGIC
+// 4. ACCOMMODATION & ITINERARY LOGIC
 // ==========================================
 function saveAccommodation() {
     const city = document.getElementById('acc-city').value;
@@ -328,11 +338,13 @@ function saveAccommodation() {
     
     let accData = JSON.parse(localStorage.getItem('accommodations')) || {};
     if (!accData[city]) accData[city] = {};
+    
     accData[city][family] = { address, start, end, link, image };
     localStorage.setItem('accommodations', JSON.stringify(accData));
     
     document.getElementById('acc-address').value = ''; document.getElementById('acc-start').value = '';
-    document.getElementById('acc-end').value = ''; document.getElementById('acc-link').value = ''; document.getElementById('acc-image').value = '';
+    document.getElementById('acc-end').value = ''; document.getElementById('acc-link').value = ''; 
+    document.getElementById('acc-image').value = '';
     
     renderAccommodations();
 }
@@ -341,7 +353,10 @@ function renderAccommodations() {
     const filter = document.getElementById('family-selector').value;
     const data = JSON.parse(localStorage.getItem('accommodations')) || {};
     const cities = [{ id: 'la', key: 'LA' }, { id: 'utah', key: 'Utah' }, { id: 'vegas', key: 'Vegas' }];
-    const today = new Date(); today.setHours(0,0,0,0);
+    
+    const today = new Date(); 
+    today.setHours(0,0,0,0);
+    
     let todayHtml = '';
 
     cities.forEach(c => {
@@ -354,10 +369,11 @@ function renderAccommodations() {
         const processCard = (f, acc) => {
             const address = acc.address || acc;
             const headerBg = acc.image ? `url('${acc.image}') center/cover` : `var(--accent)`;
+            // PERFECTED: Using the official Google Maps Directions API URL
             const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
             
             const ui = `
-                <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15);">
+                <div style="background: var(--card); border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px var(--shadow); margin-bottom: 24px; text-align: left;">
                     <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
                         <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(f)} Stay</h3>
                     </div>
@@ -369,17 +385,25 @@ function renderAccommodations() {
                         </div>
                     </div>
                 </div>`;
+                
             cHtml += ui;
             
             if (acc.start && acc.end) {
-                const sDate = new Date(acc.start); const eDate = new Date(acc.end);
-                sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999);
-                if (today >= sDate && today <= eDate) todayHtml += ui;
+                const sDate = new Date(acc.start);
+                const eDate = new Date(acc.end);
+                sDate.setHours(0,0,0,0);
+                eDate.setHours(23,59,59,999);
+                if (today >= sDate && today <= eDate) {
+                    todayHtml += ui;
+                }
             }
         };
 
-        if (filter !== 'All' && cityData[filter]) processCard(filter, cityData[filter]); 
-        else if (filter === 'All') Object.entries(cityData).forEach(([f, acc]) => processCard(f, acc));
+        if (filter !== 'All' && cityData[filter]) {
+            processCard(filter, cityData[filter]);
+        } else if (filter === 'All') {
+            Object.entries(cityData).forEach(([f, acc]) => processCard(f, acc));
+        }
         
         container.innerHTML = cHtml;
     });
@@ -390,10 +414,14 @@ function renderAccommodations() {
 
 function renderItinerary() {
     const filter = document.getElementById('family-selector').value;
+    
     let hLA = '', hUtah = '', hVegas = '', hToday = '', hTomorrow = '';
     let lLA = '', lUtah = '', lVegas = '';
     let tCount = 0, tmCount = 0;
-    const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
+    
+    const today = new Date(); 
+    const tomorrow = new Date(); 
+    tomorrow.setDate(tomorrow.getDate() + 1); 
     
     itineraryData.forEach(row => {
         const col = row.split(','); 
@@ -403,7 +431,9 @@ function renderItinerary() {
             const addr = (col.length >= 6) ? col[5].trim() : '';
             
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
+                
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
+                // PERFECTED: Using the official Google Maps Directions API URL
                 const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(searchLoc)}`;
                 const addressDisplayHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
                 
@@ -433,7 +463,10 @@ function renderItinerary() {
                 
                 const isDateMatch = (s, target) => { 
                     let dt = new Date(s); 
-                    if(isNaN(dt)) { const p = s.split(/[-/]/); dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); } 
+                    if(isNaN(dt)) { 
+                        const p = s.split(/[-/]/); 
+                        dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); 
+                    } 
                     return dt.toDateString() === target.toDateString(); 
                 };
                 
@@ -452,10 +485,13 @@ function renderItinerary() {
     renderAccommodations();
 }
 
-function updateFamilyFilter() { localStorage.setItem('savedFamilyFilter', document.getElementById('family-selector').value); renderItinerary(); }
+function updateFamilyFilter() { 
+    localStorage.setItem('savedFamilyFilter', document.getElementById('family-selector').value); 
+    renderItinerary(); 
+}
 
 // ==========================================
-// 5. WEATHER ENGINE & BACKGROUNDS
+// 5. WEATHER ENGINE & INIT
 // ==========================================
 const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 const getWeatherIcon = (c) => { 
@@ -476,9 +512,9 @@ async function initWeather() {
                 document.getElementById('hw-desc').innerText = d.weather[0].description; 
                 document.getElementById('hw-loc').innerText = `📍 ${d.name}`;
                 
-                // NEW: Dynamic Weather Backgrounds
+                // Dynamic Weather Backgrounds
                 const mainWeather = d.weather[0].main.toLowerCase();
-                let bgImage = 'bg.jpg'; // fallback
+                let bgImage = 'bg.jpg'; 
                 if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
                 else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
                 else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
@@ -495,7 +531,7 @@ async function initWeather() {
                 }).join('');
                 
                 if (wDash) wDash.innerHTML = `
-                    <div class="WTH-hero">
+                    <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
                         <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
                         <div class="WTH-hero-temp">${Math.round(d.main.temp)}°C</div>
                         <div class="WTH-hero-desc">${d.weather[0].description}</div>
