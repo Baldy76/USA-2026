@@ -53,9 +53,10 @@ body {
     text-align: left;
 }
 
-.admin-card label {
+.admin-card label, .admin-card h3 {
     display: block;
     margin-bottom: 10px;
+    margin-top: 0;
     font-weight: bold;
 }
 
@@ -78,4 +79,18 @@ body {
     font-size: 16px;
     cursor: pointer;
     width: 100%;
+}
+
+/* Version Control Styling */
+.version-control {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 12px;
+    color: #888;
+    padding-bottom: 20px;
+}
+
+/* Sync Button Special Color */
+.sync-btn {
+    background-color: #28a745;
 }
