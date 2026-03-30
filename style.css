@@ -44,8 +44,20 @@ body.dark-mode::before { opacity: 0.06; }
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
 .page { padding: 20px; max-width: 600px; margin: 0 auto; }
 
-.fade-in { animation: fadeIn 0.2s ease-out forwards; will-change: opacity, transform; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* NEW SPA ENGINE (From User Snippet) */
+.tab-content { 
+    display: none !important; 
+    width: 100%; 
+    opacity: 0; 
+}
+.tab-content.active { 
+    display: block !important; 
+    animation: tabEnter 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+}
+@keyframes tabEnter { 
+    from { opacity: 0; transform: scale(0.98) translateY(10px); } 
+    to { opacity: 1; transform: scale(1) translateY(0); } 
+}
 
 /* 3. The Boarding Pass & Flight Tracker */
 .flight-card {
@@ -68,7 +80,6 @@ h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text);
 .plane-icon { flex: 1; position: relative; height: 2px; background: rgba(255,255,255,0.3); margin: 0 15px; }
 .plane-icon::after { content: '✈️'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 16px; }
 
-/* NEW: Boarding Pass Barcode */
 .barcode {
     height: 30px; margin-top: 20px; border-radius: 4px; opacity: 0.6;
     background: repeating-linear-gradient(to right, #fff, #fff 3px, transparent 3px, transparent 5px, #fff 5px, #fff 6px, transparent 6px, transparent 10px);
