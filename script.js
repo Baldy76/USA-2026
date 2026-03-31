@@ -78,7 +78,6 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
 window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     if (navigator.vibrate) navigator.vibrate(40); 
 
-    // The core DOM manipulation function
     const updateDOM = () => {
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
@@ -108,7 +107,6 @@ window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
         window.scrollTo(0,0); 
     };
 
-    // Use the native View Transitions API if supported, otherwise standard render
     if (!document.startViewTransition) {
         updateDOM();
     } else {
@@ -296,6 +294,9 @@ async function loadAllData() {
         safeRun('RenderItinerary', renderItinerary);
         safeRun('RenderVault', renderTravelVault);
         safeRun('RenderAcc', renderAccommodations);
+
+        // Update the Home Greeting on load based on saved preferences
+        updateFamilyFilter();
 
     } catch (parseError) { 
         console.error("[MODULE ISOLATED] Data Parsing Failed:", parseError); 
@@ -536,6 +537,17 @@ function renderItinerary() { safeRun('RenderItin', () => {
 function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
     if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
+    
+    // UPDATED: Dynamically change the Home Hero greeting!
+    const greetingEl = document.getElementById('home-greeting');
+    if (greetingEl) {
+        if (!sel || sel.value === 'All' || sel.value === 'Everyone') {
+            greetingEl.innerText = "The USA 2026 Adventure";
+        } else {
+            greetingEl.innerText = "Welcome, " + sel.value;
+        }
+    }
+
     renderItinerary(); 
     renderTravelVault();
     renderAccommodations();
