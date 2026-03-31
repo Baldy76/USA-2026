@@ -1,4 +1,8 @@
-/* 1. ZERO-LATENCY TOUCH ENGINE */
+/* 1. ZERO-LATENCY & NATIVE APP ENGINE */
+html {
+    overscroll-behavior: none; /* Kills pull-to-refresh and background bounce */
+}
+
 * {
     -webkit-tap-highlight-color: transparent; 
     touch-action: manipulation; 
@@ -34,13 +38,23 @@ body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, 
 body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg, #af52de 0%, #5e5ce6 100%); }
 body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); }
 
-/* 3. General Styling */
+/* 3. General Styling & Screen Lockdown */
 body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg); color: var(--text); padding-bottom: 120px; 
     transition: background-color 0.3s ease; position: relative;
-    /* Prevents horizontal scrolling overflow */
+    /* Lockdown Rules */
     overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-user-select: none; /* Stops accidental long-press highlighting */
+    user-select: none;
+    -webkit-touch-callout: none; /* Stops long-press popups */
+}
+
+/* Re-allow typing in input fields */
+input, textarea, select {
+    -webkit-user-select: auto;
+    user-select: auto;
 }
 
 body::before {
@@ -114,7 +128,6 @@ body.theme-splash .bottom-nav { transform: translateY(150px); pointer-events: no
 }
 .nav-icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s ease; will-change: transform; }
 
-/* FIX: Cleaner, native-feeling active state (no background block) */
 .nav-btn.active { 
     background: transparent; 
     color: var(--accent); 
