@@ -39,6 +39,8 @@ body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg); color: var(--text); padding-bottom: 120px; 
     transition: background-color 0.3s ease; position: relative;
+    /* Prevents horizontal scrolling overflow */
+    overflow-x: hidden;
 }
 
 body::before {
@@ -49,7 +51,7 @@ body::before {
 body.dark-mode::before { opacity: 0.06; }
 
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
-.page { padding: 20px; max-width: 600px; margin: 0 auto; }
+.page { padding: 20px; max-width: 600px; margin: 0 auto; overflow-x: hidden; }
 
 /* OPTIMIZED SPA ENGINE */
 .tab-content { 
@@ -111,7 +113,13 @@ body.theme-splash .bottom-nav { transform: translateY(150px); pointer-events: no
     user-select: none;
 }
 .nav-icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s ease; will-change: transform; }
-.nav-btn.active { background: var(--accent-gradient); color: white; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); opacity: 1; }
+
+/* FIX: Cleaner, native-feeling active state (no background block) */
+.nav-btn.active { 
+    background: transparent; 
+    color: var(--accent); 
+    opacity: 1; 
+}
 .nav-btn.active .nav-icon { transform: scale(1.1); }
 
 /* Glass Elements */
