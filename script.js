@@ -176,7 +176,7 @@ function calculateSmartTab() {
     }
     const splashBtn = document.getElementById('splash-go-btn');
     if (splashBtn) {
-        splashBtn.setAttribute('onclick', `openTab('${smartTab}', '${smartNavBtn}')`);
+        splashBtn.onclick = () => openTab(smartTab, smartNavBtn);
     }
 }
 
@@ -305,7 +305,6 @@ async function loadAllData() {
     }
 
     try {
-        // Updated to use the robust CSV Parser
         if (itinData) {
             itineraryData = parseCSV(itinData).slice(1).filter(r => r.length > 1 && r[0].trim() !== '');
             itineraryData.sort((a, b) => {
@@ -378,7 +377,7 @@ function addCustomFamily() { safeRun('AddFamily', () => {
 async function preCacheImages() {
     if ('caches' in window) {
         try {
-            const cache = await caches.open('holiday-planner-v2.1.0');
+            const cache = await caches.open('holiday-planner-v2.1.1');
             const imgUrls = vaultAndStaysData
                 .map(cols => cols[7] ? cols[7].trim() : '')
                 .filter(url => url.startsWith('http'));
@@ -570,4 +569,187 @@ function renderItinerary() { safeRun('RenderItin', () => {
                     </div>`;
 
                 if (loc.toLowerCase().includes('la')) { if(d !== lLA) { hLA += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lLA = d; } hLA += cardHtml; }
-                else if (loc.toLowerCase().includes('utah')) { if(d !== lUtah) { hUtah += `<div class="date-divider"><span class="sticky-date">${escapeHTML(
+                else if (loc.toLowerCase().includes('utah')) { if(d !== lUtah) { hUtah += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lUtah = d; } hUtah += cardHtml; }
+                else if (loc.toLowerCase().includes('vegas')) { if(d !== lVegas) { hVegas += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lVegas = d; } hVegas += cardHtml; }
+                
+                const isDateMatch = (s, target) => { let dt = new Date(parseDateTime(s)); return dt.toDateString() === target.toDateString(); };
+                if (isDateMatch(d, today)) { hToday += cardHtml; tCount++; } 
+                else if (isDateMatch(d, tomorrow)) { hTomorrow += cardHtml; tmCount++; }
+            }
+        }
+    });
+    
+    if(document.getElementById('la-itinerary')) document.getElementById('la-itinerary').innerHTML = hLA || '<div class="empty-state">No activities</div>';
+    if(document.getElementById('utah-itinerary')) document.getElementById('utah-itinerary').innerHTML = hUtah || '<div class="empty-state">No activities</div>';
+    if(document.getElementById('vegas-itinerary')) document.getElementById('vegas-itinerary').innerHTML = hVegas || '<div class="empty-state">No activities</div>';
+    if(document.getElementById('today-itinerary')) document.getElementById('today-itinerary').innerHTML = hToday || '<div class="empty-state"><span class="empty-icon">🏖️</span><div class="empty-text">Nothing Scheduled</div></div>';
+    if(document.getElementById('tomorrow-itinerary')) document.getElementById('tomorrow-itinerary').innerHTML = hTomorrow || '<div class="empty-state"><span class="empty-icon">📅</span><div class="empty-text">No Plans Yet</div></div>';
+})};
+
+function updateFamilyFilter() { safeRun('UpdateFilter', () => {
+    const sel = document.getElementById('family-selector');
+    if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
+    renderItinerary(); 
+    renderTravelVault();
+    renderAccommodations();
+})};
+
+
+// ==========================================
+// 5. WEATHER ENGINE (With Fallback)
+// ==========================================
+const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
+const getWeatherIcon = (c) => { 
+    const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; 
+    return m[c] || '🌤️'; 
+};
+
+// FEATURE: Dynamic Destination Toggle
+function setWeatherCity(target) {
+    document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-w-${target}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
+    if (target === 'la') fetchAndRenderWeather(34.0522, -118.2437, "Los Angeles");
+    else if (target === 'utah') fetchAndRenderWeather(37.0965, -113.5684, "Utah"); 
+    else if (target === 'vegas') fetchAndRenderWeather(36.1699, -115.1398, "Las Vegas");
+    else initLocalWeather(); 
+}
+
+function autoSetWeatherCity() {
+    const now = new Date();
+    const savedStart = localStorage.getItem('tripStartDate');
+    let target = 'la'; // Default for scouting before trip
+    if (savedStart) {
+        const tripDate = new Date(savedStart);
+        if (now >= tripDate) target = 'local'; // Once trip starts, revert to live GPS
+    }
+    setWeatherCity(target);
+}
+
+async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
+    try { 
+        const res = await fetch("https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
+        if(!res.ok) throw new Error("API Error");
+        const d = await res.json(); 
+        
+        const locName = fallbackName || d.name;
+        if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
+        if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
+        if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
+        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
+        
+        const mainWeather = d.weather[0].main.toLowerCase();
+        let bgImage = 'bg.jpg'; 
+        if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
+        else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
+        else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
+        else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
+        document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
+
+        const fRes = await fetch("https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
+        const fData = await fRes.json();
+        let forecastHtml = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
+            const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+            return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
+        }).join('');
+        
+        const wDash = document.getElementById('WTH-dashboard');
+        if (wDash) wDash.innerHTML = `
+            <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
+                <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
+                <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
+                <div class="WTH-hero-desc">${d.weather[0].description}</div>
+                <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
+                    📍 ${escapeHTML(locName)}
+                </div>
+            </div>
+            <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
+            ${forecastHtml}
+        `; 
+    } catch (e) { 
+        console.error("[MODULE ISOLATED] Weather Fetch Failed", e);
+        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; 
+    }
+}
+
+async function initLocalWeather() {
+    const fallbackLat = 34.0522, fallbackLon = -118.2437;
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude, "Local GPS")); },
+            (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
+            { timeout: 5000 } 
+        );
+    } else {
+        safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
+    }
+}
+
+// ==========================================
+// 6. INITIALIZATION & PWA MAINTENANCE
+// ==========================================
+window.onload = () => {
+    document.body.classList.add('theme-splash');
+    
+    // Set default Let's Go behavior instantly to prevent dead buttons
+    const splashBtn = document.getElementById('splash-go-btn');
+    if(splashBtn) splashBtn.onclick = () => openTab('home', 'nav-btn-home');
+
+    safeRun('InitTheme', () => {
+        applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
+        document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+        document.body.classList.add('theme-splash');
+        updateMetaThemeColor('splash');
+    });
+    
+    safeRun('InitClocks', () => {
+        updateTimeAndCountdown();
+        setInterval(updateTimeAndCountdown, 60000); 
+    });
+    
+    safeRun('InitWeather', autoSetWeatherCity);
+    safeRunAsync('InitCurrency', initLiveCurrency); 
+    safeRunAsync('InitDataEngine', loadAllData); 
+};
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+}
+
+// 1. New Google Sheets Data Pull (No Page Reload)
+async function forceDataSync() {
+    const btn = document.querySelector('button[onclick="forceDataSync()"]');
+    if (btn) btn.innerText = "⏳ Syncing...";
+    
+    await safeRunAsync('InitDataEngine', loadAllData); 
+    
+    if (btn) {
+        btn.innerText = "✅ Synced!";
+        setTimeout(() => { btn.innerText = "☁️ Force Refresh Data"; }, 2000);
+    }
+}
+
+// 2. Restored GitHub/Code App Update (Hard Reload)
+function updateAppVersion() {
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => { 
+            for (let r of regs) r.update(); 
+        });
+    }
+    alert("Flushing app cache. The page will now reload to pull the newest code.");
+    window.location.reload(true);
+}
+
+// ==========================================
+// 7. AUTO-SYNC ON APP RESUME
+// ==========================================
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        console.log("App resumed: Pulling fresh data from cloud...");
+        safeRunAsync('ResumeSync', loadAllData);
+    }
+});
