@@ -54,7 +54,7 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    const activePage = document.querySelector('.tab-content.active')?.id || 'home';
+    const activePage = document.querySelector('.tab-content.active')?.id || 'splash';
     updateMetaThemeColor(activePage, isDark);
 }
 
@@ -69,6 +69,7 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
+    else if (pageId === 'splash') metaColor = isDark ? '#0b0e14' : '#f2f5f9';
     
     const meta = document.getElementById('theme-meta'); 
     if (meta) meta.content = metaColor;
@@ -94,8 +95,9 @@ window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
         if(activeBtn) activeBtn.classList.add('active');
     }
 
-    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-    if (pageId === 'la') document.body.classList.add('theme-la');
+    document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+    if (pageId === 'splash') document.body.classList.add('theme-splash');
+    else if (pageId === 'la') document.body.classList.add('theme-la');
     else if (pageId === 'utah') document.body.classList.add('theme-utah');
     else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
     else if (pageId === 'flights') document.body.classList.add('theme-flights');
@@ -224,7 +226,6 @@ async function loadAllData() {
     let vData = '';
 
     try {
-        // Attempt to fetch fresh data from Google
         const [itineraryRes, vaultRes] = await Promise.all([
             fetch(sheetUrl),
             fetch(vaultUrl)
@@ -233,18 +234,15 @@ async function loadAllData() {
         itinData = await itineraryRes.text();
         vData = await vaultRes.text();
 
-        // Success! Save a backup copy to the phone's local storage
         localStorage.setItem('offline_itinerary', itinData);
         localStorage.setItem('offline_vault', vData);
 
     } catch (e) { 
         console.warn("[OFFLINE MODE] No internet connection. Loading backup data..."); 
         
-        // If the fetch fails, grab the backup copies
         itinData = localStorage.getItem('offline_itinerary') || '';
         vData = localStorage.getItem('offline_vault') || '';
         
-        // If there's no backup and no internet, show a warning and halt
         if (!itinData && !vData) {
             console.error("[OFFLINE MODE] No backup data found.");
             return;
@@ -606,10 +604,14 @@ async function initWeather() {
 // 6. INITIALIZATION & PWA
 // ==========================================
 window.onload = () => {
+    document.body.classList.add('theme-splash');
+    
     safeRun('InitTheme', () => {
         applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
+        // Let the splash screen theme take over immediately
         document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-        updateMetaThemeColor('home');
+        document.body.classList.add('theme-splash');
+        updateMetaThemeColor('splash');
     });
     
     safeRun('InitClocks', () => {
