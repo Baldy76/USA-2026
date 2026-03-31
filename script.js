@@ -625,4 +625,96 @@ async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
         }
 
         const [currentRes, forecastRes] = await Promise.all([
-            fetchWithTimeout("https://api
+            fetchWithTimeout("https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric", { timeout: 4000 }),
+            fetchWithTimeout("https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric", { timeout: 4000 })
+        ]);
+        
+        const d = await currentRes.json();
+        const fData = await forecastRes.json();
+        const locName = fallbackName || d.name;
+
+        localStorage.setItem('weatherCache', JSON.stringify({
+            timestamp: Date.now(),
+            current: d,
+            forecast: fData,
+            locName: locName
+        }));
+
+        renderWeatherToDOM(d, fData, locName);
+
+    } catch (e) { 
+        console.error("[MODULE ISOLATED] Weather Fetch Failed", e);
+        
+        const oldCache = JSON.parse(localStorage.getItem('weatherCache'));
+        if (oldCache) {
+            renderWeatherToDOM(oldCache.current, oldCache.forecast, oldCache.locName);
+            if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = "Offline (Cached)";
+        } else {
+            if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; 
+        }
+    }
+}
+
+async function initWeather() {
+    const fallbackLat = 34.0522, fallbackLon = -118.2437;
+    
+    const cachedData = JSON.parse(localStorage.getItem('weatherCache'));
+    if (cachedData && (Date.now() - cachedData.timestamp < 1800000)) {
+        safeRunAsync('WeatherFetchCache', () => fetchAndRenderWeather(0, 0, null)); 
+        return;
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude)); },
+            (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
+            { timeout: 4000, maximumAge: 60000 } 
+        );
+    } else {
+        safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
+    }
+}
+
+// ==========================================
+// 6. INITIALIZATION & PWA
+// ==========================================
+window.onload = () => {
+    document.body.classList.add('theme-splash');
+    
+    safeRun('InitTheme', () => {
+        applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
+        document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+        document.body.classList.add('theme-splash');
+        updateMetaThemeColor('splash');
+    });
+    
+    safeRun('InitClocks', () => {
+        updateTimeAndCountdown();
+        setInterval(updateTimeAndCountdown, 60000); 
+    });
+    
+    safeRun('InitWeather', initWeather);
+    safeRunAsync('InitCurrency', initLiveCurrency); 
+    safeRunAsync('InitDataEngine', loadAllData); 
+
+    // NEW: Background refresh loops to keep data perfectly in sync
+    setInterval(() => safeRunAsync('BackgroundDataSync', loadAllData), 600000); 
+};
+
+// NEW: Instantly pulls fresh data if you unlock your phone after being asleep
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        safeRunAsync('ForegroundDataSync', loadAllData);
+    }
+});
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+}
+
+function syncUpdates() {
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => { for (let r of regs) r.update(); });
+    }
+    alert("Updating..."); window.location.reload(true); 
+}
