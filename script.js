@@ -54,7 +54,7 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    const activePage = document.querySelector('.tab-content.active')?.id || 'splash';
+    const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
 
@@ -69,7 +69,6 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
-    else if (pageId === 'splash') metaColor = isDark ? '#0b0e14' : '#f2f5f9';
     
     const meta = document.getElementById('theme-meta'); 
     if (meta) meta.content = metaColor;
@@ -78,40 +77,31 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
 window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     if (navigator.vibrate) navigator.vibrate(40); 
 
-    const updateDOM = () => {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
 
-        const targetPage = document.getElementById(pageId);
-        if(targetPage) { 
-            targetPage.classList.add('active'); 
-        }
-
-        if (buttonId) {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const activeBtn = document.getElementById(buttonId); 
-            if(activeBtn) activeBtn.classList.add('active');
-        }
-
-        document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-        if (pageId === 'splash') document.body.classList.add('theme-splash');
-        else if (pageId === 'la') document.body.classList.add('theme-la');
-        else if (pageId === 'utah') document.body.classList.add('theme-utah');
-        else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
-        else if (pageId === 'flights') document.body.classList.add('theme-flights');
-        
-        updateMetaThemeColor(pageId);
-        window.scrollTo(0,0); 
-    };
-
-    if (!document.startViewTransition) {
-        updateDOM();
-    } else {
-        document.startViewTransition(() => updateDOM());
+    const targetPage = document.getElementById(pageId);
+    if(targetPage) { 
+        targetPage.classList.add('active'); 
     }
+
+    if (buttonId) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.getElementById(buttonId); 
+        if(activeBtn) activeBtn.classList.add('active');
+    }
+
+    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+    if (pageId === 'la') document.body.classList.add('theme-la');
+    else if (pageId === 'utah') document.body.classList.add('theme-utah');
+    else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
+    else if (pageId === 'flights') document.body.classList.add('theme-flights');
+    
+    updateMetaThemeColor(pageId);
+    window.scrollTo(0,0); 
 })};
 
 function switchDayView(day) { safeRun('SwitchDay', () => {
@@ -234,6 +224,7 @@ async function loadAllData() {
     let vData = '';
 
     try {
+        // Attempt to fetch fresh data from Google
         const [itineraryRes, vaultRes] = await Promise.all([
             fetch(sheetUrl),
             fetch(vaultUrl)
@@ -242,15 +233,18 @@ async function loadAllData() {
         itinData = await itineraryRes.text();
         vData = await vaultRes.text();
 
+        // Success! Save a backup copy to the phone's local storage
         localStorage.setItem('offline_itinerary', itinData);
         localStorage.setItem('offline_vault', vData);
 
     } catch (e) { 
         console.warn("[OFFLINE MODE] No internet connection. Loading backup data..."); 
         
+        // If the fetch fails, grab the backup copies
         itinData = localStorage.getItem('offline_itinerary') || '';
         vData = localStorage.getItem('offline_vault') || '';
         
+        // If there's no backup and no internet, show a warning and halt
         if (!itinData && !vData) {
             console.error("[OFFLINE MODE] No backup data found.");
             return;
@@ -294,9 +288,6 @@ async function loadAllData() {
         safeRun('RenderItinerary', renderItinerary);
         safeRun('RenderVault', renderTravelVault);
         safeRun('RenderAcc', renderAccommodations);
-
-        // Update the Home Greeting on load based on saved preferences
-        updateFamilyFilter();
 
     } catch (parseError) { 
         console.error("[MODULE ISOLATED] Data Parsing Failed:", parseError); 
@@ -537,17 +528,6 @@ function renderItinerary() { safeRun('RenderItin', () => {
 function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
     if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
-    
-    // UPDATED: Dynamic greeting now stacks cleanly using innerHTML and a <br> tag!
-    const greetingEl = document.getElementById('home-greeting');
-    if (greetingEl) {
-        if (!sel || sel.value === 'All' || sel.value === 'Everyone') {
-            greetingEl.innerHTML = "The USA 2026<br>Adventure";
-        } else {
-            greetingEl.innerHTML = "Welcome<br>" + escapeHTML(sel.value);
-        }
-    }
-
     renderItinerary(); 
     renderTravelVault();
     renderAccommodations();
@@ -626,13 +606,10 @@ async function initWeather() {
 // 6. INITIALIZATION & PWA
 // ==========================================
 window.onload = () => {
-    document.body.classList.add('theme-splash');
-    
     safeRun('InitTheme', () => {
         applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
         document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-        document.body.classList.add('theme-splash');
-        updateMetaThemeColor('splash');
+        updateMetaThemeColor('home');
     });
     
     safeRun('InitClocks', () => {
