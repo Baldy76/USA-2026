@@ -9,10 +9,19 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-mode">
+<body class="light-mode theme-splash">
 
     <main id="content">
         
+        <section id="splash" class="page tab-content active">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; text-align: center;">
+                <img src="logo.png" alt="USA 2026 Logo" class="splash-logo" style="width: 220px; height: 220px; margin-bottom: 40px; object-fit: cover;">
+                <h1 style="font-size: 38px; font-weight: 900; margin-bottom: 5px; color: var(--text);">USA 2026</h1>
+                <p style="opacity: 0.5; font-weight: 800; margin-bottom: 50px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">The Ultimate Itinerary</p>
+                <button onclick="openTab('home', 'nav-btn-home')" class="action-btn" style="padding: 20px 50px; font-size: 20px; border-radius: 30px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.4); max-width: 250px;">Let's Go!</button>
+            </div>
+        </section>
+
         <section id="la" class="page tab-content">
             <div class="city-hero" style="background-image: url('la.jpg');">
                 <h2>Los Angeles</h2>
@@ -33,7 +42,7 @@
             </div>
         </section>
 
-        <section id="home" class="page tab-content active">
+        <section id="home" class="page tab-content">
             
             <div id="time-engine" style="margin-bottom: 20px;">
                 <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
@@ -207,14 +216,14 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v1.9.0</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.0.0</div>
         </section>
     </main>
 
     <nav class="bottom-nav">
         <button id="nav-btn-la" onclick="openTab('la', 'nav-btn-la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
         <button id="nav-btn-utah" onclick="openTab('utah', 'nav-btn-utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
-        <button id="nav-btn-home" onclick="openTab('home', 'nav-btn-home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button id="nav-btn-home" onclick="openTab('home', 'nav-btn-home')" class="nav-btn"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button id="nav-btn-vegas" onclick="openTab('vegas', 'nav-btn-vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
         <button id="nav-btn-flights" onclick="openTab('flights', 'nav-btn-flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
