@@ -18,7 +18,7 @@
                 <img src="logo.png" alt="USA 2026 Logo" class="splash-logo" style="width: 220px; height: 220px; margin-bottom: 40px; object-fit: cover;">
                 <h1 style="font-size: 38px; font-weight: 900; margin-bottom: 5px; color: var(--text);">USA 2026</h1>
                 <p style="opacity: 0.5; font-weight: 800; margin-bottom: 50px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">The Ultimate Itinerary</p>
-                <button onclick="openTab('home', 'nav-btn-home')" class="action-btn" style="padding: 20px 50px; font-size: 20px; border-radius: 30px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.4); max-width: 250px;">Let's Go!</button>
+                <button onclick="openTab('home', 'nav-btn-home')" class="action-btn" id="splash-go-btn" style="padding: 20px 50px; font-size: 20px; border-radius: 30px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.4); max-width: 250px;">Let's Go!</button>
             </div>
         </section>
 
@@ -155,6 +155,12 @@
         </section>
 
         <section id="weather-root" class="page tab-content">
+            <div class="theme-segmented-control" style="margin-bottom: 20px;">
+                <button class="segment weather-btn active" id="btn-w-local" onclick="setWeatherCity('local')">📍 Local</button>
+                <button class="segment weather-btn" id="btn-w-la" onclick="setWeatherCity('la')">🌴 LA</button>
+                <button class="segment weather-btn" id="btn-w-utah" onclick="setWeatherCity('utah')">⛰️ Utah</button>
+                <button class="segment weather-btn" id="btn-w-vegas" onclick="setWeatherCity('vegas')">🎲 Vegas</button>
+            </div>
             <div id="WTH-dashboard">
                 <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
             </div>
@@ -216,7 +222,7 @@
                 <button onclick="syncUpdates()" class="action-btn sync-btn">☁️ Force Refresh Data</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.0.1</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.0</div>
         </section>
     </main>
 
