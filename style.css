@@ -51,6 +51,22 @@ body {
     -webkit-touch-callout: none; /* Stops long-press popups */
 }
 
+/* =========================================
+   SPLASH SCREEN MOVEMENT LOCK (v2.1.2)
+   ========================================= */
+body.theme-splash {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important; 
+}
+
+#splash {
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    height: 100dvh; /* Enforces absolute rigid height on mobile */
+}
+
 /* Re-allow typing in input fields */
 input, textarea, select {
     -webkit-user-select: auto;
