@@ -43,6 +43,26 @@ function parseDateTime(dateStr, timeStr = '') {
     return isNaN(d) ? 0 : d.getTime();
 }
 
+// FEATURE: Bulletproof CSV Parser (Handles inner-cell line breaks)
+function parseCSV(str) {
+    const arr = [];
+    let quote = false;
+    let row = 0, col = 0;
+    for (let c = 0; c < str.length; c++) {
+        let cc = str[c], nc = str[c+1];
+        arr[row] = arr[row] || [];
+        arr[row][col] = arr[row][col] || '';
+        if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
+        if (cc == '"') { quote = !quote; continue; }
+        if (cc == ',' && !quote) { ++col; continue; }
+        if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+        if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+        arr[row][col] += cc;
+    }
+    return arr;
+}
+
 // ==========================================
 // 1. THEME & NEW SPA NAVIGATION ENGINE
 // ==========================================
@@ -128,6 +148,37 @@ function toggleComplete(element) { safeRun('ToggleComplete', () => {
     if (element.style.opacity === '0.5') { element.style.opacity = '1'; element.style.transform = 'scale(1)'; } 
     else { element.style.opacity = '0.5'; element.style.transform = 'scale(0.98)'; }
 })};
+
+// FEATURE: Smart Tab Routing
+function calculateSmartTab() {
+    let smartTab = 'home';
+    let smartNavBtn = 'nav-btn-home';
+    const now = new Date();
+    const todayStr = now.toDateString();
+    
+    const savedStart = localStorage.getItem('tripStartDate');
+    if (savedStart) {
+        const tripDate = new Date(savedStart);
+        tripDate.setHours(0,0,0,0);
+        if (now >= tripDate) {
+            for (let cols of itineraryData) {
+                if (cols.length >= 5) {
+                    const d = new Date(parseDateTime(cols[0]));
+                    if (d.toDateString() === todayStr) {
+                        const loc = cols[1].toLowerCase();
+                        if (loc.includes('la')) { smartTab = 'la'; smartNavBtn = 'nav-btn-la'; break; }
+                        if (loc.includes('utah')) { smartTab = 'utah'; smartNavBtn = 'nav-btn-utah'; break; }
+                        if (loc.includes('vegas')) { smartTab = 'vegas'; smartNavBtn = 'nav-btn-vegas'; break; }
+                    }
+                }
+            }
+        }
+    }
+    const splashBtn = document.getElementById('splash-go-btn');
+    if (splashBtn) {
+        splashBtn.setAttribute('onclick', `openTab('${smartTab}', '${smartNavBtn}')`);
+    }
+}
 
 // ==========================================
 // 2. DASHBOARD TOOLS (Calculators & Clocks)
@@ -226,15 +277,12 @@ async function loadAllData() {
     let vData = '';
 
     try {
-        // Create a unique timestamp to bypass Google's 5-minute cache
         const cacheBuster = `&t=${Date.now()}`;
-        
         const [itineraryRes, vaultRes] = await Promise.all([
             fetch(sheetUrl + cacheBuster),
             fetch(vaultUrl + cacheBuster)
         ]);
         
-        // If Google returns an error (like a 500 status), throw an error to trigger the offline fallback
         if (!itineraryRes.ok || !vaultRes.ok) {
             throw new Error("Google Sheets returned an error status.");
         }
@@ -247,7 +295,6 @@ async function loadAllData() {
 
     } catch (e) { 
         console.warn("[OFFLINE MODE] No internet connection or API failed. Loading backup data..."); 
-        
         itinData = localStorage.getItem('offline_itinerary') || '';
         vData = localStorage.getItem('offline_vault') || '';
         
@@ -258,42 +305,37 @@ async function loadAllData() {
     }
 
     try {
-        // --- Process Itinerary Data ---
+        // Updated to use the robust CSV Parser
         if (itinData) {
-            const iRows = itinData.split('\n').slice(1);
-            itineraryData = iRows.filter(r => r.trim() !== '');
+            itineraryData = parseCSV(itinData).slice(1).filter(r => r.length > 1 && r[0].trim() !== '');
             itineraryData.sort((a, b) => {
-                const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-                const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-                if (ca.length < 5 || cb.length < 5) return 0;
-                return parseDateTime(ca[0], ca[3]) - parseDateTime(cb[0], cb[3]);
+                if (a.length < 5 || b.length < 5) return 0;
+                return parseDateTime(a[0], a[3]) - parseDateTime(b[0], b[3]);
             });
-            
-            itineraryData.forEach(row => {
-                const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+            itineraryData.forEach(col => {
                 if (col.length >= 5 && col[4].trim().toLowerCase() !== 'everyone') {
                     sheetFamilies.add(col[4].trim());
                 }
             });
         }
 
-        // --- Process Vault Data ---
         if (vData) {
-            const vRows = vData.split('\n').slice(1);
-            vaultAndStaysData = vRows.filter(r => r.trim() !== '');
-            vaultAndStaysData.forEach(row => {
-                const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+            vaultAndStaysData = parseCSV(vData).slice(1).filter(r => r.length > 1 && r[0].trim() !== '');
+            vaultAndStaysData.forEach(col => {
                 if (col.length > 0 && col[0].trim().toLowerCase() !== 'everyone') {
                     sheetFamilies.add(col[0].trim());
                 }
             });
         }
 
-        // --- Render Everything ---
         safeRun('PopulateDropdown', populateDropdown);
         safeRun('RenderItinerary', renderItinerary);
         safeRun('RenderVault', renderTravelVault);
         safeRun('RenderAcc', renderAccommodations);
+        
+        // Run New Features
+        safeRun('CalculateSmartTab', calculateSmartTab);
+        safeRunAsync('PreCacheImages', preCacheImages);
 
     } catch (parseError) { 
         console.error("[MODULE ISOLATED] Data Parsing Failed:", parseError); 
@@ -332,6 +374,25 @@ function addCustomFamily() { safeRun('AddFamily', () => {
     }
 })};
 
+// FEATURE: Pre-Cache Vault Images
+async function preCacheImages() {
+    if ('caches' in window) {
+        try {
+            const cache = await caches.open('holiday-planner-v2.1.0');
+            const imgUrls = vaultAndStaysData
+                .map(cols => cols[7] ? cols[7].trim() : '')
+                .filter(url => url.startsWith('http'));
+            
+            if (imgUrls.length > 0) {
+                imgUrls.forEach(url => {
+                    cache.match(url).then(res => {
+                        if (!res) fetch(url, { mode: 'no-cors' }).then(response => cache.put(url, response)).catch(() => {});
+                    });
+                });
+            }
+        } catch (e) { console.log('Pre-caching failed', e); }
+    }
+}
 
 // ==========================================
 // 4. VAULT & ACCOMMODATION RENDERING
@@ -346,13 +407,10 @@ function renderTravelVault() { safeRun('RenderVault', () => {
     let hasData = false;
 
     const sortedData = [...vaultAndStaysData].sort((a,b) => {
-        const ca = a.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-        const cb = b.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-        return parseDateTime(ca[2]) - parseDateTime(cb[2]); 
+        return parseDateTime(a[2]) - parseDateTime(b[2]); 
     });
 
-    sortedData.forEach(row => {
-        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+    sortedData.forEach(cols => {
         if(cols.length < 2) return;
         
         const fam = cols[0].trim();
@@ -428,8 +486,7 @@ function renderAccommodations() { safeRun('RenderAcc', () => {
     
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
 
-    vaultAndStaysData.forEach(row => {
-        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
+    vaultAndStaysData.forEach(cols => {
         if(cols.length < 2) return;
 
         const fam = cols[0].trim();
@@ -489,12 +546,11 @@ function renderItinerary() { safeRun('RenderItin', () => {
     let tCount = 0, tmCount = 0;
     const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
     
-    itineraryData.forEach(row => {
-        const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, ''));
-        if(col.length >= 5) {
-            const d = col[0].trim(); const loc = col[1].trim(); const act = col[2].trim();
-            const time = col[3].trim(); const who = col[4].trim(); 
-            const addr = (col.length >= 6) ? col[5].trim() : '';
+    itineraryData.forEach(cols => {
+        if(cols.length >= 5) {
+            const d = cols[0].trim(); const loc = cols[1].trim(); const act = cols[2].trim();
+            const time = cols[3].trim(); const who = cols[4].trim(); 
+            const addr = (cols.length >= 6) ? cols[5].trim() : '';
             
             if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
                 const searchLoc = addr !== '' ? addr : `${act} ${loc}`;
@@ -514,159 +570,4 @@ function renderItinerary() { safeRun('RenderItin', () => {
                     </div>`;
 
                 if (loc.toLowerCase().includes('la')) { if(d !== lLA) { hLA += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lLA = d; } hLA += cardHtml; }
-                else if (loc.toLowerCase().includes('utah')) { if(d !== lUtah) { hUtah += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lUtah = d; } hUtah += cardHtml; }
-                else if (loc.toLowerCase().includes('vegas')) { if(d !== lVegas) { hVegas += `<div class="date-divider"><span class="sticky-date">${escapeHTML(d)}</span></div>`; lVegas = d; } hVegas += cardHtml; }
-                
-                const isDateMatch = (s, target) => { let dt = new Date(parseDateTime(s)); return dt.toDateString() === target.toDateString(); };
-                if (isDateMatch(d, today)) { hToday += cardHtml; tCount++; } 
-                else if (isDateMatch(d, tomorrow)) { hTomorrow += cardHtml; tmCount++; }
-            }
-        }
-    });
-    
-    if(document.getElementById('la-itinerary')) document.getElementById('la-itinerary').innerHTML = hLA || '<div class="empty-state">No activities</div>';
-    if(document.getElementById('utah-itinerary')) document.getElementById('utah-itinerary').innerHTML = hUtah || '<div class="empty-state">No activities</div>';
-    if(document.getElementById('vegas-itinerary')) document.getElementById('vegas-itinerary').innerHTML = hVegas || '<div class="empty-state">No activities</div>';
-    if(document.getElementById('today-itinerary')) document.getElementById('today-itinerary').innerHTML = hToday || '<div class="empty-state"><span class="empty-icon">🏖️</span><div class="empty-text">Nothing Scheduled</div></div>';
-    if(document.getElementById('tomorrow-itinerary')) document.getElementById('tomorrow-itinerary').innerHTML = hTomorrow || '<div class="empty-state"><span class="empty-icon">📅</span><div class="empty-text">No Plans Yet</div></div>';
-})};
-
-function updateFamilyFilter() { safeRun('UpdateFilter', () => {
-    const sel = document.getElementById('family-selector');
-    if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
-    renderItinerary(); 
-    renderTravelVault();
-    renderAccommodations();
-})};
-
-
-// ==========================================
-// 5. WEATHER ENGINE (With Fallback)
-// ==========================================
-const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
-const getWeatherIcon = (c) => { 
-    const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; 
-    return m[c] || '🌤️'; 
-};
-
-async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
-    try { 
-        const res = await fetch("https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
-        if(!res.ok) throw new Error("API Error");
-        const d = await res.json(); 
-        
-        const locName = fallbackName || d.name;
-        if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
-        if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
-        if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
-        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
-        
-        const mainWeather = d.weather[0].main.toLowerCase();
-        let bgImage = 'bg.jpg'; 
-        if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
-        else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
-        else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
-        else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
-        document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
-
-        const fRes = await fetch("https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
-        const fData = await fRes.json();
-        let forecastHtml = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-            const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-            return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
-        }).join('');
-        
-        const wDash = document.getElementById('WTH-dashboard');
-        if (wDash) wDash.innerHTML = `
-            <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
-                <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
-                <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
-                <div class="WTH-hero-desc">${d.weather[0].description}</div>
-                <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
-                    📍 ${escapeHTML(locName)}
-                </div>
-            </div>
-            <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
-            ${forecastHtml}
-        `; 
-    } catch (e) { 
-        console.error("[MODULE ISOLATED] Weather Fetch Failed", e);
-        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; 
-    }
-}
-
-async function initWeather() {
-    const fallbackLat = 34.0522, fallbackLon = -118.2437;
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude)); },
-            (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
-            { timeout: 5000 } 
-        );
-    } else {
-        safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
-    }
-}
-
-// ==========================================
-// 6. INITIALIZATION & PWA
-// ==========================================
-window.onload = () => {
-    document.body.classList.add('theme-splash');
-    
-    safeRun('InitTheme', () => {
-        applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
-        // Let the splash screen theme take over immediately
-        document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-        document.body.classList.add('theme-splash');
-        updateMetaThemeColor('splash');
-    });
-    
-    safeRun('InitClocks', () => {
-        updateTimeAndCountdown();
-        setInterval(updateTimeAndCountdown, 60000); 
-    });
-    
-    safeRun('InitWeather', initWeather);
-    safeRunAsync('InitCurrency', initLiveCurrency); 
-    safeRunAsync('InitDataEngine', loadAllData); 
-};
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
-}
-
-// Replaced old syncUpdates with our dynamic async version
-async function syncUpdates() {
-    const btn = document.querySelector('.sync-btn');
-    if (btn) btn.innerText = "⏳ Syncing...";
-
-    // 1. Tell the Service Worker to look for app updates in the background
-    if('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(regs => { for (let r of regs) r.update(); });
-    }
-    
-    // 2. Force a fresh data pull from Google Sheets
-    await safeRunAsync('InitDataEngine', loadAllData); 
-    
-    // 3. Update the button to show success, then reset it
-    if (btn) {
-        btn.innerText = "✅ Synced!";
-        btn.style.backgroundColor = "#28a745"; // Green success color
-        setTimeout(() => { 
-            btn.innerText = "☁️ Force Refresh Data"; 
-            btn.style.backgroundColor = ""; // Reset to default CSS
-        }, 2000);
-    }
-}
-
-// ==========================================
-// 7. AUTO-SYNC ON APP RESUME
-// ==========================================
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        console.log("App resumed: Pulling fresh data from cloud...");
-        // Silently pull new data in the background
-        safeRunAsync('ResumeSync', loadAllData);
-    }
-});
+                else if (loc.toLowerCase().includes('utah')) { if(d !== lUtah) { hUtah += `<div class="date-divider"><span class="sticky-date">${escapeHTML(
