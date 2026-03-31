@@ -538,13 +538,13 @@ function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
     if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
     
-    // UPDATED: Dynamically change the Home Hero greeting!
+    // UPDATED: Dynamic greeting now stacks cleanly using innerHTML and a <br> tag!
     const greetingEl = document.getElementById('home-greeting');
     if (greetingEl) {
         if (!sel || sel.value === 'All' || sel.value === 'Everyone') {
-            greetingEl.innerText = "The USA 2026 Adventure";
+            greetingEl.innerHTML = "The USA 2026<br>Adventure";
         } else {
-            greetingEl.innerText = "Welcome, " + sel.value;
+            greetingEl.innerHTML = "Welcome<br>" + escapeHTML(sel.value);
         }
     }
 
