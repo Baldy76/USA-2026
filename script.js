@@ -227,7 +227,10 @@ function updateTimeAndCountdown() { safeRun('Clocks', () => {
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
     const ptTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' }).format(now);
     
-    if(document.getElementById('clock-uk')) document.getElementById('clock-ukinnerText = ukTime;
+    // ==========================================
+    // THE FIX: The missing quote mark and bracket have been restored!
+    // ==========================================
+    if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
     if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = ptTime;
 })};
 
@@ -239,8 +242,6 @@ function saveTripSettings() { safeRun('SaveTrip', () => {
 // ==========================================
 // 3. MASTER CLOUD DATA ENGINE (WITH OFFLINE MODE)
 // ==========================================
-
-// NEW: Manual Force Sync for the Admin Button
 async function forceDataSync() { safeRunAsync('ForceSync', async () => {
     const btn = document.getElementById('btn-force-sync');
     if (btn) { btn.innerText = "⏳ Syncing..."; btn.style.opacity = "0.7"; }
@@ -697,11 +698,9 @@ window.onload = () => {
     safeRunAsync('InitCurrency', initLiveCurrency); 
     safeRunAsync('InitDataEngine', loadAllData); 
 
-    // NEW: Background refresh loops to keep data perfectly in sync
     setInterval(() => safeRunAsync('BackgroundDataSync', loadAllData), 600000); 
 };
 
-// NEW: Instantly pulls fresh data if you unlock your phone after being asleep
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
         safeRunAsync('ForegroundDataSync', loadAllData);
@@ -713,8 +712,12 @@ if ('serviceWorker' in navigator) {
 }
 
 function syncUpdates() {
+    // Clear out weather cache to force a fresh fetch
+    localStorage.removeItem('weatherCache');
+    
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => { for (let r of regs) r.update(); });
     }
-    alert("Updating..."); window.location.reload(true); 
+    alert("Cache cleared! Reloading..."); 
+    window.location.reload(true); 
 }
