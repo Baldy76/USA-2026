@@ -126,6 +126,54 @@ window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     window.scrollTo(0,0); 
 })};
 
+// ==========================================
+// SWIPE NAVIGATION ENGINE (v2.1.3)
+// ==========================================
+let touchstartX = 0;
+let touchendX = 0;
+const swipeThreshold = 50; 
+
+const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
+
+function handleSwipe() {
+    const distance = touchendX - touchstartX;
+    if (Math.abs(distance) < swipeThreshold) return; 
+
+    const activeTab = document.querySelector('.tab-content.active');
+    if (!activeTab || !tabOrder.includes(activeTab.id)) return; 
+
+    const currentIndex = tabOrder.indexOf(activeTab.id);
+
+    if (distance < 0) {
+        // Swiped Left 👈 
+        if (currentIndex < tabOrder.length - 1) {
+            const nextTab = tabOrder[currentIndex + 1];
+            openTab(nextTab, 'nav-btn-' + nextTab);
+        }
+    } else {
+        // Swiped Right 👉 
+        if (currentIndex > 0) {
+            const prevTab = tabOrder[currentIndex - 1];
+            openTab(prevTab, 'nav-btn-' + prevTab);
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const mainContent = document.getElementById('content');
+    if(mainContent) {
+        mainContent.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        mainContent.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+    }
+});
+// ==========================================
+
 function switchDayView(day) { safeRun('SwitchDay', () => {
     const todayView = document.getElementById('today-view');
     const tomorrowView = document.getElementById('tomorrow-view');
@@ -377,7 +425,7 @@ function addCustomFamily() { safeRun('AddFamily', () => {
 async function preCacheImages() {
     if ('caches' in window) {
         try {
-            const cache = await caches.open('holiday-planner-v2.1.1');
+            const cache = await caches.open('holiday-planner-v2.1.3'); // Bumped to v2.1.3
             const imgUrls = vaultAndStaysData
                 .map(cols => cols[7] ? cols[7].trim() : '')
                 .filter(url => url.startsWith('http'));
