@@ -43,6 +43,16 @@ function parseDateTime(dateStr, timeStr = '') {
     return isNaN(d) ? 0 : d.getTime();
 }
 
+const fetchWithTimeout = async (resource, options = {}) => {
+    const { timeout = 4000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(resource, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    if (!response.ok) throw new Error("Bad Network Response");
+    return response;
+};
+
 // ==========================================
 // 1. THEME & NEW SPA NAVIGATION ENGINE
 // ==========================================
@@ -54,7 +64,7 @@ function applyTheme(isDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
-    const activePage = document.querySelector('.tab-content.active')?.id || 'home';
+    const activePage = document.querySelector('.tab-content.active')?.id || 'splash';
     updateMetaThemeColor(activePage, isDark);
 }
 
@@ -69,6 +79,7 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
+    else if (pageId === 'splash') metaColor = isDark ? '#0b0e14' : '#f2f5f9';
     
     const meta = document.getElementById('theme-meta'); 
     if (meta) meta.content = metaColor;
@@ -77,31 +88,40 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
 window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     if (navigator.vibrate) navigator.vibrate(40); 
 
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    const targetPage = document.getElementById(pageId);
-    if(targetPage) { 
-        targetPage.classList.add('active'); 
-    }
-
-    if (buttonId) {
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
+    const updateDOM = () => {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
         });
-        const activeBtn = document.getElementById(buttonId); 
-        if(activeBtn) activeBtn.classList.add('active');
-    }
 
-    document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-    if (pageId === 'la') document.body.classList.add('theme-la');
-    else if (pageId === 'utah') document.body.classList.add('theme-utah');
-    else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
-    else if (pageId === 'flights') document.body.classList.add('theme-flights');
-    
-    updateMetaThemeColor(pageId);
-    window.scrollTo(0,0); 
+        const targetPage = document.getElementById(pageId);
+        if(targetPage) { 
+            targetPage.classList.add('active'); 
+        }
+
+        if (buttonId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(buttonId); 
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+        if (pageId === 'splash') document.body.classList.add('theme-splash');
+        else if (pageId === 'la') document.body.classList.add('theme-la');
+        else if (pageId === 'utah') document.body.classList.add('theme-utah');
+        else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
+        else if (pageId === 'flights') document.body.classList.add('theme-flights');
+        
+        updateMetaThemeColor(pageId);
+        window.scrollTo(0,0); 
+    };
+
+    if (!document.startViewTransition) {
+        updateDOM();
+    } else {
+        document.startViewTransition(() => updateDOM());
+    }
 })};
 
 function switchDayView(day) { safeRun('SwitchDay', () => {
@@ -159,7 +179,7 @@ function convertCurrency() { safeRun('ConvertCurr', () => {
 
 async function initLiveCurrency() {
     try {
-        const response = await fetch('https://api.frankfurter.app/latest?from=GBP&to=USD');
+        const response = await fetchWithTimeout('https://api.frankfurter.app/latest?from=GBP&to=USD', { timeout: 3000 });
         const data = await response.json();
         if (data.rates && data.rates.USD) {
             liveExchangeRate = data.rates.USD;
@@ -207,7 +227,7 @@ function updateTimeAndCountdown() { safeRun('Clocks', () => {
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
     const ptTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' }).format(now);
     
-    if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
+    if(document.getElementById('clock-uk')) document.getElementById('clock-ukinnerText = ukTime;
     if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = ptTime;
 })};
 
@@ -219,32 +239,43 @@ function saveTripSettings() { safeRun('SaveTrip', () => {
 // ==========================================
 // 3. MASTER CLOUD DATA ENGINE (WITH OFFLINE MODE)
 // ==========================================
+
+// NEW: Manual Force Sync for the Admin Button
+async function forceDataSync() { safeRunAsync('ForceSync', async () => {
+    const btn = document.getElementById('btn-force-sync');
+    if (btn) { btn.innerText = "⏳ Syncing..."; btn.style.opacity = "0.7"; }
+    
+    await loadAllData();
+    
+    if (btn) { 
+        btn.innerText = "✅ Up to Date!"; 
+        btn.style.opacity = "1";
+        setTimeout(() => { btn.innerText = "⬇️ Pull Latest Data"; }, 3000);
+    }
+})};
+
 async function loadAllData() {
     let itinData = '';
     let vData = '';
 
     try {
-        // Attempt to fetch fresh data from Google
         const [itineraryRes, vaultRes] = await Promise.all([
-            fetch(sheetUrl),
-            fetch(vaultUrl)
+            fetchWithTimeout(sheetUrl, { timeout: 4000 }),
+            fetchWithTimeout(vaultUrl, { timeout: 4000 })
         ]);
         
         itinData = await itineraryRes.text();
         vData = await vaultRes.text();
 
-        // Success! Save a backup copy to the phone's local storage
         localStorage.setItem('offline_itinerary', itinData);
         localStorage.setItem('offline_vault', vData);
 
     } catch (e) { 
-        console.warn("[OFFLINE MODE] No internet connection. Loading backup data..."); 
+        console.warn("[OFFLINE MODE] Network slow/blocked. Bypassing fetch & loading backup..."); 
         
-        // If the fetch fails, grab the backup copies
         itinData = localStorage.getItem('offline_itinerary') || '';
         vData = localStorage.getItem('offline_vault') || '';
         
-        // If there's no backup and no internet, show a warning and halt
         if (!itinData && !vData) {
             console.error("[OFFLINE MODE] No backup data found.");
             return;
@@ -252,7 +283,6 @@ async function loadAllData() {
     }
 
     try {
-        // --- Process Itinerary Data ---
         if (itinData) {
             const iRows = itinData.split('\n').slice(1);
             itineraryData = iRows.filter(r => r.trim() !== '');
@@ -271,7 +301,6 @@ async function loadAllData() {
             });
         }
 
-        // --- Process Vault Data ---
         if (vData) {
             const vRows = vData.split('\n').slice(1);
             vaultAndStaysData = vRows.filter(r => r.trim() !== '');
@@ -283,11 +312,12 @@ async function loadAllData() {
             });
         }
 
-        // --- Render Everything ---
         safeRun('PopulateDropdown', populateDropdown);
         safeRun('RenderItinerary', renderItinerary);
         safeRun('RenderVault', renderTravelVault);
         safeRun('RenderAcc', renderAccommodations);
+
+        updateFamilyFilter();
 
     } catch (parseError) { 
         console.error("[MODULE ISOLATED] Data Parsing Failed:", parseError); 
@@ -325,7 +355,6 @@ function addCustomFamily() { safeRun('AddFamily', () => {
         document.getElementById('new-family-name').value = ''; 
     }
 })};
-
 
 // ==========================================
 // 4. VAULT & ACCOMMODATION RENDERING
@@ -528,6 +557,16 @@ function renderItinerary() { safeRun('RenderItin', () => {
 function updateFamilyFilter() { safeRun('UpdateFilter', () => {
     const sel = document.getElementById('family-selector');
     if(sel) { localStorage.setItem('savedFamilyFilter', sel.value); }
+    
+    const greetingEl = document.getElementById('home-greeting');
+    if (greetingEl) {
+        if (!sel || sel.value === 'All' || sel.value === 'Everyone') {
+            greetingEl.innerHTML = "The USA 2026<br>Adventure";
+        } else {
+            greetingEl.innerHTML = "Welcome<br>" + escapeHTML(sel.value);
+        }
+    }
+
     renderItinerary(); 
     renderTravelVault();
     renderAccommodations();
@@ -535,7 +574,7 @@ function updateFamilyFilter() { safeRun('UpdateFilter', () => {
 
 
 // ==========================================
-// 5. WEATHER ENGINE (With Fallback)
+// 5. WEATHER ENGINE (WITH LAG-FREE CACHING)
 // ==========================================
 const W_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 const getWeatherIcon = (c) => { 
@@ -543,92 +582,47 @@ const getWeatherIcon = (c) => {
     return m[c] || '🌤️'; 
 };
 
+function renderWeatherToDOM(d, fData, locName) {
+    if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
+    if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
+    if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
+    if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
+    
+    const mainWeather = d.weather[0].main.toLowerCase();
+    let bgImage = 'bg.jpg'; 
+    if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
+    else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
+    else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
+    else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
+    document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
+
+    let forecastHtml = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
+        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+        return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
+    }).join('');
+    
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `
+        <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
+            <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
+            <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
+            <div class="WTH-hero-desc">${d.weather[0].description}</div>
+            <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
+                📍 ${escapeHTML(locName)}
+            </div>
+        </div>
+        <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
+        ${forecastHtml}
+    `; 
+}
+
 async function fetchAndRenderWeather(lat, lon, fallbackName = null) {
     try { 
-        const res = await fetch("https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
-        if(!res.ok) throw new Error("API Error");
-        const d = await res.json(); 
-        
-        const locName = fallbackName || d.name;
-        if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
-        if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
-        if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
-        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
-        
-        const mainWeather = d.weather[0].main.toLowerCase();
-        let bgImage = 'bg.jpg'; 
-        if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
-        else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
-        else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
-        else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
-        document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
+        const cachedData = JSON.parse(localStorage.getItem('weatherCache'));
+        if (cachedData && (Date.now() - cachedData.timestamp < 1800000)) {
+            renderWeatherToDOM(cachedData.current, cachedData.forecast, cachedData.locName);
+            return; 
+        }
 
-        const fRes = await fetch("https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + W_API_KEY + "&units=metric"); 
-        const fData = await fRes.json();
-        let forecastHtml = fData.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-            const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-            return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
-        }).join('');
-        
-        const wDash = document.getElementById('WTH-dashboard');
-        if (wDash) wDash.innerHTML = `
-            <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
-                <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
-                <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
-                <div class="WTH-hero-desc">${d.weather[0].description}</div>
-                <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">
-                    📍 ${escapeHTML(locName)}
-                </div>
-            </div>
-            <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
-            ${forecastHtml}
-        `; 
-    } catch (e) { 
-        console.error("[MODULE ISOLATED] Weather Fetch Failed", e);
-        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; 
-    }
-}
-
-async function initWeather() {
-    const fallbackLat = 34.0522, fallbackLon = -118.2437;
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => { safeRunAsync('WeatherFetch', () => fetchAndRenderWeather(pos.coords.latitude, pos.coords.longitude)); },
-            (err) => { safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles")); },
-            { timeout: 5000 } 
-        );
-    } else {
-        safeRunAsync('WeatherFallback', () => fetchAndRenderWeather(fallbackLat, fallbackLon, "Los Angeles"));
-    }
-}
-
-// ==========================================
-// 6. INITIALIZATION & PWA
-// ==========================================
-window.onload = () => {
-    safeRun('InitTheme', () => {
-        applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
-        document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-        updateMetaThemeColor('home');
-    });
-    
-    safeRun('InitClocks', () => {
-        updateTimeAndCountdown();
-        setInterval(updateTimeAndCountdown, 60000); 
-    });
-    
-    safeRun('InitWeather', initWeather);
-    safeRunAsync('InitCurrency', initLiveCurrency); 
-    safeRunAsync('InitDataEngine', loadAllData); 
-};
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
-}
-
-function syncUpdates() {
-    if('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(regs => { for (let r of regs) r.update(); });
-    }
-    alert("Updating..."); window.location.reload(true); 
-}
+        const [currentRes, forecastRes] = await Promise.all([
+            fetchWithTimeout("https://api
