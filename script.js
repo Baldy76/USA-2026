@@ -226,11 +226,19 @@ async function loadAllData() {
     let vData = '';
 
     try {
+        // Create a unique timestamp to bypass Google's 5-minute cache
+        const cacheBuster = `&t=${Date.now()}`;
+        
         const [itineraryRes, vaultRes] = await Promise.all([
-            fetch(sheetUrl),
-            fetch(vaultUrl)
+            fetch(sheetUrl + cacheBuster),
+            fetch(vaultUrl + cacheBuster)
         ]);
         
+        // If Google returns an error (like a 500 status), throw an error to trigger the offline fallback
+        if (!itineraryRes.ok || !vaultRes.ok) {
+            throw new Error("Google Sheets returned an error status.");
+        }
+
         itinData = await itineraryRes.text();
         vData = await vaultRes.text();
 
@@ -238,7 +246,7 @@ async function loadAllData() {
         localStorage.setItem('offline_vault', vData);
 
     } catch (e) { 
-        console.warn("[OFFLINE MODE] No internet connection. Loading backup data..."); 
+        console.warn("[OFFLINE MODE] No internet connection or API failed. Loading backup data..."); 
         
         itinData = localStorage.getItem('offline_itinerary') || '';
         vData = localStorage.getItem('offline_vault') || '';
@@ -628,9 +636,37 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
 }
 
-function syncUpdates() {
+// Replaced old syncUpdates with our dynamic async version
+async function syncUpdates() {
+    const btn = document.querySelector('.sync-btn');
+    if (btn) btn.innerText = "⏳ Syncing...";
+
+    // 1. Tell the Service Worker to look for app updates in the background
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => { for (let r of regs) r.update(); });
     }
-    alert("Updating..."); window.location.reload(true); 
+    
+    // 2. Force a fresh data pull from Google Sheets
+    await safeRunAsync('InitDataEngine', loadAllData); 
+    
+    // 3. Update the button to show success, then reset it
+    if (btn) {
+        btn.innerText = "✅ Synced!";
+        btn.style.backgroundColor = "#28a745"; // Green success color
+        setTimeout(() => { 
+            btn.innerText = "☁️ Force Refresh Data"; 
+            btn.style.backgroundColor = ""; // Reset to default CSS
+        }, 2000);
+    }
 }
+
+// ==========================================
+// 7. AUTO-SYNC ON APP RESUME
+// ==========================================
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        console.log("App resumed: Pulling fresh data from cloud...");
+        // Silently pull new data in the background
+        safeRunAsync('ResumeSync', loadAllData);
+    }
+});
