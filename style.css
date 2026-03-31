@@ -1,7 +1,18 @@
-/* 1. ZERO-LATENCY TOUCH ENGINE */
+/* 1. ZERO-LATENCY & BOX MODEL LOCK (The Layout Fix) */
 * {
     -webkit-tap-highlight-color: transparent; 
     touch-action: manipulation; 
+    /* This forces padding to stay inside the 100% width limit, preventing sideways scrolling */
+    box-sizing: border-box; 
+    /* Forces long URLs or references to break so they don't stretch the screen */
+    overflow-wrap: break-word;
+}
+
+html, body {
+    /* Physically locks the app to the exact width of the phone glass */
+    max-width: 100vw;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* 2. Base Color Palette & Dynamic CSS Variables */
@@ -41,7 +52,6 @@ body {
     /* Safely pads the bottom of the scroll area based on device notch */
     padding-bottom: calc(120px + env(safe-area-inset-bottom)); 
     transition: background-color 0.3s ease; position: relative;
-    overflow-x: hidden;
     /* Kills browser pull-to-refresh */
     overscroll-behavior-y: none; 
 }
@@ -49,6 +59,7 @@ body {
 #content {
     /* Enables native rubber-band scrolling on iOS */
     -webkit-overflow-scrolling: touch; 
+    width: 100%;
 }
 
 body::before {
@@ -59,7 +70,7 @@ body::before {
 body.dark-mode::before { opacity: 0.06; }
 
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
-.page { padding: 20px; max-width: 600px; margin: 0 auto; overflow-x: hidden; }
+.page { padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
 
 /* OPTIMIZED SPA ENGINE */
 .tab-content { 
@@ -158,7 +169,7 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .admin-card { padding: 24px; }
 .admin-card label, .admin-card h3 { display: block; margin-bottom: 12px; margin-top: 0; font-weight: 800; font-size: 18px; }
 .admin-card select, .admin-card input, .admin-card textarea {
-    width: 100%; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 16px; border: 2px solid var(--ios-grey); background-color: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; outline: none; -webkit-appearance: none; font-family: inherit; transition: border-color 0.2s ease;
+    width: 100%; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 16px; border: 2px solid var(--ios-grey); background-color: var(--bg); color: var(--text); margin-bottom: 15px; outline: none; -webkit-appearance: none; font-family: inherit; transition: border-color 0.2s ease;
 }
 .admin-card select:focus, .admin-card input:focus, .admin-card textarea:focus { border-color: var(--accent); }
 .action-btn { 
@@ -168,7 +179,7 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 }
 .action-btn:active { transform: scale(0.96); }
 
-.theme-segmented-control { display: flex; background: var(--ios-grey); border-radius: 16px; padding: 6px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+.theme-segmented-control { display: flex; background: var(--ios-grey); border-radius: 16px; padding: 6px; width: 100%; margin-bottom: 10px; }
 .segment { flex: 1; padding: 14px; border-radius: 12px; border: none; background: transparent; font-weight: 800; color: var(--text); opacity: 0.5; font-size: 15px; cursor: pointer; transition: all 0.2s ease; user-select: none; }
 .segment.active { background: var(--card); opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: var(--text); }
 .version-control { text-align: center; margin-top: 30px; font-size: 13px; font-weight: 800; color: var(--text); opacity: 0.3; padding-bottom: 40px; }
