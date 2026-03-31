@@ -22,53 +22,39 @@
             </div>
         </section>
 
-        <section id="la" class="page tab-content">
-            <div class="city-hero" style="background-image: url('la.jpg');">
-                <h2>Los Angeles</h2>
-            </div>
-            <div id="la-home-card"></div>
-            <div id="la-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div> 
-        </section>
-
-        <section id="utah" class="page tab-content">
-            <div class="city-hero" style="background-image: url('utah.jpg');">
-                <h2>Utah</h2>
-            </div>
-            <div id="utah-home-card"></div>
-            <div id="utah-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div>
-        </section>
-
         <section id="home" class="page tab-content">
             
-            <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
-                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
-                    <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
-                </div>
-
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
-                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">--:--</div>
-                        </div>
-                        <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
-                            <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
-                        </div>
+            <div class="city-hero" style="background-image: url('home-bg.jpg'); height: auto; min-height: 280px; flex-direction: column; align-items: stretch; justify-content: center; padding: 30px 20px; text-align: center; border-radius: 32px; box-shadow: 0 12px 35px var(--shadow);">
+                
+                <h2 id="home-greeting" style="position: relative; z-index: 2; color: white; margin-top: 0; margin-bottom: 25px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); font-size: 28px;">The USA 2026 Adventure</h2>
+                
+                <div id="time-engine" style="position: relative; z-index: 2; margin-bottom: 0;">
+                    
+                    <div id="countdown-display" style="display: none; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: white; padding: 24px 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);">
+                        <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">-- Days to Go!</div>
+                        <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.9; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 12px; display: inline-block;">Loading Date...</div>
                     </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">
-                        Loading Date...
+
+                    <div id="dual-clocks" style="display: none; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 24px; padding: 24px 20px; border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
+                            <div>
+                                <div style="font-size: 12px; font-weight: 800; opacity: 0.7; text-transform: uppercase;">🇬🇧 UK Time</div>
+                                <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">--:--</div>
+                            </div>
+                            <div style="width: 2px; background: rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 800; opacity: 0.7; text-transform: uppercase;">🇺🇸 Local</div>
+                                <div id="clock-local" style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">--:--</div>
+                            </div>
+                        </div>
+                        <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: white; background: rgba(255,255,255,0.15); padding: 10px; border-radius: 16px;">
+                            Loading Date...
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')">
+            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')" style="margin-top: 24px;">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
                     <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s ease;">📍 Locating...</div>
@@ -154,69 +140,38 @@
 
         </section>
 
+        <section id="la" class="page tab-content">
+            <div class="city-hero" style="background-image: url('la.jpg');"><h2>Los Angeles</h2></div>
+            <div id="la-home-card"></div><div id="la-itinerary"></div> 
+        </section>
+
+        <section id="utah" class="page tab-content">
+            <div class="city-hero" style="background-image: url('utah.jpg');"><h2>Utah</h2></div>
+            <div id="utah-home-card"></div><div id="utah-itinerary"></div>
+        </section>
+
         <section id="weather-root" class="page tab-content">
-            <div id="WTH-dashboard">
-                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-            </div>
+            <div id="WTH-dashboard"><div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div></div>
         </section>
 
         <section id="vegas" class="page tab-content">
-            <div class="city-hero" style="background-image: url('vegas.jpg');">
-                <h2>Las Vegas</h2>
-            </div>
-            <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-            </div>
+            <div class="city-hero" style="background-image: url('vegas.jpg');"><h2>Las Vegas</h2></div>
+            <div id="vegas-home-card"></div><div id="vegas-itinerary"></div>
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
-            <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;">
-                <span class="empty-icon">☁️</span>
-                <div class="empty-text">No Travel Data</div>
-                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
-            </div>
+            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;"><h2>Travel Details</h2></div>
+            <div id="flights-vault-display"></div><div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Travel Data</div></div>
         </section>
 
         <section id="admin" class="page tab-content">
             <h2>Admin</h2>
-            
-            <div class="admin-card">
-                <h3>Theme Selection</h3>
-                <div class="theme-segmented-control">
-                    <button id="btnLight" class="segment active" onclick="setThemeMode(false)">☀️ Light</button>
-                    <button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button>
-                </div>
-            </div>
-
-            <div class="admin-card">
-                <h3>✈️ Trip Settings</h3>
-                <label>Trip Start Date:</label>
-                <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
-            </div>
-
-            <div class="admin-card">
-                <h3>App Settings</h3>
-                <label>Select Your Family:</label>
-                <select id="family-selector" onchange="updateFamilyFilter()"></select>
-            </div>
-
-            <div class="admin-card">
-                <h3>Add Custom Family Name</h3>
-                <input type="text" id="new-family-name" />
-                <button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button>
-            </div>
-            
-            <div class="admin-card">
-                <h3>App Maintenance</h3>
-                <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
-            </div>
-
-            <div class="version-control">ULTIMATE PLANNER // v2.1.2</div>
+            <div class="admin-card"><h3>Theme Selection</h3><div class="theme-segmented-control"><button id="btnLight" class="segment active" onclick="setThemeMode(false)">☀️ Light</button><button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button></div></div>
+            <div class="admin-card"><h3>✈️ Trip Settings</h3><label>Trip Start Date:</label><input type="date" id="trip-start-date" onchange="saveTripSettings()" /></div>
+            <div class="admin-card"><h3>App Settings</h3><label>Select Your Family:</label><select id="family-selector" onchange="updateFamilyFilter()"></select></div>
+            <div class="admin-card"><h3>Add Custom Family Name</h3><input type="text" id="new-family-name" /><button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button></div>
+            <div class="admin-card"><h3>App Maintenance</h3><button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button></div>
+            <div class="version-control">ULTIMATE PLANNER // v2.2.0</div>
         </section>
     </main>
 
