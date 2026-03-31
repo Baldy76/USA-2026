@@ -7,7 +7,8 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="style.css?v=2.3.3">
 </head>
 <body class="light-mode theme-splash">
 
@@ -188,7 +189,7 @@
             <div class="admin-card"><h3>App Settings</h3><label>Select Your Family:</label><select id="family-selector" onchange="updateFamilyFilter()"></select></div>
             <div class="admin-card"><h3>Add Custom Family Name</h3><input type="text" id="new-family-name" /><button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button></div>
             <div class="admin-card"><h3>App Maintenance</h3><button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Clear Cache</button></div>
-            <div class="version-control">ULTIMATE PLANNER // v2.3.1</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.3.3</div>
         </section>
     </main>
 
@@ -200,6 +201,6 @@
         <button id="nav-btn-flights" onclick="openTab('flights', 'nav-btn-flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=2.3.3"></script>
 </body>
 </html>
