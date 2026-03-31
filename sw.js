@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v2.1.2';
+const CACHE_NAME = 'holiday-planner-v2.2.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -14,7 +14,8 @@ const ASSETS_TO_CACHE = [
     './clouds.jpg',
     './rain.jpg',
     './snow.jpg',
-    './logo.png'
+    './logo.png',
+    './home-bg.jpg'
 ];
 
 self.addEventListener('install', event => {
