@@ -2,17 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Super Holiday Planner 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-mode">
+<body class="light-mode theme-splash">
 
     <main id="content">
         
+        <section id="splash" class="tab-content active" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: 9999; background-color: var(--bg); overflow: hidden; touch-action: none;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; width: 100%; padding: 20px; box-sizing: border-box;">
+                <img src="logo.png" alt="USA 2026 Logo" class="splash-logo" style="width: 220px; height: 220px; margin-bottom: 40px; object-fit: cover;">
+                <h1 style="font-size: 38px; font-weight: 900; margin-bottom: 5px; color: var(--text);">USA 2026</h1>
+                <p style="opacity: 0.5; font-weight: 800; margin-bottom: 50px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">The Ultimate Itinerary</p>
+                <button onclick="openTab('home', 'nav-btn-home')" class="action-btn" style="padding: 20px 50px; font-size: 20px; border-radius: 30px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.4); max-width: 250px;">Let's Go!</button>
+            </div>
+        </section>
+
         <section id="la" class="page tab-content">
             <div class="city-hero" style="background-image: url('la.jpg');">
                 <h2>Los Angeles</h2>
@@ -33,33 +42,39 @@
             </div>
         </section>
 
-        <section id="home" class="page tab-content active">
+        <section id="home" class="page tab-content">
             
-            <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="countdown-display" style="display: none; background: var(--accent); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px var(--shadow);">
-                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
-                    <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.8; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 12px; display: inline-block;">Loading Date...</div>
-                </div>
-
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
-                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">--:--</div>
-                        </div>
-                        <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
-                            <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
-                        </div>
+            <div class="city-hero" style="background-image: url('home-bg.jpg'); height: auto; min-height: 280px; flex-direction: column; align-items: stretch; justify-content: center; padding: 30px 20px; text-align: center; border-radius: 32px; box-shadow: 0 12px 35px var(--shadow);">
+                
+                <h2 id="home-greeting" style="position: relative; z-index: 2; color: white; margin-top: 0; margin-bottom: 25px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); font-size: 28px; line-height: 1.2;">The USA 2026<br>Adventure</h2>
+                
+                <div id="time-engine" style="position: relative; z-index: 2; margin-bottom: 0;">
+                    
+                    <div id="countdown-display" style="display: none; background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: white; padding: 24px 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);">
+                        <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">-- Days to Go!</div>
+                        <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.9; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 12px; display: inline-block;">Loading Date...</div>
                     </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">
-                        Loading Date...
+
+                    <div id="dual-clocks" style="display: none; background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 24px; padding: 24px 20px; border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
+                            <div>
+                                <div style="font-size: 12px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">🇬🇧 UK Time</div>
+                                <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">--:--</div>
+                            </div>
+                            <div style="width: 2px; background: rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">🇺🇸 Local</div>
+                                <div id="clock-local" style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">--:--</div>
+                            </div>
+                        </div>
+                        <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: white; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 16px;">
+                            Loading Date...
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')">
+            <div id="home-weather-pill" class="weather-pill" onclick="openTab('weather-root')" style="margin-top: 24px;">
                 <span style="font-size: 30px;" id="hw-icon">🌤️</span>
                 <div style="flex:1; text-align: left;">
                     <div id="hw-loc" style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s ease;">📍 Locating...</div>
@@ -139,82 +154,48 @@
                 </div>
             </div>
 
-            <button onclick="openTab('admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
+            <button onclick="openTab('admin')" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #ff3b30 0%, #d11141 100%); color: white; border: none; font-weight: 900; padding: 20px; box-shadow: 0 8px 24px rgba(255, 59, 48, 0.3);">
                 ⚙️ Admin & Trip Settings
             </button>
 
         </section>
 
         <section id="weather-root" class="page tab-content">
-            <div id="WTH-dashboard">
-                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-            </div>
+            <div id="WTH-dashboard"><div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div></div>
         </section>
 
         <section id="vegas" class="page tab-content">
-            <div class="city-hero" style="background-image: url('vegas.jpg');">
-                <h2>Las Vegas</h2>
-            </div>
-            <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-            </div>
+            <div class="city-hero" style="background-image: url('vegas.jpg');"><h2>Las Vegas</h2></div>
+            <div id="vegas-home-card"></div><div id="vegas-itinerary"></div>
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
-            <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;">
-                <span class="empty-icon">☁️</span>
-                <div class="empty-text">No Travel Data</div>
-                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
-            </div>
+            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;"><h2>Travel Details</h2></div>
+            <div id="flights-vault-display"></div><div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Travel Data</div></div>
         </section>
 
         <section id="admin" class="page tab-content">
             <h2>Admin</h2>
-            
-            <div class="admin-card">
-                <h3>Theme Selection</h3>
-                <div class="theme-segmented-control">
-                    <button id="btnLight" class="segment active" onclick="setThemeMode(false)">☀️ Light</button>
-                    <button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button>
-                </div>
-            </div>
 
             <div class="admin-card">
-                <h3>✈️ Trip Settings</h3>
-                <label>Trip Start Date:</label>
-                <input type="date" id="trip-start-date" onchange="saveTripSettings()" />
-            </div>
-
-            <div class="admin-card">
-                <h3>App Settings</h3>
-                <label>Select Your Family:</label>
-                <select id="family-selector" onchange="updateFamilyFilter()"></select>
-            </div>
-
-            <div class="admin-card">
-                <h3>Add Custom Family Name</h3>
-                <input type="text" id="new-family-name" />
-                <button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button>
+                <h3>☁️ Cloud Sync</h3>
+                <p style="font-size: 13px; opacity: 0.6; margin-top: 0; margin-bottom: 15px; line-height: 1.4;">Google takes ~5 mins to publish sheet changes. The app auto-syncs every 10 mins and on wake.</p>
+                <button id="btn-force-sync" onclick="forceDataSync()" class="action-btn" style="background-color: var(--accent); color: white;">⬇️ Pull Latest Data</button>
             </div>
             
-            <div class="admin-card">
-                <h3>App Maintenance</h3>
-                <button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Sync Updates</button>
-            </div>
-
-            <div class="version-control">ULTIMATE PLANNER // v1.9.0</div>
+            <div class="admin-card"><h3>Theme Selection</h3><div class="theme-segmented-control"><button id="btnLight" class="segment active" onclick="setThemeMode(false)">☀️ Light</button><button id="btnDark" class="segment" onclick="setThemeMode(true)">🌙 Dark</button></div></div>
+            <div class="admin-card"><h3>✈️ Trip Settings</h3><label>Trip Start Date:</label><input type="date" id="trip-start-date" onchange="saveTripSettings()" /></div>
+            <div class="admin-card"><h3>App Settings</h3><label>Select Your Family:</label><select id="family-selector" onchange="updateFamilyFilter()"></select></div>
+            <div class="admin-card"><h3>Add Custom Family Name</h3><input type="text" id="new-family-name" /><button onclick="addCustomFamily()" class="action-btn">➕ Add to List</button></div>
+            <div class="admin-card"><h3>App Maintenance</h3><button onclick="syncUpdates()" class="action-btn sync-btn">🔄 Clear Cache</button></div>
+            <div class="version-control">ULTIMATE PLANNER // v2.3.1</div>
         </section>
     </main>
 
     <nav class="bottom-nav">
         <button id="nav-btn-la" onclick="openTab('la', 'nav-btn-la')" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
         <button id="nav-btn-utah" onclick="openTab('utah', 'nav-btn-utah')" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
-        <button id="nav-btn-home" onclick="openTab('home', 'nav-btn-home')" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button id="nav-btn-home" onclick="openTab('home', 'nav-btn-home')" class="nav-btn"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button id="nav-btn-vegas" onclick="openTab('vegas', 'nav-btn-vegas')" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
         <button id="nav-btn-flights" onclick="openTab('flights', 'nav-btn-flights')" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
