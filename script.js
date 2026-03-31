@@ -78,32 +78,42 @@ function updateMetaThemeColor(pageId, isDark = document.body.classList.contains(
 window.openTab = (pageId, buttonId = null) => { safeRun('Navigation', () => {
     if (navigator.vibrate) navigator.vibrate(40); 
 
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    const targetPage = document.getElementById(pageId);
-    if(targetPage) { 
-        targetPage.classList.add('active'); 
-    }
-
-    if (buttonId) {
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
+    // The core DOM manipulation function
+    const updateDOM = () => {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
         });
-        const activeBtn = document.getElementById(buttonId); 
-        if(activeBtn) activeBtn.classList.add('active');
-    }
 
-    document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
-    if (pageId === 'splash') document.body.classList.add('theme-splash');
-    else if (pageId === 'la') document.body.classList.add('theme-la');
-    else if (pageId === 'utah') document.body.classList.add('theme-utah');
-    else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
-    else if (pageId === 'flights') document.body.classList.add('theme-flights');
-    
-    updateMetaThemeColor(pageId);
-    window.scrollTo(0,0); 
+        const targetPage = document.getElementById(pageId);
+        if(targetPage) { 
+            targetPage.classList.add('active'); 
+        }
+
+        if (buttonId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(buttonId); 
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
+        if (pageId === 'splash') document.body.classList.add('theme-splash');
+        else if (pageId === 'la') document.body.classList.add('theme-la');
+        else if (pageId === 'utah') document.body.classList.add('theme-utah');
+        else if (pageId === 'vegas') document.body.classList.add('theme-vegas');
+        else if (pageId === 'flights') document.body.classList.add('theme-flights');
+        
+        updateMetaThemeColor(pageId);
+        window.scrollTo(0,0); 
+    };
+
+    // Use the native View Transitions API if supported, otherwise standard render
+    if (!document.startViewTransition) {
+        updateDOM();
+    } else {
+        document.startViewTransition(() => updateDOM());
+    }
 })};
 
 function switchDayView(day) { safeRun('SwitchDay', () => {
@@ -608,7 +618,6 @@ window.onload = () => {
     
     safeRun('InitTheme', () => {
         applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
-        // Let the splash screen theme take over immediately
         document.body.classList.remove('theme-la', 'theme-utah', 'theme-vegas', 'theme-flights');
         document.body.classList.add('theme-splash');
         updateMetaThemeColor('splash');
