@@ -123,17 +123,20 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); transform: scale(0.98); border: 1px dashed var(--ios-grey); box-shadow: none; margin-bottom: 12px; }
 
 /* =========================================
-   10. PRO UPGRADES (v2.1.8)
+   10. PRO UPGRADES (v2.1.9)
    ========================================= */
 
-/* Directional Page Transitions */
+/* Directional Page Transitions - FIXED */
 .tab-content { display: none !important; width: 100%; }
+.tab-content.active { display: block !important; } 
+
 @keyframes slideInRight { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes slideInLeft { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes fadePop { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.tab-content.active.slide-right { display: block !important; animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-.tab-content.active.slide-left { display: block !important; animation: slideInLeft 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-.tab-content.active.fade-pop { display: block !important; animation: fadePop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+.tab-content.active.slide-right { animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.tab-content.active.slide-left { animation: slideInLeft 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.tab-content.active.fade-pop { animation: fadePop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
 /* Offline Banner */
 #offline-banner {
