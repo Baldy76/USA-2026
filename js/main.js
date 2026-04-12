@@ -84,19 +84,17 @@ function startNotificationEngine() {
             if (notified.includes(taskId)) return;
             
             const taskTime = parseDateTime(cols[0], cols[3]);
-            // If the activity is within the next 30 minutes
             if (taskTime > now && (taskTime - now) <= 1800000) { 
-                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'icon-192.png' });
+                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
                 notified.push(taskId);
                 setVal('notifiedTasks', notified);
             }
         });
-    }, 60000); // Check every 1 minute
+    }, 60000); 
 }
 
 // ---- EVENT BINDING ENGINE ----
 function bindEvents() {
-    // Nav & Installs
     document.getElementById('splash-go-btn')?.addEventListener('click', () => openTab('home'));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('btn-install-app')?.addEventListener('click', async () => {
@@ -108,17 +106,14 @@ function bindEvents() {
         }
     });
 
-    // Wallet Uploads
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     
-    // Notifications
     document.getElementById('btn-enable-notifs')?.addEventListener('click', async () => {
         const perm = await Notification.requestPermission();
         if (perm === 'granted') alert("Notifications enabled! We'll ping you 30 mins before an activity.");
         else alert("Notification permission denied by your browser settings.");
     });
 
-    // UI Tools
     document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
     document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
     document.getElementById('btn-show-today')?.addEventListener('click', () => switchDayView('today'));
@@ -126,7 +121,6 @@ function bindEvents() {
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
     
-    // Admin & Calc
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
     document.getElementById('btn-add-family')?.addEventListener('click', addCustomFamily);
@@ -165,17 +159,15 @@ function bindEvents() {
             let completedTasks = await getVal('completedTasks') || [];
             completedTasks.push(modal.dataset.activeTaskId);
             await setVal('completedTasks', completedTasks);
-            syncToCloud('completion', completedTasks); // Push state to cloud
+            syncToCloud('completion', completedTasks); 
             closeCompletionModal(); renderItinerary(); 
         }
     });
 
     document.body.addEventListener('click', async (e) => {
-        // Handle Active Task Clicks
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
         
-        // Handle Un-Completing Tasks
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard && e.target.tagName.toLowerCase() !== 'a') {
             let completedTasks = await getVal('completedTasks') || [];
@@ -185,11 +177,9 @@ function bindEvents() {
             renderItinerary();
         }
 
-        // Handle Map Links
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) window.open(linkBtn.dataset.url, '_blank');
 
-        // Handle Wallet Delete
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -227,7 +217,7 @@ window.addEventListener('load', async () => {
     initLiveCurrency(); autoSetWeatherCity(); updateTimeAndCountdown();
     
     setInterval(updateTimeAndCountdown, 60000);
-    startNotificationEngine(); // Kick off the background notification checker
+    startNotificationEngine(); 
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
