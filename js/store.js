@@ -48,7 +48,7 @@ export const getVal = async (key) => {
 // UTILITIES
 export const escapeHTML = (str) => {
     if (!str) return "";
-    return String(str).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'"); 
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); 
 };
 
 export const parseDateTime = (dateStr, timeStr = '') => {
