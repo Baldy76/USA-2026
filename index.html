@@ -7,9 +7,13 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.7">
+    <link rel="stylesheet" href="style.css?v=2.1.8">
 </head>
 <body class="light-mode theme-splash">
+
+    <div id="offline-banner">✈️ Offline Mode: Viewing saved itinerary.</div>
+
+    <div id="ptr-spinner">↻ Syncing...</div>
 
     <main id="content">
         
@@ -92,6 +96,8 @@
             </div>
             
             <div id="today-view" style="display: block;">
+                <button id="btn-share-today" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Today's Plan</button>
+                
                 <div id="today-itinerary">
                     <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
                 </div>
@@ -102,6 +108,8 @@
             </div>
 
             <div id="tomorrow-view" style="display: none;">
+                <button id="btn-share-tomorrow" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Tomorrow's Plan</button>
+
                 <div id="tomorrow-itinerary">Loading...</div>
                 <div id="tomorrow-completed-section" class="completed-section" style="display: none;">
                     <div class="completed-divider"><span>✅ Completed Tomorrow</span></div>
@@ -244,7 +252,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.7</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.8</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -262,7 +270,19 @@
             </div>
         </div>
 
+        <div id="scratchpad-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; height: 70vh;">
+                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between;">
+                    📝 Trip Notes
+                    <span id="btn-close-scratchpad" style="opacity: 0.5; cursor: pointer;">✕</span>
+                </h3>
+                <textarea id="scratchpad-text" placeholder="Jot down gate changes, packing reminders, or random thoughts here... This saves instantly." style="flex: 1; resize: none; margin-bottom: 0; background: rgba(0,0,0,0.05);"></textarea>
+            </div>
+        </div>
+
     </main>
+
+    <button id="btn-open-scratchpad" class="floating-btn">📝</button>
 
     <nav class="bottom-nav">
         <button id="nav-btn-la" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
@@ -272,6 +292,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
 
-    <script src="script.js?v=2.1.7"></script>
+    <script type="module" src="js/main.js?v=2.1.8"></script>
 </body>
 </html>
