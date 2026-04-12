@@ -29,11 +29,17 @@ export function openTab(pageId, isPopState = false) {
         const curIdx = tabOrder.indexOf(activeTab.id); const newIdx = tabOrder.indexOf(pageId);
         animClass = newIdx > curIdx ? 'slide-right' : 'slide-left';
     }
+    
     document.querySelectorAll('.tab-content').forEach(tab => { tab.className = 'page tab-content'; });
     const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active', animClass);
+    
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById('nav-btn-' + pageId); if(activeBtn) activeBtn.classList.add('active');
-    document.body.className = `light-mode theme-${pageId}`;
+    
+    // THE FIX: Safely grab the current Dark Mode state so it doesn't get wiped out!
+    const isDark = document.body.classList.contains('dark-mode');
+    document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
+    
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0); 
     if (!isPopState) history.pushState({ pageId: pageId }, '', `#${pageId}`);
 }
