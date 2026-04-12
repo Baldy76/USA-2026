@@ -122,11 +122,7 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .completed-divider span { background: var(--bg); padding: 0 15px; position: relative; z-index: 2; font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; color: var(--text); transition: background 0.3s ease; }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); transform: scale(0.98); border: 1px dashed var(--ios-grey); box-shadow: none; margin-bottom: 12px; }
 
-/* =========================================
-   10. PRO UPGRADES (v2.1.9)
-   ========================================= */
-
-/* Directional Page Transitions - FIXED */
+/* 10. PRO UPGRADES (v2.1.13) */
 .tab-content { display: none !important; width: 100%; }
 .tab-content.active { display: block !important; } 
 
@@ -138,7 +134,6 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .tab-content.active.slide-left { animation: slideInLeft 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 .tab-content.active.fade-pop { animation: fadePop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-/* Offline Banner */
 #offline-banner {
     display: none; background: #ff3b30; color: white; text-align: center; padding: 12px; font-size: 13px; font-weight: 900;
     position: fixed; top: 0; width: 100%; z-index: 20000; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
@@ -146,7 +141,6 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 #offline-banner.active { display: block; animation: slideDown 0.3s ease forwards; }
 @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
-/* Floating Scratchpad Button */
 .floating-btn {
     position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; border-radius: 28px;
     background: var(--accent-gradient); color: white; border: none; font-size: 24px; font-weight: 900;
@@ -156,7 +150,6 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .floating-btn:active { transform: scale(0.9); }
 body.theme-splash .floating-btn { display: none; }
 
-/* Custom Pull-to-Refresh Spinner */
 #ptr-spinner {
     position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px) scale(0);
     background: var(--card); border: 1px solid var(--ios-grey); border-radius: 20px; padding: 10px 20px;
@@ -164,3 +157,16 @@ body.theme-splash .floating-btn { display: none; }
     z-index: 1000; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 #ptr-spinner.refreshing { transform: translateX(-50%) translateY(20px) scale(1); }
+
+/* 11. WALLET CSS GRID */
+.wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wallet-item {
+    background-color: var(--ios-grey); background-size: cover; background-position: center; 
+    height: 120px; border-radius: 16px; position: relative; display: flex; align-items: center; justify-content: center;
+    font-size: 40px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 4px 10px var(--shadow);
+}
+.delete-doc-btn {
+    position: absolute; top: -8px; right: -8px; background: #ff3b30; color: white; border: none; border-radius: 50%;
+    width: 28px; height: 28px; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 59, 48, 0.5);
+    z-index: 10; display: flex; align-items: center; justify-content: center;
+}
