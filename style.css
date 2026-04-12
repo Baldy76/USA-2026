@@ -7,7 +7,7 @@ html { overscroll-behavior: none; }
     --bg: #f2f5f9; --card: rgba(255, 255, 255, 0.75); --text: #1c1c1e; --ios-grey: rgba(229, 229, 234, 0.6);  
     --accent: #007aff; --accent-gradient: linear-gradient(135deg, #007aff 0%, #00c6ff 100%);
     --flight-bg: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%);
-    --shadow: rgba(0, 0, 0, 0.08); --bg-image: url('bg.jpg'); 
+    --shadow: rgba(0, 0, 0, 0.08); --bg-image: url('img/bg.jpg'); 
 }
 
 body.dark-mode { 
@@ -122,7 +122,7 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .completed-divider span { background: var(--bg); padding: 0 15px; position: relative; z-index: 2; font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; color: var(--text); transition: background 0.3s ease; }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); transform: scale(0.98); border: 1px dashed var(--ios-grey); box-shadow: none; margin-bottom: 12px; }
 
-/* 10. PRO UPGRADES (v2.1.13) */
+/* 10. PRO UPGRADES */
 .tab-content { display: none !important; width: 100%; }
 .tab-content.active { display: block !important; } 
 
