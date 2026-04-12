@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.16">
+    <link rel="stylesheet" href="style.css?v=2.1.17">
 </head>
 <body class="light-mode theme-splash">
 
@@ -18,11 +18,17 @@
     <main id="content">
         
         <section id="splash" class="page tab-content active">
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; text-align: center;">
-                <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo" style="width: 220px; height: 220px; margin-bottom: 40px; object-fit: cover;">
-                <h1 style="font-size: 38px; font-weight: 900; margin-bottom: 5px; color: var(--text);">USA 2026</h1>
-                <p style="opacity: 0.5; font-weight: 800; margin-bottom: 50px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">The Ultimate Itinerary</p>
-                <button id="splash-go-btn" class="action-btn" style="padding: 20px 50px; font-size: 20px; border-radius: 30px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.4); max-width: 250px;">Let's Go!</button>
+            <div class="splash-container">
+                <div class="splash-glass-card">
+                    <div class="floating-icons">
+                        <span class="icon la-icon">🌴</span>
+                        <span class="icon utah-icon">⛰️</span>
+                        <span class="icon vegas-icon">🎲</span>
+                    </div>
+                    <h1 class="splash-title">USA 2026</h1>
+                    <p class="splash-subtitle">The Ultimate Itinerary</p>
+                    <button id="splash-go-btn" class="action-btn pulse-btn">Begin Journey ✈️</button>
+                </div>
             </div>
         </section>
 
@@ -275,7 +281,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.16</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.17</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -315,6 +321,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.16"></script>
+    <script type="module" src="js/main.js?v=2.1.17"></script>
 </body>
 </html>
