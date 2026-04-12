@@ -1,12 +1,12 @@
 import { state, setVal, getVal } from './store.js';
-import { loadAllData, initLiveCurrency, fetchWeather } from './api.js';
+import { loadAllData, initLiveCurrency } from './api.js';
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
     openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, 
     closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     switchDayView, setTip, calculateTip, convertCurrency, 
     populateDropdown, addCustomFamily, updateFamilyFilter,
-    setWeatherCity, autoSetWeatherCity
+    setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -18,7 +18,6 @@ export function openTab(pageId, isPopState = false) {
     const activeTab = document.querySelector('.tab-content.active');
     let animClass = 'fade-pop'; 
     
-    // Directional Swipe calculation
     if (activeTab && tabOrder.includes(activeTab.id) && tabOrder.includes(pageId)) {
         const curIdx = tabOrder.indexOf(activeTab.id);
         const newIdx = tabOrder.indexOf(pageId);
@@ -26,7 +25,7 @@ export function openTab(pageId, isPopState = false) {
     }
 
     document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.className = 'page tab-content'; // Reset classes
+        tab.className = 'page tab-content'; 
     });
 
     const targetPage = document.getElementById(pageId);
@@ -36,20 +35,18 @@ export function openTab(pageId, isPopState = false) {
     const activeBtn = document.getElementById('nav-btn-' + pageId); 
     if(activeBtn) activeBtn.classList.add('active');
 
-    // THE FIX: Safely swap themes without destroying Dark Mode or forcing Splash on Home
-    document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights', 'theme-home');
-    document.body.classList.add(`theme-${pageId}`);
+    // THE BUG FIX: Replaced the hardcoded 'theme-splash' so the nav bar stays put on Home
+    document.body.className = `light-mode theme-${pageId}`;
     
     updateMetaThemeColor(pageId);
+    updateTimeAndCountdown();
     window.scrollTo(0,0); 
 
-    // History API (Back Button Support)
     if (!isPopState) {
         history.pushState({ pageId: pageId }, '', `#${pageId}`);
     }
 }
 
-// Intercept Physical Phone Back Button
 window.addEventListener('popstate', (event) => {
     const scratchModal = document.getElementById('scratchpad-modal');
     if (scratchModal && scratchModal.classList.contains('active')) { closeScratchpad(); return; }
@@ -105,7 +102,7 @@ function initSwipes() {
     }, { passive: true });
 }
 
-// ---- EVENT BINDING ENGINE ----
+// ---- EVENT BINDING ENGINE (FULLY RESTORED) ----
 function bindEvents() {
     // Navigation & Share
     document.getElementById('splash-go-btn')?.addEventListener('click', () => openTab('home'));
@@ -113,17 +110,18 @@ function bindEvents() {
     document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
     document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
     
-    // UI Toggles
+    // UI Toggles & Admin Button
     document.getElementById('btn-show-today')?.addEventListener('click', () => switchDayView('today'));
     document.getElementById('btn-show-tomorrow')?.addEventListener('click', () => switchDayView('tomorrow'));
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
     
-    // Theme & Admin
+    // Theme & Admin Inputs
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
     document.getElementById('btn-add-family')?.addEventListener('click', addCustomFamily);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
+    document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
 
     // Calculators
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -218,6 +216,8 @@ window.addEventListener('load', async () => {
     renderItinerary();
     initLiveCurrency();
     autoSetWeatherCity();
+    
+    setInterval(updateTimeAndCountdown, 60000);
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
