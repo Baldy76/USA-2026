@@ -1,35 +1,18 @@
 /* 1. ZERO-LATENCY & NATIVE APP ENGINE */
-html {
-    overscroll-behavior: none; /* Kills pull-to-refresh and background bounce */
-}
-
-/* THE FIX: Added box-sizing so padding doesn't push elements off-screen */
-*, *::before, *::after {
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    touch-action: manipulation; 
-}
+html { overscroll-behavior: none; }
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
 /* 2. Base Color Palette & Dynamic CSS Variables */
 :root {
-    --bg: #f2f5f9;        
-    --card: rgba(255, 255, 255, 0.75);      
-    --text: #1c1c1e;      
-    --ios-grey: rgba(229, 229, 234, 0.6);  
-    --accent: #007aff;    
-    --accent-gradient: linear-gradient(135deg, #007aff 0%, #00c6ff 100%);
+    --bg: #f2f5f9; --card: rgba(255, 255, 255, 0.75); --text: #1c1c1e; --ios-grey: rgba(229, 229, 234, 0.6);  
+    --accent: #007aff; --accent-gradient: linear-gradient(135deg, #007aff 0%, #00c6ff 100%);
     --flight-bg: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%);
-    --shadow: rgba(0, 0, 0, 0.08);
-    --bg-image: url('bg.jpg'); 
+    --shadow: rgba(0, 0, 0, 0.08); --bg-image: url('bg.jpg'); 
 }
 
 body.dark-mode { 
-    --bg: #0b0e14; 
-    --card: rgba(28, 31, 38, 0.75); 
-    --text: #f2f2f7; 
-    --ios-grey: rgba(44, 44, 46, 0.6); 
-    --accent: #0a84ff;
-    --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #00d2ff 100%);
+    --bg: #0b0e14; --card: rgba(28, 31, 38, 0.75); --text: #f2f2f7; --ios-grey: rgba(44, 44, 46, 0.6); 
+    --accent: #0a84ff; --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #00d2ff 100%);
     --flight-bg: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(30, 64, 175, 0.9) 100%);
     --shadow: rgba(0, 0, 0, 0.4);
 }
@@ -43,91 +26,28 @@ body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135de
 /* 3. General Styling & Screen Lockdown */
 body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg); color: var(--text); padding-bottom: 120px; 
-    transition: background-color 0.3s ease; position: relative;
-    
-    /* THE FIX: Hard limits on body width */
-    width: 100%;
-    max-width: 100vw;
-    
-    /* Lockdown Rules */
-    overflow-x: hidden;
-    overscroll-behavior-y: none;
-    -webkit-user-select: none; /* Stops accidental long-press highlighting */
-    user-select: none;
-    -webkit-touch-callout: none; /* Stops long-press popups */
+    background-color: var(--bg); color: var(--text); padding-bottom: 120px; transition: background-color 0.3s ease; position: relative;
+    width: 100%; max-width: 100vw; overflow-x: hidden; overscroll-behavior-y: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
+body.theme-splash { overflow: hidden !important; overscroll-behavior: none !important; touch-action: none !important; }
+#splash { overflow: hidden; overscroll-behavior: none; touch-action: none; height: 100dvh; width: 100%; }
 
-/* =========================================
-   SPLASH SCREEN MOVEMENT LOCK
-   ========================================= */
-body.theme-splash {
-    overflow: hidden !important;
-    overscroll-behavior: none !important;
-    touch-action: none !important; 
-}
-
-#splash {
-    overflow: hidden;
-    overscroll-behavior: none;
-    touch-action: none;
-    height: 100dvh; /* Enforces absolute rigid height on mobile */
-    width: 100%;
-}
-
-/* Re-allow typing in input fields */
-input, textarea, select {
-    -webkit-user-select: auto;
-    user-select: auto;
-}
-
+input, textarea, select { -webkit-user-select: auto; user-select: auto; }
 body::before {
     content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--bg-image); background-size: cover; background-position: center;
     opacity: 0.15; z-index: -1; pointer-events: none; transition: background-image 0.5s ease;
 }
 body.dark-mode::before { opacity: 0.06; }
-
 h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text); }
-
-/* THE FIX: Added width: 100% so it knows how to margin auto perfectly */
-.page { 
-    padding: 20px; 
-    max-width: 600px; 
-    width: 100%;
-    margin: 0 auto; 
-    overflow-x: hidden; 
-}
-
-/* OPTIMIZED SPA ENGINE */
-.tab-content { 
-    display: none !important; 
-    width: 100%; 
-}
-.tab-content.active { 
-    display: block !important; 
-    animation: tabEnter 0.2s ease-out forwards; 
-    will-change: opacity, transform;
-}
-@keyframes tabEnter { 
-    from { opacity: 0; transform: translateY(8px); } 
-    to { opacity: 1; transform: translateY(0); } 
-}
+.page { padding: 20px; max-width: 600px; width: 100%; margin: 0 auto; overflow-x: hidden; }
 
 /* 4. The Boarding Pass & Flight Tracker */
-.flight-card {
-    background: var(--flight-bg); color: white; border-radius: 28px; padding: 24px;
-    margin-bottom: 24px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.3); position: relative;
-    overflow: hidden; 
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15); transform: translateZ(0);
-}
+.flight-card { background: var(--flight-bg); color: white; border-radius: 28px; padding: 24px; margin-bottom: 24px; box-shadow: 0 12px 30px rgba(0, 122, 255, 0.3); position: relative; overflow: hidden; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); transform: translateZ(0); }
 .flight-card::before { content: '✈️'; position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.1; transform: rotate(-15deg); }
 .flight-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.3); padding-bottom: 15px; }
-
 .flight-tracker-link { color: #ffffff; text-decoration: none; border-bottom: 2px dashed rgba(255,255,255,0.5); transition: all 0.2s ease; }
 .flight-tracker-link:hover, .flight-tracker-link:active { text-shadow: 0 0 12px rgba(255,255,255,0.9); border-bottom-color: #ffffff; }
-
 .flight-num { font-size: 20px; font-weight: 900; letter-spacing: 1px; }
 .flight-path { display: flex; justify-content: space-between; align-items: center; text-align: center; margin: 10px 0; }
 .path-node { flex: 1; }
@@ -135,58 +55,26 @@ h2 { font-size: 34px; font-weight: 900; margin-bottom: 20px; color: var(--text);
 .path-node span { font-size: 12px; opacity: 0.7; font-weight: 800; text-transform: uppercase; }
 .plane-icon { flex: 1; position: relative; height: 2px; background: rgba(255,255,255,0.3); margin: 0 15px; }
 .plane-icon::after { content: '✈️'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 16px; }
-
-.barcode {
-    height: 30px; margin-top: 20px; border-radius: 4px; opacity: 0.6;
-    background: repeating-linear-gradient(to right, #fff, #fff 3px, transparent 3px, transparent 5px, #fff 5px, #fff 6px, transparent 6px, transparent 10px);
-}
+.barcode { height: 30px; margin-top: 20px; border-radius: 4px; opacity: 0.6; background: repeating-linear-gradient(to right, #fff, #fff 3px, transparent 3px, transparent 5px, #fff 5px, #fff 6px, transparent 6px, transparent 10px); }
 
 /* 5. Navigation */
-.bottom-nav {
-    position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around;
-    background: rgba(255, 255, 255, 0.85); 
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 10px 30px var(--shadow); padding: 10px 5px; border-radius: 35px; z-index: 1000;
-    transform: translateY(0); transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
+.bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto; display: flex; justify-content: space-around; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 10px 30px var(--shadow); padding: 10px 5px; border-radius: 35px; z-index: 1000; transform: translateY(0); transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
 body.dark-mode .bottom-nav { background: rgba(28, 31, 38, 0.85); border: 1px solid rgba(255,255,255,0.05); }
-
-/* Hide Nav Bar on Splash Screen */
 body.theme-splash .bottom-nav { transform: translateY(150px); pointer-events: none; }
-
-.nav-btn {
-    background: transparent; border: none; color: var(--text); opacity: 0.5; font-size: 10px; font-weight: 800; cursor: pointer; padding: 6px 4px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; border-radius: 20px;
-    user-select: none;
-}
+.nav-btn { background: transparent; border: none; color: var(--text); opacity: 0.5; font-size: 10px; font-weight: 800; cursor: pointer; padding: 6px 4px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; border-radius: 20px; user-select: none; }
 .nav-icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s ease; will-change: transform; }
-
-.nav-btn.active { 
-    background: transparent; 
-    color: var(--accent); 
-    opacity: 1; 
-}
+.nav-btn.active { background: transparent; color: var(--accent); opacity: 1; }
 .nav-btn.active .nav-icon { transform: scale(1.1); }
 
 /* Glass Elements */
-.admin-card, .skel-card, .weather-pill, .WTH-hero, .WTH-card, #countdown-display, #dual-clocks {
-    background: var(--card); border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); text-align: left; border: 1px solid rgba(255,255,255,0.3); 
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-    transform: translateZ(0); 
-}
+.admin-card, .skel-card, .weather-pill, .WTH-hero, .WTH-card, #countdown-display, #dual-clocks { background: var(--card); border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); text-align: left; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transform: translateZ(0); }
 body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-pill, body.dark-mode .WTH-hero, body.dark-mode .WTH-card, body.dark-mode #countdown-display, body.dark-mode #dual-clocks { border: 1px solid rgba(255,255,255,0.05); }
 .admin-card { padding: 24px; }
 .admin-card label, .admin-card h3 { display: block; margin-bottom: 12px; margin-top: 0; font-weight: 800; font-size: 18px; }
-.admin-card select, .admin-card input, .admin-card textarea {
-    width: 100%; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 16px; border: 2px solid var(--ios-grey); background-color: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; outline: none; -webkit-appearance: none; font-family: inherit; transition: border-color 0.2s ease;
-}
+.admin-card select, .admin-card input, .admin-card textarea { width: 100%; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 16px; border: 2px solid var(--ios-grey); background-color: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; outline: none; -webkit-appearance: none; font-family: inherit; transition: border-color 0.2s ease; }
 .admin-card select:focus, .admin-card input:focus, .admin-card textarea:focus { border-color: var(--accent); }
-.action-btn { 
-    background-color: var(--accent); color: white; border: none; padding: 16px 20px; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; width: 100%; 
-    transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease; 
-    will-change: transform; 
-}
+.action-btn { background-color: var(--accent); color: white; border: none; padding: 16px 20px; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; width: 100%; transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease; will-change: transform; }
 .action-btn:active { transform: scale(0.96); }
-
 .theme-segmented-control { display: flex; background: var(--ios-grey); border-radius: 16px; padding: 6px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
 .segment { flex: 1; padding: 14px; border-radius: 12px; border: none; background: transparent; font-weight: 800; color: var(--text); opacity: 0.5; font-size: 15px; cursor: pointer; transition: all 0.2s ease; user-select: none; }
 .segment.active { background: var(--card); opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: var(--text); }
@@ -196,7 +84,6 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 /* 6. Heroes & Sticky Headers */
 @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 .splash-logo { animation: float 6s ease-in-out infinite; box-shadow: 0 20px 50px rgba(0,0,0,0.2); border-radius: 30%; }
-
 .city-hero { background-size: cover; background-position: center; border-radius: 32px; height: 200px; display: flex; align-items: flex-end; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px var(--shadow); transform: translateZ(0); }
 .city-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 50%); }
 .city-hero h2 { position: relative; z-index: 2; color: white; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-size: 38px; }
@@ -224,59 +111,53 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .empty-state { text-align: center; padding: 50px 20px; opacity: 0.5; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text); }
 .empty-icon { font-size: 60px; display: block; margin-bottom: 15px; filter: grayscale(100%); opacity: 0.7; }
 .empty-text { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
-.ADM-hdr { margin: 0 0 15px; opacity: 0.5; font-size: 12px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: center; color: var(--text); }
 
+/* 9. MODAL & COMPLETED SECTION */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-content { width: 90%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.modal-overlay.active .modal-content { transform: scale(1); }
+.completed-divider { text-align: center; margin: 40px 0 20px; position: relative; }
+.completed-divider::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: repeating-linear-gradient(90deg, var(--ios-grey), var(--ios-grey) 5px, transparent 5px, transparent 10px); z-index: 1; }
+.completed-divider span { background: var(--bg); padding: 0 15px; position: relative; z-index: 2; font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; color: var(--text); transition: background 0.3s ease; }
+.itin-card.completed { opacity: 0.6; filter: grayscale(100%); transform: scale(0.98); border: 1px dashed var(--ios-grey); box-shadow: none; margin-bottom: 12px; }
 
 /* =========================================
-   9. MODAL & COMPLETED SECTION (v2.1.7)
+   10. PRO UPGRADES (v2.1.8)
    ========================================= */
 
-/* The Modal Overlay */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    z-index: 10000; 
-    display: none; align-items: center; justify-content: center; 
-    opacity: 0; transition: opacity 0.3s ease;
-}
-.modal-overlay.active { 
-    display: flex; opacity: 1; 
-}
+/* Directional Page Transitions */
+.tab-content { display: none !important; width: 100%; }
+@keyframes slideInRight { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInLeft { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadePop { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.tab-content.active.slide-right { display: block !important; animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.tab-content.active.slide-left { display: block !important; animation: slideInLeft 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.tab-content.active.fade-pop { display: block !important; animation: fadePop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-/* The Modal Box */
-.modal-content { 
-    width: 90%; max-width: 400px; 
-    transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+/* Offline Banner */
+#offline-banner {
+    display: none; background: #ff3b30; color: white; text-align: center; padding: 12px; font-size: 13px; font-weight: 900;
+    position: fixed; top: 0; width: 100%; z-index: 20000; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
 }
-.modal-overlay.active .modal-content { 
-    transform: scale(1); 
-}
+#offline-banner.active { display: block; animation: slideDown 0.3s ease forwards; }
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
-/* The Dashed Divider */
-.completed-divider {
-    text-align: center; margin: 40px 0 20px; position: relative;
+/* Floating Scratchpad Button */
+.floating-btn {
+    position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; border-radius: 28px;
+    background: var(--accent-gradient); color: white; border: none; font-size: 24px; font-weight: 900;
+    box-shadow: 0 10px 20px var(--shadow); z-index: 999; cursor: pointer; transition: transform 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
 }
-.completed-divider::before {
-    content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
-    background: repeating-linear-gradient(90deg, var(--ios-grey), var(--ios-grey) 5px, transparent 5px, transparent 10px);
-    z-index: 1;
-}
-.completed-divider span {
-    background: var(--bg); padding: 0 15px; position: relative; z-index: 2;
-    font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; color: var(--text);
-    transition: background 0.3s ease;
-}
+.floating-btn:active { transform: scale(0.9); }
+body.theme-splash .floating-btn { display: none; }
 
-/* Visual Changes for Completed Tasks */
-.itin-card.completed {
-    opacity: 0.6; 
-    filter: grayscale(100%); 
-    transform: scale(0.98); 
-    border: 1px dashed var(--ios-grey); 
-    box-shadow: none;
-    margin-bottom: 12px;
+/* Custom Pull-to-Refresh Spinner */
+#ptr-spinner {
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px) scale(0);
+    background: var(--card); border: 1px solid var(--ios-grey); border-radius: 20px; padding: 10px 20px;
+    font-weight: 900; font-size: 14px; color: var(--accent); box-shadow: 0 4px 15px var(--shadow);
+    z-index: 1000; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.itin-card.completed:active {
-    transform: scale(0.96);
-}
+#ptr-spinner.refreshing { transform: translateX(-50%) translateY(20px) scale(1); }
