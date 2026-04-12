@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.5">
+    <link rel="stylesheet" href="style.css?v=2.1.7">
 </head>
 <body class="light-mode theme-splash">
 
@@ -30,6 +30,10 @@
             <div id="la-itinerary">
                 <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
             </div> 
+            <div id="la-completed-section" class="completed-section" style="display: none;">
+                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
+                <div id="la-completed-list"></div>
+            </div>
         </section>
 
         <section id="utah" class="page tab-content">
@@ -39,6 +43,10 @@
             <div id="utah-home-card"></div>
             <div id="utah-itinerary">
                 <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
+            </div>
+            <div id="utah-completed-section" class="completed-section" style="display: none;">
+                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
+                <div id="utah-completed-list"></div>
             </div>
         </section>
 
@@ -87,10 +95,18 @@
                 <div id="today-itinerary">
                     <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
                 </div>
+                <div id="today-completed-section" class="completed-section" style="display: none;">
+                    <div class="completed-divider"><span>✅ Completed Today</span></div>
+                    <div id="today-completed-list"></div>
+                </div>
             </div>
 
             <div id="tomorrow-view" style="display: none;">
                 <div id="tomorrow-itinerary">Loading...</div>
+                <div id="tomorrow-completed-section" class="completed-section" style="display: none;">
+                    <div class="completed-divider"><span>✅ Completed Tomorrow</span></div>
+                    <div id="tomorrow-completed-list"></div>
+                </div>
             </div>
 
             <div id="today-home-card" style="margin-top: 30px;"></div>
@@ -174,6 +190,10 @@
             <div id="vegas-itinerary">
                 <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
             </div>
+            <div id="vegas-completed-section" class="completed-section" style="display: none;">
+                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
+                <div id="vegas-completed-list"></div>
+            </div>
         </section>
 
         <section id="flights" class="page tab-content">
@@ -224,8 +244,24 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.5</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.7</div>
         </section>
+
+        <div id="completion-modal" class="modal-overlay">
+            <div class="modal-content admin-card">
+                <h3 style="margin-top:0; font-size: 22px;">Complete Activity?</h3>
+                <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px; font-size: 16px;"></p>
+                <label style="display:flex; align-items:center; gap:12px; font-weight:800; cursor:pointer; margin-bottom:24px; background: var(--bg); padding: 15px; border-radius: 12px;">
+                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0; accent-color:var(--accent);">
+                    Yes, mark as completed
+                </label>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-cancel-modal" class="action-btn" style="background:var(--ios-grey); color:var(--text); flex:1;">Cancel</button>
+                    <button id="btn-confirm-modal" class="action-btn" style="flex:1; opacity:0.5; pointer-events:none;">Confirm</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <nav class="bottom-nav">
@@ -236,6 +272,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
     </nav>
 
-    <script src="script.js?v=2.1.5"></script>
+    <script src="script.js?v=2.1.7"></script>
 </body>
 </html>
