@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.12">
+    <link rel="stylesheet" href="style.css?v=2.1.13">
 </head>
 <body class="light-mode theme-splash">
 
@@ -27,13 +27,9 @@
         </section>
 
         <section id="la" class="page tab-content">
-            <div class="city-hero" style="background-image: url('la.jpg');">
-                <h2>Los Angeles</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('la.jpg');"><h2>Los Angeles</h2></div>
             <div id="la-home-card"></div>
-            <div id="la-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div> 
+            <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div> 
             <div id="la-completed-section" class="completed-section" style="display: none;">
                 <div class="completed-divider"><span>✅ Completed Tasks</span></div>
                 <div id="la-completed-list"></div>
@@ -41,13 +37,9 @@
         </section>
 
         <section id="utah" class="page tab-content">
-            <div class="city-hero" style="background-image: url('utah.jpg');">
-                <h2>Utah</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('utah.jpg');"><h2>Utah</h2></div>
             <div id="utah-home-card"></div>
-            <div id="utah-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div>
-            </div>
+            <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;">
                 <div class="completed-divider"><span>✅ Completed Tasks</span></div>
                 <div id="utah-completed-list"></div>
@@ -74,10 +66,13 @@
                             <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
                         </div>
                     </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">
-                        Loading Date...
-                    </div>
+                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">Loading Date...</div>
                 </div>
+            </div>
+
+            <div id="install-banner" style="display: none; background: var(--accent-gradient); color: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); align-items: center; justify-content: space-between;">
+                <div style="font-weight: 800; font-size: 14px; line-height: 1.3;">Install USA 2026 App<br><span style="font-weight: 500; font-size: 12px; opacity: 0.8;">For offline access & notifications</span></div>
+                <button id="btn-install-app" style="background: white; color: var(--accent); border: none; padding: 8px 16px; border-radius: 12px; font-weight: 900; cursor: pointer;">Install</button>
             </div>
 
             <div id="home-weather-pill" class="weather-pill">
@@ -97,24 +92,14 @@
             
             <div id="today-view" style="display: block;">
                 <button id="btn-share-today" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Today's Plan</button>
-                
-                <div id="today-itinerary">
-                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-                </div>
-                <div id="today-completed-section" class="completed-section" style="display: none;">
-                    <div class="completed-divider"><span>✅ Completed Today</span></div>
-                    <div id="today-completed-list"></div>
-                </div>
+                <div id="today-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
+                <div id="today-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Today</span></div><div id="today-completed-list"></div></div>
             </div>
 
             <div id="tomorrow-view" style="display: none;">
                 <button id="btn-share-tomorrow" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Tomorrow's Plan</button>
-
                 <div id="tomorrow-itinerary">Loading...</div>
-                <div id="tomorrow-completed-section" class="completed-section" style="display: none;">
-                    <div class="completed-divider"><span>✅ Completed Tomorrow</span></div>
-                    <div id="tomorrow-completed-list"></div>
-                </div>
+                <div id="tomorrow-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tomorrow</span></div><div id="tomorrow-completed-list"></div></div>
             </div>
 
             <div id="today-home-card" style="margin-top: 30px;"></div>
@@ -138,7 +123,6 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                     <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">🍽️ Tip & Split Calculator</div>
                 </div>
-                
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
                     <div style="flex: 2;">
                         <label style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
@@ -147,28 +131,17 @@
                     <div style="flex: 1.5;">
                         <label style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
                         <select id="split-ways" style="margin: 0; padding: 14px 10px; font-size: 16px; font-weight: 800; width: 100%; border-radius: 12px; border: 2px solid var(--ios-grey); background: var(--bg); color: var(--text); outline: none;">
-                            <option value="1">1 Family</option>
-                            <option value="2" selected>2 Families</option>
+                            <option value="1">1 Family</option><option value="2" selected>2 Families</option>
                         </select>
                     </div>
                 </div>
-                
                 <div class="theme-segmented-control" style="margin-bottom: 15px;">
-                    <button class="segment tip-btn" data-tip="15">15%</button>
-                    <button class="segment tip-btn active" data-tip="18">18%</button>
-                    <button class="segment tip-btn" data-tip="20">20%</button>
-                    <button class="segment tip-btn" data-tip="22">22%</button>
+                    <button class="segment tip-btn" data-tip="15">15%</button><button class="segment tip-btn active" data-tip="18">18%</button>
+                    <button class="segment tip-btn" data-tip="20">20%</button><button class="segment tip-btn" data-tip="22">22%</button>
                 </div>
-                
                 <div style="background: var(--bg); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Per Family (USD)</div>
-                        <div id="tip-usd" style="font-size: 24px; font-weight: 900; color: var(--text);">$0.00</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">In GBP</div>
-                        <div id="tip-gbp" style="font-size: 24px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">£0.00</div>
-                    </div>
+                    <div><div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Per Family (USD)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900; color: var(--text);">$0.00</div></div>
+                    <div style="text-align: right;"><div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">£0.00</div></div>
                 </div>
             </div>
 
@@ -185,34 +158,33 @@
                 <button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button>
                 <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
             </div>
-            <div id="WTH-dashboard">
-                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-            </div>
+            <div id="WTH-dashboard"><div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div></div>
         </section>
 
         <section id="vegas" class="page tab-content">
-            <div class="city-hero" style="background-image: url('vegas.jpg');">
-                <h2>Las Vegas</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('vegas.jpg');"><h2>Las Vegas</h2></div>
             <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-            </div>
+            <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="vegas-completed-section" class="completed-section" style="display: none;">
-                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
-                <div id="vegas-completed-list"></div>
+                <div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div>
             </div>
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('flights.jpg'); margin-bottom: 30px;"><h2>Vault & Details</h2></div>
             <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;">
-                <span class="empty-icon">☁️</span>
-                <div class="empty-text">No Travel Data</div>
-                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
+            <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Travel Data</div><div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div></div>
+            
+            <div class="admin-card" style="margin-top: 30px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="font-size: 14px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🗄️ Offline Wallet</div>
+                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">
+                        ➕ Add Doc
+                        <input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden>
+                    </label>
+                </div>
+                <div style="font-size: 12px; opacity: 0.6; margin-bottom: 15px;">Save passports, booking PDFs, or tickets here for offline access.</div>
+                <div id="wallet-gallery" class="wallet-grid"></div>
             </div>
         </section>
 
@@ -222,22 +194,25 @@
             <div class="admin-card">
                 <h3>Theme Selection</h3>
                 <div class="theme-segmented-control">
-                    <button id="btnLight" class="segment active">☀️ Light</button>
-                    <button id="btnDark" class="segment">🌙 Dark</button>
+                    <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
                 <div style="font-size: 11px; opacity: 0.6; margin-top: 8px; text-align: center;">Defaults to your system setting if untouched.</div>
             </div>
 
             <div class="admin-card">
+                <h3>🔔 Smart Notifications</h3>
+                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
+                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text);">Enable Push Notifications</button>
+            </div>
+
+            <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
-                <label>Trip Start Date:</label>
-                <input type="date" id="trip-start-date" />
+                <label>Trip Start Date:</label><input type="date" id="trip-start-date" />
             </div>
 
             <div class="admin-card">
                 <h3>App Settings</h3>
-                <label>Select Your Family:</label>
-                <select id="family-selector"></select>
+                <label>Select Your Family:</label><select id="family-selector"></select>
             </div>
 
             <div class="admin-card">
@@ -252,7 +227,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.12</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.13</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -260,8 +235,7 @@
                 <h3 style="margin-top:0; font-size: 22px;">Complete Activity?</h3>
                 <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px; font-size: 16px;"></p>
                 <label style="display:flex; align-items:center; gap:12px; font-weight:800; cursor:pointer; margin-bottom:24px; background: var(--bg); padding: 15px; border-radius: 12px;">
-                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0; accent-color:var(--accent);">
-                    Yes, mark as completed
+                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0; accent-color:var(--accent);"> Yes, mark as completed
                 </label>
                 <div style="display:flex; gap:10px;">
                     <button id="btn-cancel-modal" class="action-btn" style="background:var(--ios-grey); color:var(--text); flex:1;">Cancel</button>
@@ -272,10 +246,7 @@
 
         <div id="scratchpad-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; height: 70vh;">
-                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between;">
-                    📝 Trip Notes
-                    <span id="btn-close-scratchpad" style="opacity: 0.5; cursor: pointer;">✕</span>
-                </h3>
+                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between;">📝 Trip Notes<span id="btn-close-scratchpad" style="opacity: 0.5; cursor: pointer;">✕</span></h3>
                 <textarea id="scratchpad-text" placeholder="Jot down gate changes, packing reminders, or random thoughts here... This saves instantly." style="flex: 1; resize: none; margin-bottom: 0; background: rgba(0,0,0,0.05);"></textarea>
             </div>
         </div>
@@ -289,9 +260,9 @@
         <button id="nav-btn-utah" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
         <button id="nav-btn-home" class="nav-btn"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button id="nav-btn-vegas" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
-        <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Flights</span></button>
+        <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.12"></script>
+    <script type="module" src="js/main.js?v=2.1.13"></script>
 </body>
 </html>
