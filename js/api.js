@@ -3,6 +3,23 @@ import { state, setVal, getVal, parseCSV, parseDateTime } from './store.js';
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv';
 const vaultUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv';
 
+// ---- MULTIPLAYER SYNC ENGINE ----
+// Paste your deployed Google Apps Script URL here. If empty, the app gracefully falls back to single-player offline mode.
+export const SYNC_URL = ""; 
+
+export async function syncToCloud(payloadType, data) {
+    if (!SYNC_URL || !navigator.onLine) return; 
+    try {
+        fetch(SYNC_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: payloadType, payload: data, timestamp: Date.now() })
+        });
+    } catch(e) { console.warn('Cloud sync failed'); }
+}
+
+// ---- DATA FETCHING ----
 export async function loadAllData() {
     let itinData = '';
     let vData = '';
@@ -24,7 +41,7 @@ export async function loadAllData() {
         if (!itinData && !vData) return false;
     }
 
-    state.sheetFamilies.clear(); // THE FIX: Wipes old family list to prevent sync bugs
+    state.sheetFamilies.clear(); 
 
     if (itinData) {
         state.itineraryData = parseCSV(itinData).slice(1).filter(r => r.length > 1 && r[0].trim() !== '');
@@ -38,11 +55,10 @@ export async function loadAllData() {
     return true;
 }
 
-// THE FIX: Restored image caching logic
 export async function preCacheImages() {
     if ('caches' in window) {
         try {
-            const cache = await caches.open('holiday-planner-v2.1.12');
+            const cache = await caches.open('holiday-planner-v2.1.13');
             const imgUrls = state.vaultAndStaysData
                 .map(cols => cols[7] ? cols[7].trim() : '')
                 .filter(url => url.startsWith('http'));
