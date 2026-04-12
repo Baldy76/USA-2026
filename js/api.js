@@ -24,6 +24,8 @@ export async function loadAllData() {
         if (!itinData && !vData) return false;
     }
 
+    state.sheetFamilies.clear(); // THE FIX: Wipes old family list to prevent sync bugs
+
     if (itinData) {
         state.itineraryData = parseCSV(itinData).slice(1).filter(r => r.length > 1 && r[0].trim() !== '');
         state.itineraryData.sort((a, b) => (a.length < 5 || b.length < 5) ? 0 : parseDateTime(a[0], a[3]) - parseDateTime(b[0], b[3]));
@@ -34,6 +36,26 @@ export async function loadAllData() {
         state.vaultAndStaysData.forEach(col => { if (col.length > 0 && col[0].trim().toLowerCase() !== 'everyone') state.sheetFamilies.add(col[0].trim()); });
     }
     return true;
+}
+
+// THE FIX: Restored image caching logic
+export async function preCacheImages() {
+    if ('caches' in window) {
+        try {
+            const cache = await caches.open('holiday-planner-v2.1.12');
+            const imgUrls = state.vaultAndStaysData
+                .map(cols => cols[7] ? cols[7].trim() : '')
+                .filter(url => url.startsWith('http'));
+            
+            if (imgUrls.length > 0) {
+                imgUrls.forEach(url => {
+                    cache.match(url).then(res => {
+                        if (!res) fetch(url, { mode: 'no-cors' }).then(response => cache.put(url, response)).catch(() => {});
+                    });
+                });
+            }
+        } catch (e) {}
+    }
 }
 
 export async function initLiveCurrency() {
