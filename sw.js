@@ -1,23 +1,25 @@
-const CACHE_NAME = 'holiday-planner-v2.1.13';
+const CACHE_NAME = 'holiday-planner-v2.1.16';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=2.1.13',
-    './js/main.js?v=2.1.13',
-    './js/store.js?v=2.1.13',
-    './js/api.js?v=2.1.13',
-    './js/ui.js?v=2.1.13',
+    './style.css?v=2.1.16',
+    './js/main.js?v=2.1.16',
+    './js/store.js?v=2.1.16',
+    './js/api.js?v=2.1.16',
+    './js/ui.js?v=2.1.16',
     './manifest.json',
-    './la.jpg',
-    './utah.jpg',
-    './vegas.jpg',
-    './flights.jpg',
-    './bg.jpg',
-    './clear.jpg',
-    './clouds.jpg',
-    './rain.jpg',
-    './snow.jpg',
-    './logo.png'
+    './img/la.jpg',
+    './img/utah.jpg',
+    './img/vegas.jpg',
+    './img/flights.jpg',
+    './img/bg.jpg',
+    './img/clear.jpg',
+    './img/clouds.jpg',
+    './img/rain.jpg',
+    './img/snow.jpg',
+    './img/logo.png',
+    './img/icon-192.png',
+    './img/icon-512.png'
 ];
 
 self.addEventListener('install', event => { self.skipWaiting(); });
