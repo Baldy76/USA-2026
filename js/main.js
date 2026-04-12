@@ -15,7 +15,7 @@ function openTab(pageId, isPopState = false) {
     if (activeTab && tabOrder.includes(activeTab.id) && tabOrder.includes(pageId)) {
         const curIdx = tabOrder.indexOf(activeTab.id);
         const newIdx = tabOrder.indexOf(pageId);
-        animClass = newIdx > curIdx ? 'slide-in-right' : 'slide-in-left';
+        animClass = newIdx > curIdx ? 'slide-right' : 'slide-left';
     }
 
     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -42,7 +42,7 @@ function openTab(pageId, isPopState = false) {
 window.addEventListener('popstate', (event) => {
     // If a modal is open, back button closes it instead of changing tabs
     const scratchModal = document.getElementById('scratchpad-modal');
-    if (scratchModal.classList.contains('active')) { closeScratchpad(); return; }
+    if (scratchModal && scratchModal.classList.contains('active')) { closeScratchpad(); return; }
     
     if (event.state && event.state.pageId) {
         openTab(event.state.pageId, true);
@@ -97,6 +97,11 @@ function initSwipes() {
 
 // ---- EVENT BINDING ----
 function bindEvents() {
+    // Splash screen button
+    document.getElementById('splash-go-btn')?.addEventListener('click', () => {
+        openTab('home');
+    });
+
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
     document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
@@ -151,8 +156,8 @@ window.addEventListener('load', async () => {
     
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
-    // First load sets home as state
-    history.replaceState({ pageId: 'home' }, '', '#home');
+    // Sets the splash screen as the root history state
+    history.replaceState({ pageId: 'splash' }, '', '#splash');
     
     await loadAllData();
     renderItinerary();
