@@ -1,4 +1,3 @@
-
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
 
 // ---- ITINERARY & VAULT ----
@@ -62,8 +61,130 @@ export async function renderItinerary() {
     updateSec('la', hLA, cLA); updateSec('utah', hUtah, cUtah); updateSec('vegas', hVegas, cVegas); updateSec('today', hToday, cToday); updateSec('tomorrow', hTomorrow, cTomorrow);
 }
 
-export function renderTravelVault() { /* Standard vault logic remains the same. To save token limits in code, rendering matches v2.1.7 completely */ }
-export function renderAccommodations() { /* Standard Acc logic remains the same. Matches v2.1.7 completely */ }
+export function renderTravelVault() { 
+    const filter = document.getElementById('family-selector')?.value || 'All';
+    const display = document.getElementById('flights-vault-display');
+    const emptyState = document.getElementById('empty-vault-state');
+    if(!display) return;
+
+    let html = '';
+    let hasData = false;
+
+    const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
+
+    sortedData.forEach(cols => {
+        if(cols.length < 2) return;
+        const fam = cols[0].trim();
+        const type = cols[1].trim().toLowerCase();
+        
+        if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
+            if (type === 'flight') {
+                hasData = true;
+                const date = escapeHTML(cols[2]?.trim());
+                const dep = escapeHTML(cols[3]?.trim());
+                const arr = escapeHTML(cols[4]?.trim());
+                const airline = escapeHTML(cols[5]?.trim().toUpperCase());
+                const fnum = escapeHTML(cols[6]?.trim());
+                const ftime = escapeHTML(cols[7]?.trim());
+                const term = escapeHTML(cols[8]?.trim());
+                const ref = escapeHTML(cols[9]?.trim());
+
+                const searchStr = (airline + fnum).replace(/\s+/g, '');
+                const trackerLink = searchStr ? "https://flightaware.com/live/flight/" + searchStr : "#";
+                const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${airline} ${fnum} ↗</a>` : `${airline} ${fnum}`;
+
+                html += `
+                <div class="flight-card">
+                    <div class="flight-header">
+                        <span class="flight-num">${linkHtml}</span>
+                        <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${date} <br> TIME: ${ftime}</span>
+                    </div>
+                    <div class="flight-path">
+                        <div class="path-node"><span>From</span><strong>${dep}</strong></div>
+                        <div class="plane-icon"></div>
+                        <div class="path-node"><span>To</span><strong>${arr}</strong></div>
+                    </div>
+                    <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                        <span>Term/Gate: ${term || "Check Screens"}</span>
+                        <span>Ref: ${ref}</span>
+                    </div>
+                    <div class="barcode"></div>
+                </div>`;
+            } else if (type === 'car') {
+                hasData = true;
+                html += `
+                <div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);">
+                    <div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div>
+                    <div style="font-size:16px; font-weight:700; margin-top:10px;">
+                        <div style="margin-bottom: 12px;"><strong>Company:</strong> ${escapeHTML(cols[4]?.trim())}</div>
+                        <div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Pick-up:</strong><br>${escapeHTML(cols[5]?.trim())}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[2]?.trim())} @ ${escapeHTML(cols[6]?.trim())}</span></div>
+                        <div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Drop-off:</strong><br>${escapeHTML(cols[8]?.trim()) || escapeHTML(cols[5]?.trim())}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[3]?.trim())} @ ${escapeHTML(cols[7]?.trim())}</span></div>
+                        <span style="color: var(--accent); font-size:14px;"><strong>Ref:</strong> ${escapeHTML(cols[9]?.trim())}</span>
+                    </div>
+                </div>`;
+            }
+        }
+    });
+
+    display.innerHTML = html;
+    if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
+}
+
+export function renderAccommodations() { 
+    const filter = document.getElementById('family-selector')?.value || 'All';
+    const today = new Date(); today.setHours(0,0,0,0);
+    
+    let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
+
+    state.vaultAndStaysData.forEach(cols => {
+        if(cols.length < 2) return;
+        const fam = cols[0].trim();
+        const type = cols[1].trim().toLowerCase();
+
+        if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
+            const checkIn = cols[2]?.trim();
+            const city = cols[3]?.trim();
+            const address = escapeHTML(cols[4]?.trim());
+            const checkOut = cols[5]?.trim();
+            const link = escapeHTML(cols[6]?.trim());
+            const imgUrl = escapeHTML(cols[7]?.trim());
+
+            const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`;
+            const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(address);
+            
+            const ui = `
+                <div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+                    <div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
+                        <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>
+                            ${link ? `<button class="action-btn link-btn" data-url="${link}" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+                
+            if(city.toLowerCase().includes('la')) htmlLA += ui;
+            else if(city.toLowerCase().includes('utah')) htmlUtah += ui;
+            else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
+
+            if (checkIn && checkOut) {
+                let sDate = new Date(parseDateTime(checkIn));
+                let eDate = new Date(parseDateTime(checkOut));
+                sDate.setHours(0,0,0,0);
+                eDate.setHours(23,59,59,999);
+                if (today >= sDate && today <= eDate) htmlToday += ui;
+            }
+        }
+    });
+
+    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA;
+    const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
+    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
+    const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
+}
 
 // ---- SHARE API ----
 export async function shareDay(dayViewId, titleName) {
