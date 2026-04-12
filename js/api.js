@@ -4,8 +4,7 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweT
 const vaultUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv';
 
 // ---- MULTIPLAYER SYNC ENGINE ----
-// Paste your deployed Google Apps Script URL here. If empty, the app gracefully falls back to single-player offline mode.
-export const SYNC_URL = ""; 
+export const SYNC_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
 
 export async function syncToCloud(payloadType, data) {
     if (!SYNC_URL || !navigator.onLine) return; 
