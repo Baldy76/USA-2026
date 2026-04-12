@@ -1,6 +1,7 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
 import { fetchWeather, syncToCloud } from './api.js';
 
+// ---- THEME ENGINE ----
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     const btnLight = document.getElementById('btnLight'); const btnDark = document.getElementById('btnDark');
@@ -23,6 +24,7 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
+// ---- CLOCK & DATE ENGINE ----
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
@@ -68,6 +70,8 @@ export function updateTimeAndCountdown() {
 }
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
+
+// ---- DASHBOARD CALCULATORS ----
 export function switchDayView(day) { 
     const tV = document.getElementById('today-view'), tmV = document.getElementById('tomorrow-view');
     const bT = document.getElementById('btn-show-today'), bTm = document.getElementById('btn-show-tomorrow');
@@ -89,6 +93,7 @@ export function convertCurrency() {
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
+// ---- FAMILY FILTERS ----
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
@@ -108,6 +113,7 @@ export function addCustomFamily() {
 }
 export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
 
+// ---- WEATHER ENGINE ----
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
@@ -140,9 +146,9 @@ function renderWeatherDOM(data, fallbackName) {
     if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
     if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
     
-    const mainWeather = d.weather[0].main.toLowerCase(); let bgImage = 'bg.jpg'; 
-    if (mainWeather.includes('clear')) bgImage = 'clear.jpg'; else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
-    else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg'; else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
+    const mainWeather = d.weather[0].main.toLowerCase(); let bgImage = 'img/bg.jpg'; 
+    if (mainWeather.includes('clear')) bgImage = 'img/clear.jpg'; else if (mainWeather.includes('cloud')) bgImage = 'img/clouds.jpg';
+    else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'img/rain.jpg'; else if (mainWeather.includes('snow')) bgImage = 'img/snow.jpg';
     document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
 
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
@@ -154,6 +160,7 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);"><div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div><div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div><div class="WTH-hero-desc">${d.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
 }
 
+// ---- ITINERARY & VAULT RENDERERS ----
 export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; const completedTasks = await getVal('completedTasks') || [];
     let hLA = '', hUtah = '', hVegas = '', hToday = '', hTomorrow = ''; let cLA = '', cUtah = '', cVegas = '', cToday = '', cTomorrow = ''; let lLA = '', lUtah = '', lVegas = ''; 
@@ -293,7 +300,7 @@ export function closeScratchpad() {
 export function saveScratchpad() {
     const val = document.getElementById('scratchpad-text').value;
     setVal('scratchpadNotes', val);
-    syncToCloud('scratchpad', val); // Fires off to Google Apps Script silently
+    syncToCloud('scratchpad', val); 
 }
 
 export function openCompletionModal(taskId, taskName) {
