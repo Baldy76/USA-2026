@@ -31,6 +31,63 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     if (meta) meta.content = metaColor;
 }
 
+// ---- CLOCK & DATE ENGINE (RESTORED) ----
+export function updateTimeAndCountdown() { 
+    try {
+        const now = new Date();
+        const cContainer = document.getElementById('countdown-display');
+        const clockContainer = document.getElementById('dual-clocks');
+        if(!cContainer || !clockContainer) return;
+
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        const dateString = now.toLocaleDateString(undefined, options);
+        
+        if (document.getElementById('cd-date')) document.getElementById('cd-date').textContent = dateString;
+        if (document.getElementById('clock-date')) document.getElementById('clock-date').textContent = dateString;
+
+        const savedStart = localStorage.getItem('tripStartDate');
+        if (savedStart) {
+            const input = document.getElementById('trip-start-date');
+            if(input) input.value = savedStart;
+            const tripDate = new Date(savedStart);
+            if (!isNaN(tripDate.getTime())) {
+                tripDate.setHours(0,0,0,0);
+                const diff = tripDate - now;
+                if (diff > 0) {
+                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    const cdText = document.getElementById('cd-text');
+                    if(cdText) cdText.innerHTML = `🚀 ${days} Days to Go!`;
+                    cContainer.style.display = 'block'; clockContainer.style.display = 'none';
+                    return; 
+                }
+            }
+        } 
+        
+        cContainer.style.display = 'none'; clockContainer.style.display = 'block';
+        
+        const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
+        let localTz = 'America/Los_Angeles'; 
+        let localTzLabel = '🇺🇸 Local (PT)';
+
+        if (activeTab === 'utah') {
+            localTz = 'America/Denver'; 
+            localTzLabel = '🇺🇸 Local (MT)';
+        }
+        
+        const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
+        const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
+        
+        if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
+        if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = localTime;
+        if(document.getElementById('local-tz-label')) document.getElementById('local-tz-label').innerText = localTzLabel;
+    } catch(e) { console.error('Clock error', e); }
+}
+
+export function saveTripSettings() {
+    localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); 
+    updateTimeAndCountdown(); 
+}
+
 // ---- DASHBOARD CALCULATORS ----
 export function switchDayView(day) { 
     const todayView = document.getElementById('today-view');
