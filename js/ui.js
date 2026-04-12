@@ -3,7 +3,10 @@ import { fetchWeather, syncToCloud } from './api.js';
 
 // ---- THEME ENGINE ----
 export function applyTheme(isDark) {
+    // THE FIX: Explicitly toggle both classes to ensure they never conflict
     document.body.classList.toggle('dark-mode', isDark);
+    document.body.classList.toggle('light-mode', !isDark);
+    
     const btnLight = document.getElementById('btnLight'); const btnDark = document.getElementById('btnDark');
     if (btnLight && btnDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
