@@ -1,6 +1,205 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
+import { fetchWeather } from './api.js';
 
-// ---- ITINERARY & VAULT ----
+// ---- THEME ENGINE ----
+export function applyTheme(isDark) {
+    document.body.classList.toggle('dark-mode', isDark);
+    const btnLight = document.getElementById('btnLight'); 
+    const btnDark = document.getElementById('btnDark');
+    if (btnLight && btnDark) {
+        if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
+        else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
+    }
+    const activePage = document.querySelector('.tab-content.active')?.id || 'splash';
+    updateMetaThemeColor(activePage, isDark);
+}
+
+export function setThemeMode(isDark) {
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+}
+
+export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
+    let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
+    if (pageId === 'la') metaColor = '#ff9500';
+    else if (pageId === 'utah') metaColor = '#ff3b30';
+    else if (pageId === 'vegas') metaColor = '#af52de';
+    else if (pageId === 'flights') metaColor = '#0284c7';
+    else if (pageId === 'splash') metaColor = isDark ? '#0b0e14' : '#f2f5f9';
+    
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) meta.content = metaColor;
+}
+
+// ---- DASHBOARD CALCULATORS ----
+export function switchDayView(day) { 
+    const todayView = document.getElementById('today-view');
+    const tomorrowView = document.getElementById('tomorrow-view');
+    const btnToday = document.getElementById('btn-show-today');
+    const btnTomorrow = document.getElementById('btn-show-tomorrow');
+    if(!todayView || !tomorrowView) return;
+
+    if (day === 'today') {
+        todayView.style.display = 'block'; tomorrowView.style.display = 'none';
+        if(btnToday) { btnToday.style.backgroundColor = 'var(--accent)'; btnToday.style.color = 'white'; }
+        if(btnTomorrow) { btnTomorrow.style.backgroundColor = 'var(--ios-grey)'; btnTomorrow.style.color = 'var(--text)'; }
+    } else {
+        todayView.style.display = 'none'; tomorrowView.style.display = 'block';
+        if(btnTomorrow) { btnTomorrow.style.backgroundColor = 'var(--accent)'; btnTomorrow.style.color = 'white'; }
+        if(btnToday) { btnToday.style.backgroundColor = 'var(--ios-grey)'; btnToday.style.color = 'var(--text)'; }
+    }
+}
+
+let currentTipPercent = 18;
+export function setTip(percent, btnElement) { 
+    currentTipPercent = percent;
+    document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
+    calculateTip();
+}
+
+export function calculateTip() { 
+    const billTotal = parseFloat(document.getElementById('bill-total')?.value) || 0;
+    const splitWays = parseInt(document.getElementById('split-ways')?.value) || 1;
+    const totalWithTip = billTotal * (1 + (currentTipPercent / 100));
+    const perFamilyUsd = totalWithTip / splitWays;
+    const perFamilyGbp = perFamilyUsd / state.liveExchangeRate; 
+    
+    if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${perFamilyUsd.toFixed(2)}`;
+    if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${perFamilyGbp.toFixed(2)}`;
+}
+
+export function convertCurrency() { 
+    const usd = document.getElementById('usd-input')?.value;
+    if(document.getElementById('gbp-output')) {
+        document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
+    }
+}
+
+// ---- FAMILY FILTER LOGIC ----
+export function populateDropdown() {
+    const mainSelect = document.getElementById('family-selector');
+    if(!mainSelect) return;
+    mainSelect.innerHTML = '<option value="All">Show All Activities</option>';
+    
+    const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
+    const allFamilies = new Set([...state.sheetFamilies, ...customFamilies]);
+    
+    allFamilies.forEach(f => {
+        const opt = document.createElement('option'); opt.value = f; opt.textContent = f;
+        mainSelect.appendChild(opt);
+    });
+    
+    const savedFamily = localStorage.getItem('savedFamilyFilter');
+    if (savedFamily) mainSelect.value = savedFamily;
+}
+
+export function addCustomFamily() { 
+    const name = document.getElementById('new-family-name')?.value.trim();
+    if (name) {
+        let custom = JSON.parse(localStorage.getItem('customFamilies')) || [];
+        if (!custom.includes(name)) {
+            custom.push(name);
+            localStorage.setItem('customFamilies', JSON.stringify(custom));
+            populateDropdown();
+            const sel = document.getElementById('family-selector');
+            if(sel) sel.value = name;
+            updateFamilyFilter();
+        }
+        document.getElementById('new-family-name').value = ''; 
+    }
+}
+
+export function updateFamilyFilter() { 
+    const sel = document.getElementById('family-selector');
+    if(sel) localStorage.setItem('savedFamilyFilter', sel.value); 
+    renderItinerary(); 
+    renderTravelVault();
+    renderAccommodations();
+}
+
+// ---- WEATHER ENGINE ----
+const getWeatherIcon = (c) => { 
+    const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; 
+    return m[c] || '🌤️'; 
+};
+
+export async function setWeatherCity(target) {
+    document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-w-${target}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
+    try {
+        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
+        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
+        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
+        else if (target === 'local') {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => { renderWeatherDOM(await fetchWeather(pos.coords.latitude, pos.coords.longitude), "Local GPS"); },
+                    async (err) => { renderWeatherDOM(await fetchWeather(lat, lon), locName); },
+                    { timeout: 5000 } 
+                );
+                return;
+            }
+        }
+        renderWeatherDOM(await fetchWeather(lat, lon), locName);
+    } catch(e) {
+        if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; 
+    }
+}
+
+export function autoSetWeatherCity() {
+    const now = new Date();
+    const savedStart = localStorage.getItem('tripStartDate');
+    let target = 'la'; 
+    if (savedStart) {
+        const tripDate = new Date(savedStart);
+        if (now >= tripDate) target = 'local'; 
+    }
+    setWeatherCity(target);
+}
+
+function renderWeatherDOM(data, fallbackName) {
+    const d = data.current;
+    const locName = fallbackName || d.name;
+    
+    if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
+    if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
+    if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
+    if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
+    
+    const mainWeather = d.weather[0].main.toLowerCase();
+    let bgImage = 'bg.jpg'; 
+    if (mainWeather.includes('clear')) bgImage = 'clear.jpg';
+    else if (mainWeather.includes('cloud')) bgImage = 'clouds.jpg';
+    else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'rain.jpg';
+    else if (mainWeather.includes('snow')) bgImage = 'snow.jpg';
+    document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
+
+    let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
+        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+        return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
+    }).join('');
+    
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `
+        <div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);">
+            <div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div>
+            <div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div>
+            <div class="WTH-hero-desc">${d.weather[0].description}</div>
+            <div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div>
+        </div>
+        <h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>
+        ${forecastHtml}
+    `; 
+}
+
+
+// ---- ITINERARY & VAULT RENDERERS ----
 export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All';
     const completedTasks = await getVal('completedTasks') || [];
