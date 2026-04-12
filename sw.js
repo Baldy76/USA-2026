@@ -1,9 +1,12 @@
-const CACHE_NAME = 'holiday-planner-v2.1.5';
+const CACHE_NAME = 'holiday-planner-v2.1.8';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=2.1.5',
-    './script.js?v=2.1.5',
+    './style.css?v=2.1.8',
+    './js/main.js?v=2.1.8',
+    './js/store.js?v=2.1.8',
+    './js/api.js?v=2.1.8',
+    './js/ui.js?v=2.1.8',
     './manifest.json',
     './la.jpg',
     './utah.jpg',
@@ -17,17 +20,13 @@ const ASSETS_TO_CACHE = [
     './logo.png'
 ];
 
-self.addEventListener('install', event => {
-    self.skipWaiting(); 
-});
+self.addEventListener('install', event => { self.skipWaiting(); });
 
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(keys => {
-            return Promise.all(
-                keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-            );
-        })
+        caches.keys().then(keys => Promise.all(
+            keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        ))
     );
     self.clients.claim();
 });
@@ -35,22 +34,13 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     if (event.request.url.includes('docs.google.com') || 
         event.request.url.includes('openweathermap.org') ||
-        event.request.url.includes('frankfurter.app') ||
-        event.request.url.includes('flightaware.com')) {
-        return; 
-    }
+        event.request.url.includes('frankfurter.app')) { return; }
     
     event.respondWith(
-        fetch(event.request)
-        .then(response => {
+        fetch(event.request).then(response => {
             const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseClone);
-            });
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
             return response;
-        })
-        .catch(() => {
-            return caches.match(event.request);
-        })
+        }).catch(() => caches.match(event.request))
     );
 });
