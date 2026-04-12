@@ -1,4 +1,3 @@
-
 // GLOBAL STATE
 export const state = {
     itineraryData: [],
