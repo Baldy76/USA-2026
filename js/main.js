@@ -1,15 +1,22 @@
 import { state, setVal, getVal } from './store.js';
 import { loadAllData, initLiveCurrency, fetchWeather } from './api.js';
-import { renderItinerary, renderTravelVault, renderAccommodations, shareDay, openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, closeCompletionModal } from './ui.js';
+import { 
+    renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
+    openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, 
+    closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
+    switchDayView, setTip, calculateTip, convertCurrency, 
+    populateDropdown, addCustomFamily, updateFamilyFilter,
+    setWeatherCity, autoSetWeatherCity
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
 // ---- ROUTER & NATIVE BACK BUTTON ----
-function openTab(pageId, isPopState = false) {
+export function openTab(pageId, isPopState = false) {
     if (navigator.vibrate) navigator.vibrate(40); 
     
     const activeTab = document.querySelector('.tab-content.active');
-    let animClass = 'fade-pop'; // Default for direct clicks
+    let animClass = 'fade-pop'; 
     
     // Directional Swipe calculation
     if (activeTab && tabOrder.includes(activeTab.id) && tabOrder.includes(pageId)) {
@@ -29,7 +36,11 @@ function openTab(pageId, isPopState = false) {
     const activeBtn = document.getElementById('nav-btn-' + pageId); 
     if(activeBtn) activeBtn.classList.add('active');
 
-    document.body.className = `light-mode theme-${pageId === 'home' ? 'splash' : pageId}`;
+    // THE FIX: Safely swap themes without destroying Dark Mode or forcing Splash on Home
+    document.body.classList.remove('theme-splash', 'theme-la', 'theme-utah', 'theme-vegas', 'theme-flights', 'theme-home');
+    document.body.classList.add(`theme-${pageId}`);
+    
+    updateMetaThemeColor(pageId);
     window.scrollTo(0,0); 
 
     // History API (Back Button Support)
@@ -40,7 +51,6 @@ function openTab(pageId, isPopState = false) {
 
 // Intercept Physical Phone Back Button
 window.addEventListener('popstate', (event) => {
-    // If a modal is open, back button closes it instead of changing tabs
     const scratchModal = document.getElementById('scratchpad-modal');
     if (scratchModal && scratchModal.classList.contains('active')) { closeScratchpad(); return; }
     
@@ -84,34 +94,68 @@ function initSwipes() {
     mainContent.addEventListener('touchend', e => { 
         touchendX = e.changedTouches[0].screenX; 
         const dist = touchendX - touchstartX;
-        if (Math.abs(dist) < 60) return; // threshold
+        if (Math.abs(dist) < 60) return; 
         
         const activeTab = document.querySelector('.tab-content.active');
         if (!activeTab || !tabOrder.includes(activeTab.id)) return; 
         const currentIndex = tabOrder.indexOf(activeTab.id);
 
-        if (dist < 0 && currentIndex < tabOrder.length - 1) openTab(tabOrder[currentIndex + 1]); // Swiped Left
-        else if (dist > 0 && currentIndex > 0) openTab(tabOrder[currentIndex - 1]); // Swiped Right
+        if (dist < 0 && currentIndex < tabOrder.length - 1) openTab(tabOrder[currentIndex + 1]); 
+        else if (dist > 0 && currentIndex > 0) openTab(tabOrder[currentIndex - 1]); 
     }, { passive: true });
 }
 
-// ---- EVENT BINDING ----
+// ---- EVENT BINDING ENGINE ----
 function bindEvents() {
-    // Splash screen button
-    document.getElementById('splash-go-btn')?.addEventListener('click', () => {
-        openTab('home');
-    });
-
+    // Navigation & Share
+    document.getElementById('splash-go-btn')?.addEventListener('click', () => openTab('home'));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
     document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
     
-    // Scratchpad events
+    // UI Toggles
+    document.getElementById('btn-show-today')?.addEventListener('click', () => switchDayView('today'));
+    document.getElementById('btn-show-tomorrow')?.addEventListener('click', () => switchDayView('tomorrow'));
+    document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
+    document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
+    
+    // Theme & Admin
+    document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
+    document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
+    document.getElementById('btn-add-family')?.addEventListener('click', addCustomFamily);
+    document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
+
+    // Calculators
+    document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
+    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
+    document.querySelectorAll('.tip-btn').forEach(btn => {
+        btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); });
+    });
+
+    // Weather Buttons
+    document.querySelectorAll('.weather-btn').forEach(btn => {
+        btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); });
+    });
+
+    // Maintenance
+    document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
+        this.innerText = "⏳ Syncing...";
+        await loadAllData(); renderItinerary();
+        this.innerText = "✅ Synced!";
+        setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
+    });
+    document.getElementById('btn-update-version')?.addEventListener('click', () => {
+        if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
+        alert("Flushing app cache. The page will reload."); window.location.reload(true);
+    });
+    
+    // Scratchpad
     document.getElementById('btn-open-scratchpad')?.addEventListener('click', openScratchpad);
     document.getElementById('btn-close-scratchpad')?.addEventListener('click', closeScratchpad);
     document.getElementById('scratchpad-text')?.addEventListener('input', saveScratchpad);
 
-    // Modals
+    // Completion Modals & Card Clicks
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal');
@@ -138,13 +182,16 @@ function bindEvents() {
             completedTasks = completedTasks.filter(id => id !== completedCard.dataset.taskId);
             await setVal('completedTasks', completedTasks); renderItinerary();
         }
+
+        const linkBtn = e.target.closest('.link-btn');
+        if (linkBtn && linkBtn.dataset.url) window.open(linkBtn.dataset.url, '_blank');
     });
 
     // Offline Tracker
     window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('active'));
     window.addEventListener('online', () => {
         document.getElementById('offline-banner').classList.remove('active');
-        loadAllData().then(() => renderItinerary()); // Auto-sync when back online
+        loadAllData().then(() => renderItinerary()); 
     });
 }
 
@@ -156,12 +203,21 @@ window.addEventListener('load', async () => {
     
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
-    // Sets the splash screen as the root history state
+    // System-Synced Dark Mode
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
+    const isDark = savedTheme !== null ? savedTheme === 'true' : prefersDark.matches;
+    applyTheme(isDark);
+    prefersDark.addEventListener('change', (e) => {
+        if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches);
+    });
+
     history.replaceState({ pageId: 'splash' }, '', '#splash');
     
     await loadAllData();
     renderItinerary();
     initLiveCurrency();
+    autoSetWeatherCity();
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
