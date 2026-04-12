@@ -57,7 +57,7 @@ export async function loadAllData() {
 export async function preCacheImages() {
     if ('caches' in window) {
         try {
-            const cache = await caches.open('holiday-planner-v2.1.13');
+            const cache = await caches.open('holiday-planner-v2.1.16');
             const imgUrls = state.vaultAndStaysData
                 .map(cols => cols[7] ? cols[7].trim() : '')
                 .filter(url => url.startsWith('http'));
