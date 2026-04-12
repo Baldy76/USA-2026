@@ -1,5 +1,5 @@
 import { state, setVal, getVal } from './store.js';
-import { loadAllData, initLiveCurrency } from './api.js';
+import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
     openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, 
@@ -35,7 +35,6 @@ export function openTab(pageId, isPopState = false) {
     const activeBtn = document.getElementById('nav-btn-' + pageId); 
     if(activeBtn) activeBtn.classList.add('active');
 
-    // THE BUG FIX: Replaced the hardcoded 'theme-splash' so the nav bar stays put on Home
     document.body.className = `light-mode theme-${pageId}`;
     
     updateMetaThemeColor(pageId);
@@ -72,7 +71,11 @@ function initPullToRefresh() {
                 spinner.classList.add('refreshing');
                 if (navigator.vibrate) navigator.vibrate(50);
                 loadAllData().then(() => {
+                    // THE FIX: Must trigger full UI redraw
+                    populateDropdown();
                     renderItinerary();
+                    renderTravelVault();
+                    renderAccommodations();
                     setTimeout(() => spinner.classList.remove('refreshing'), 1000);
                 });
             }
@@ -102,7 +105,7 @@ function initSwipes() {
     }, { passive: true });
 }
 
-// ---- EVENT BINDING ENGINE (FULLY RESTORED) ----
+// ---- EVENT BINDING ENGINE ----
 function bindEvents() {
     // Navigation & Share
     document.getElementById('splash-go-btn')?.addEventListener('click', () => openTab('home'));
@@ -139,10 +142,19 @@ function bindEvents() {
     // Maintenance
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
         this.innerText = "⏳ Syncing...";
-        await loadAllData(); renderItinerary();
+        await loadAllData(); 
+        
+        // THE FIX: Trigger full UI redraw on manual sync
+        populateDropdown();
+        renderItinerary();
+        renderTravelVault();
+        renderAccommodations();
+        preCacheImages();
+        
         this.innerText = "✅ Synced!";
         setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
     });
+    
     document.getElementById('btn-update-version')?.addEventListener('click', () => {
         if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
         alert("Flushing app cache. The page will reload."); window.location.reload(true);
@@ -189,7 +201,14 @@ function bindEvents() {
     window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('active'));
     window.addEventListener('online', () => {
         document.getElementById('offline-banner').classList.remove('active');
-        loadAllData().then(() => renderItinerary()); 
+        loadAllData().then(() => {
+            // THE FIX: Trigger full redraw on network recovery
+            populateDropdown();
+            renderItinerary();
+            renderTravelVault();
+            renderAccommodations();
+            preCacheImages();
+        }); 
     });
 }
 
@@ -213,7 +232,15 @@ window.addEventListener('load', async () => {
     history.replaceState({ pageId: 'splash' }, '', '#splash');
     
     await loadAllData();
+    
+    // THE FIX: This is what caused the empty dropdowns and missing UI!
+    // We must call all rendering functions immediately after initial data load.
+    populateDropdown();
     renderItinerary();
+    renderTravelVault();
+    renderAccommodations();
+    preCacheImages();
+    
     initLiveCurrency();
     autoSetWeatherCity();
     
