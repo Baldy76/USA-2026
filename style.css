@@ -225,3 +225,58 @@ body.dark-mode .admin-card, body.dark-mode .skel-card, body.dark-mode .weather-p
 .empty-icon { font-size: 60px; display: block; margin-bottom: 15px; filter: grayscale(100%); opacity: 0.7; }
 .empty-text { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
 .ADM-hdr { margin: 0 0 15px; opacity: 0.5; font-size: 12px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: center; color: var(--text); }
+
+
+/* =========================================
+   9. MODAL & COMPLETED SECTION (v2.1.7)
+   ========================================= */
+
+/* The Modal Overlay */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); 
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 10000; 
+    display: none; align-items: center; justify-content: center; 
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.active { 
+    display: flex; opacity: 1; 
+}
+
+/* The Modal Box */
+.modal-content { 
+    width: 90%; max-width: 400px; 
+    transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+.modal-overlay.active .modal-content { 
+    transform: scale(1); 
+}
+
+/* The Dashed Divider */
+.completed-divider {
+    text-align: center; margin: 40px 0 20px; position: relative;
+}
+.completed-divider::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--ios-grey), var(--ios-grey) 5px, transparent 5px, transparent 10px);
+    z-index: 1;
+}
+.completed-divider span {
+    background: var(--bg); padding: 0 15px; position: relative; z-index: 2;
+    font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; color: var(--text);
+    transition: background 0.3s ease;
+}
+
+/* Visual Changes for Completed Tasks */
+.itin-card.completed {
+    opacity: 0.6; 
+    filter: grayscale(100%); 
+    transform: scale(0.98); 
+    border: 1px dashed var(--ios-grey); 
+    box-shadow: none;
+    margin-bottom: 12px;
+}
+.itin-card.completed:active {
+    transform: scale(0.96);
+}
