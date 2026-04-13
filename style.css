@@ -247,3 +247,23 @@ body.dark-mode .splash-glass-card { background: rgba(0, 0, 0, 0.3); border: 1px 
 .toast-exit { animation: toastOut 0.3s forwards; }
 @keyframes toastIn { from { transform: translate(-50%, -20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 @keyframes toastOut { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -20px); opacity: 0; } }
+
+
+/* =========================================
+   14. COLLAPSIBLE ACCORDIONS (v2.1.23)
+   ========================================= */
+.day-group { margin-bottom: 20px; }
+.day-group summary { list-style: none; user-select: none; cursor: pointer; position: sticky; top: 10px; z-index: 100; text-align: center; margin: 25px 0; outline: none; }
+.day-group summary::-webkit-details-marker { display: none; } /* Hides the native browser arrow */
+.day-content { animation: fadePop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+.item-count { 
+    background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 12px; font-size: 11px; 
+    margin-left: 8px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    transition: background 0.3s ease; vertical-align: middle; display: inline-block;
+}
+/* When the folder is OPEN, the counter highlights in accent color to draw the eye */
+.day-group[open] summary .item-count { background: #34c759; }
+body.theme-la .day-group[open] summary .item-count { background: #ff9500; }
+body.theme-utah .day-group[open] summary .item-count { background: #ff3b30; }
+body.theme-vegas .day-group[open] summary .item-count { background: #af52de; }
