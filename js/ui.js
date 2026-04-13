@@ -105,14 +105,16 @@ export function populateDropdown() {
     });
     const savedFamily = localStorage.getItem('savedFamilyFilter'); if (savedFamily) sel.value = savedFamily;
 }
-export function addCustomFamily() { 
-    const name = document.getElementById('new-family-name')?.value.trim();
-    if (name) {
-        let custom = JSON.parse(localStorage.getItem('customFamilies')) || [];
-        if (!custom.includes(name)) { custom.push(name); localStorage.setItem('customFamilies', JSON.stringify(custom)); populateDropdown(); const sel = document.getElementById('family-selector'); if(sel) sel.value = name; updateFamilyFilter(); }
-        document.getElementById('new-family-name').value = ''; 
+
+export function clearCustomFamilies() {
+    if(confirm("Remove all old saved names from this device? This will instantly clean up your dropdown menus.")) {
+        localStorage.removeItem('customFamilies');
+        populateDropdown();
+        updateFamilyFilter();
+        alert("Memory cleared!");
     }
 }
+
 export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
 
 // ---- WEATHER ENGINE ----
@@ -167,7 +169,6 @@ export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
     
-    // Create grouping dictionaries for the accordion engine
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} };
     let cLA = '', cUtah = '', cVegas = '', hToday = '', hTomorrow = '', cToday = '', cTomorrow = ''; 
     const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
@@ -196,25 +197,21 @@ export async function renderItinerary() {
                     <div style="font-size: 14px; font-weight: 700; opacity: 0.7; line-height: 1.5;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 800;">Get Directions</a>${addrHtml}</div>
                 </div>`;
 
-            // Function to sort cards into date folders
             const pushToGroup = (city, dateStr) => {
                 if (!grouped[city][dateStr]) grouped[city][dateStr] = [];
                 grouped[city][dateStr].push(cardHtml);
             };
 
-            // Distribute to City Views
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pushToGroup('la', d); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pushToGroup('utah', d); }
             else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pushToGroup('vegas', d); }
             
-            // Distribute to Home View (Flat list for Dashboard focus)
             const isDateMatch = (s, target) => { let dt = new Date(parseDateTime(s)); return dt.toDateString() === target.toDateString(); };
             if (isDateMatch(d, today)) { isCompleted ? cToday += cardHtml : hToday += cardHtml; } 
             else if (isDateMatch(d, tomorrow)) { isCompleted ? cTomorrow += cardHtml : hTomorrow += cardHtml; }
         }
     });
 
-    // The Folder Builder Engine (THE FIX: Removed 'open' attribute so they start collapsed!)
     const buildAccordion = (cityObj) => {
         let html = '';
         for (const [date, cards] of Object.entries(cityObj)) {
