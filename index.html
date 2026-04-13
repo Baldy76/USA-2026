@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.20">
+    <link rel="stylesheet" href="style.css?v=2.1.21">
 </head>
 <body class="light-mode theme-splash">
 
@@ -189,8 +189,15 @@
 
             <div class="admin-card" style="margin-bottom: 24px; text-align: center;">
                 <div style="font-size: 12px; font-weight: 900; opacity: 0.5; text-transform: uppercase; margin-bottom: 10px;">🎰 The Decider</div>
+                
+                <select id="roulette-mode" style="margin-bottom: 15px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: 2px solid var(--ios-grey); background: var(--bg); color: var(--text); outline: none; width: 100%; text-align: center; text-align-last: center;">
+                    <option value="bill">Who is picking up the bill?</option>
+                    <option value="driving">Who is driving?</option>
+                </select>
+
                 <div id="roulette-result" style="font-size: 28px; font-weight: 900; color: var(--accent); margin-bottom: 15px; height: 35px; display: flex; align-items: center; justify-content: center;">Tap to Spin!</div>
-                <button id="btn-spin-roulette" class="action-btn" style="background: var(--ios-grey); color: var(--text); font-size: 14px;">Who is paying / driving?</button>
+                
+                <button id="btn-spin-roulette" class="action-btn" style="background: var(--accent-gradient); color: white; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);">Spin the Wheel</button>
             </div>
 
             <button id="btn-open-admin" class="action-btn" style="margin-top: 20px; margin-bottom: 20px; background: #ffb74d; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #1c1c1e; border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
@@ -291,7 +298,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.20</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.21</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -331,6 +338,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.20"></script>
+    <script type="module" src="js/main.js?v=2.1.21"></script>
 </body>
 </html>
