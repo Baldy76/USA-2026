@@ -8,7 +8,7 @@ import {
     populateDropdown, addCustomFamily, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, 
-    triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette // <--- NEW IMPORTS
+    triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -127,7 +127,6 @@ function bindEvents() {
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
     
-    // NEW FUN EVENT LISTENERS
     document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
     document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
     document.getElementById('hero-la')?.addEventListener('click', () => triggerEmojiRain('la'));
@@ -174,8 +173,7 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks);
             syncToCloud('completion', completedTasks); 
             
-            triggerConfetti(); // <--- THE CONFETTI LAUNCH!
-            
+            triggerConfetti(); 
             closeCompletionModal(); renderItinerary(); 
         }
     });
