@@ -377,16 +377,22 @@ export function triggerHype() {
     }, 3000);
 }
 
+// THE FIX: Rewritten to listen to the dropdown and split the names accordingly!
 export function spinRoulette() {
     const res = document.getElementById('roulette-result');
     const btn = document.getElementById('btn-spin-roulette');
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
     if(!res || !btn || btn.disabled) return;
     
     btn.disabled = true;
     btn.style.opacity = '0.5';
     
-    // THE FIX: Explicitly hardcoded your group's names here!
-    const names = ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs"];
+    let names = [];
+    if (mode === 'driving') {
+        names = ["Graeme", "Dave"];
+    } else {
+        names = ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
+    }
     
     let ticks = 0;
     const maxTicks = 20;
