@@ -5,7 +5,7 @@ import {
     openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, 
     closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     switchDayView, setTip, calculateTip, convertCurrency, 
-    populateDropdown, addCustomFamily, updateFamilyFilter,
+    populateDropdown, clearCustomFamilies, updateFamilyFilter, // NEW: clearCustomFamilies imported
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, 
     triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette
@@ -102,12 +102,11 @@ function startNotificationEngine() {
 // ---- EVENT BINDING ENGINE ----
 function bindEvents() {
     
-    // NEW: IDENTITY ENGINE
+    // SMART IDENTITY ENGINE (UPDATED TO TRACK EXACT NAMES)
     const loginSelector = document.getElementById('login-selector');
     const splashGoBtn = document.getElementById('splash-go-btn');
 
     if (loginSelector && splashGoBtn) {
-        // 1. Check if they already logged in before
         const savedUser = localStorage.getItem('appUser');
         if (savedUser) {
             loginSelector.value = savedUser;
@@ -116,28 +115,19 @@ function bindEvents() {
             splashGoBtn.style.opacity = '1';
         }
 
-        // 2. Listen for selection changes
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
 
-            // Update button
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
 
-            // Map user to Family
-            let familyName = 'All';
-            const leech = ['Graeme', 'Dawn', 'Grace'];
-            const murray = ['David', 'Sarah', 'Bexs'];
+            // THE FIX: Directly map the user's name to the dropdown filter
+            let familyName = userName;
 
-            if (leech.includes(userName)) familyName = 'Leech Family';
-            if (murray.includes(userName)) familyName = 'Murray Family';
-
-            // Auto-set the admin family filter
             const famSel = document.getElementById('family-selector');
             if (famSel) {
-                // Ensure custom family tracking works
                 let customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
                 if (!customFamilies.includes(familyName) && familyName !== 'All') {
                     customFamilies.push(familyName);
@@ -197,9 +187,11 @@ function bindEvents() {
     document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
     document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
 
+    // NEW: Binding the clear memory button
+    document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
+
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
-    document.getElementById('btn-add-family')?.addEventListener('click', addCustomFamily);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
