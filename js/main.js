@@ -7,7 +7,8 @@ import {
     switchDayView, setTip, calculateTip, convertCurrency, 
     populateDropdown, addCustomFamily, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
-    handleFileUpload, renderWallet
+    handleFileUpload, renderWallet, 
+    triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette // <--- NEW IMPORTS
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -36,7 +37,6 @@ export function openTab(pageId, isPopState = false) {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById('nav-btn-' + pageId); if(activeBtn) activeBtn.classList.add('active');
     
-    // THE FIX: Safely grab the current Dark Mode state so it doesn't get wiped out!
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     
@@ -127,6 +127,13 @@ function bindEvents() {
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
     
+    // NEW FUN EVENT LISTENERS
+    document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
+    document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
+    document.getElementById('hero-la')?.addEventListener('click', () => triggerEmojiRain('la'));
+    document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
+    document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
+
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
     document.getElementById('btn-add-family')?.addEventListener('click', addCustomFamily);
@@ -166,6 +173,9 @@ function bindEvents() {
             completedTasks.push(modal.dataset.activeTaskId);
             await setVal('completedTasks', completedTasks);
             syncToCloud('completion', completedTasks); 
+            
+            triggerConfetti(); // <--- THE CONFETTI LAUNCH!
+            
             closeCompletionModal(); renderItinerary(); 
         }
     });
