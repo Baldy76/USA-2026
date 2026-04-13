@@ -1,12 +1,12 @@
-const CACHE_NAME = 'holiday-planner-v2.1.22';
+const CACHE_NAME = 'holiday-planner-v2.1.23';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=2.1.21', /* Only HTML changed, so we keep CSS/JS identical to avoid re-downloading unnecessary data */
-    './js/main.js?v=2.1.21',
-    './js/store.js?v=2.1.21',
-    './js/api.js?v=2.1.21',
-    './js/ui.js?v=2.1.21',
+    './style.css?v=2.1.23',
+    './js/main.js?v=2.1.23',
+    './js/store.js?v=2.1.23', /* Store/API omitted as they rarely change, but included here for full consistency */
+    './js/api.js?v=2.1.23',
+    './js/ui.js?v=2.1.23',
     './manifest.json',
     './img/la.jpg',
     './img/utah.jpg',
