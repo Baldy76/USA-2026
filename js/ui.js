@@ -3,7 +3,6 @@ import { fetchWeather, syncToCloud } from './api.js';
 
 // ---- THEME ENGINE ----
 export function applyTheme(isDark) {
-    // THE FIX: Explicitly toggle both classes to ensure they never conflict
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
     
@@ -316,7 +315,6 @@ export function closeCompletionModal() {
     const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
 
-
 // =========================================
 // 14. THE FUN ENGINE (CONFETTI, HYPE, ROULETTE)
 // =========================================
@@ -387,15 +385,14 @@ export function spinRoulette() {
     btn.disabled = true;
     btn.style.opacity = '0.5';
     
-    const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
-    let families = Array.from(new Set([...state.sheetFamilies, ...customFamilies]));
-    if (families.length === 0) families = ["Family A", "Family B", "The Kids", "The Adults"];
+    // THE FIX: Explicitly hardcoded your group's names here!
+    const names = ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs"];
     
     let ticks = 0;
     const maxTicks = 20;
     const interval = setInterval(() => {
         if(navigator.vibrate) navigator.vibrate(10);
-        res.innerText = families[Math.floor(Math.random() * families.length)];
+        res.innerText = names[Math.floor(Math.random() * names.length)];
         ticks++;
         if (ticks >= maxTicks) {
             clearInterval(interval);
