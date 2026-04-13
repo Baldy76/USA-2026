@@ -101,7 +101,57 @@ function startNotificationEngine() {
 
 // ---- EVENT BINDING ENGINE ----
 function bindEvents() {
+    
+    // NEW: IDENTITY ENGINE
+    const loginSelector = document.getElementById('login-selector');
+    const splashGoBtn = document.getElementById('splash-go-btn');
+
+    if (loginSelector && splashGoBtn) {
+        // 1. Check if they already logged in before
+        const savedUser = localStorage.getItem('appUser');
+        if (savedUser) {
+            loginSelector.value = savedUser;
+            splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+            splashGoBtn.disabled = false;
+            splashGoBtn.style.opacity = '1';
+        }
+
+        // 2. Listen for selection changes
+        loginSelector.addEventListener('change', function() {
+            const userName = this.value;
+            localStorage.setItem('appUser', userName);
+
+            // Update button
+            splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
+            splashGoBtn.disabled = false;
+            splashGoBtn.style.opacity = '1';
+
+            // Map user to Family
+            let familyName = 'All';
+            const leech = ['Graeme', 'Dawn', 'Grace'];
+            const murray = ['David', 'Sarah', 'Bexs'];
+
+            if (leech.includes(userName)) familyName = 'Leech Family';
+            if (murray.includes(userName)) familyName = 'Murray Family';
+
+            // Auto-set the admin family filter
+            const famSel = document.getElementById('family-selector');
+            if (famSel) {
+                // Ensure custom family tracking works
+                let customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
+                if (!customFamilies.includes(familyName) && familyName !== 'All') {
+                    customFamilies.push(familyName);
+                    localStorage.setItem('customFamilies', JSON.stringify(customFamilies));
+                    populateDropdown();
+                }
+                famSel.value = familyName;
+                updateFamilyFilter();
+            }
+        });
+    }
+
     document.getElementById('splash-go-btn')?.addEventListener('click', () => openTab('home'));
+    
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('btn-install-app')?.addEventListener('click', async () => {
         if (deferredPrompt) {
@@ -114,33 +164,23 @@ function bindEvents() {
 
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     
-    // THE FIX: SMART VISUAL NOTIFICATION BUTTON
     const notifBtn = document.getElementById('btn-enable-notifs');
     if (notifBtn) {
         if ('Notification' in window && Notification.permission === 'granted') {
-            notifBtn.style.backgroundColor = '#34c759'; // iOS Green
+            notifBtn.style.backgroundColor = '#34c759'; 
             notifBtn.style.color = 'white';
             notifBtn.innerText = '✅ Notifications Enabled';
         }
-        
         notifBtn.addEventListener('click', async function() {
-            if (!('Notification' in window)) {
-                alert("Your browser does not support notifications.");
-                return;
-            }
-            if (Notification.permission === 'granted') {
-                alert("Notifications are already enabled!");
-                return;
-            }
+            if (!('Notification' in window)) { alert("Your browser does not support notifications."); return; }
+            if (Notification.permission === 'granted') { alert("Notifications are already enabled!"); return; }
             const perm = await Notification.requestPermission();
             if (perm === 'granted') {
                 this.style.backgroundColor = '#34c759';
                 this.style.color = 'white';
                 this.innerText = '✅ Notifications Enabled';
                 if(navigator.vibrate) navigator.vibrate([50, 50]);
-            } else {
-                alert("Notification permission denied by your browser settings.");
-            }
+            } else { alert("Notification permission denied by your browser settings."); }
         });
     }
 
