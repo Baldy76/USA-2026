@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.25">
+    <link rel="stylesheet" href="style.css?v=2.1.26">
 </head>
 <body class="light-mode theme-splash">
 
@@ -29,7 +29,22 @@
                     </div>
                     <h1 class="splash-title">USA 2026</h1>
                     <p class="splash-subtitle">The Ultimate Itinerary</p>
-                    <button id="splash-go-btn" class="action-btn pulse-btn">Begin Journey ✈️</button>
+                    
+                    <select id="login-selector" style="margin-bottom: 20px; padding: 14px; font-size: 16px; font-weight: 800; border-radius: 16px; border: 2px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center; -webkit-appearance: none;">
+                        <option value="" disabled selected>Who is logging in?</option>
+                        <optgroup label="Leech Family" style="color: black;">
+                            <option value="Graeme">Graeme</option>
+                            <option value="Dawn">Dawn</option>
+                            <option value="Grace">Grace</option>
+                        </optgroup>
+                        <optgroup label="Murray Family" style="color: black;">
+                            <option value="David">David</option>
+                            <option value="Sarah">Sarah</option>
+                            <option value="Bexs">Bexs</option>
+                        </optgroup>
+                    </select>
+
+                    <button id="splash-go-btn" class="action-btn pulse-btn" disabled style="opacity: 0.5; transition: all 0.3s ease;">Select your name 👆</button>
                 </div>
             </div>
         </section>
@@ -297,7 +312,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.25</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.26</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -337,6 +352,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.25"></script>
+    <script type="module" src="js/main.js?v=2.1.26"></script>
 </body>
 </html>
