@@ -80,7 +80,7 @@ function initSwipes() {
 // ---- SMART NOTIFICATION CHECKER ----
 function startNotificationEngine() {
     setInterval(async () => {
-        if (Notification.permission !== 'granted') return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
         
@@ -114,11 +114,35 @@ function bindEvents() {
 
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     
-    document.getElementById('btn-enable-notifs')?.addEventListener('click', async () => {
-        const perm = await Notification.requestPermission();
-        if (perm === 'granted') alert("Notifications enabled! We'll ping you 30 mins before an activity.");
-        else alert("Notification permission denied by your browser settings.");
-    });
+    // THE FIX: SMART VISUAL NOTIFICATION BUTTON
+    const notifBtn = document.getElementById('btn-enable-notifs');
+    if (notifBtn) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            notifBtn.style.backgroundColor = '#34c759'; // iOS Green
+            notifBtn.style.color = 'white';
+            notifBtn.innerText = '✅ Notifications Enabled';
+        }
+        
+        notifBtn.addEventListener('click', async function() {
+            if (!('Notification' in window)) {
+                alert("Your browser does not support notifications.");
+                return;
+            }
+            if (Notification.permission === 'granted') {
+                alert("Notifications are already enabled!");
+                return;
+            }
+            const perm = await Notification.requestPermission();
+            if (perm === 'granted') {
+                this.style.backgroundColor = '#34c759';
+                this.style.color = 'white';
+                this.innerText = '✅ Notifications Enabled';
+                if(navigator.vibrate) navigator.vibrate([50, 50]);
+            } else {
+                alert("Notification permission denied by your browser settings.");
+            }
+        });
+    }
 
     document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
     document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
