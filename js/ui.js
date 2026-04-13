@@ -315,3 +315,95 @@ export function openCompletionModal(taskId, taskName) {
 export function closeCompletionModal() {
     const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
+
+
+// =========================================
+// 14. THE FUN ENGINE (CONFETTI, HYPE, ROULETTE)
+// =========================================
+
+export function triggerConfetti() {
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a'];
+    for(let i=0; i<60; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'particle confetti';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        conf.style.animationDelay = (Math.random() * 0.5) + 's';
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
+    }
+}
+
+export function triggerEmojiRain(city) {
+    if(navigator.vibrate) navigator.vibrate([30, 30]);
+    const emojis = {
+        'la': ['🌴', '☀️', '🎬', '⭐', '🏄'],
+        'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'],
+        'vegas': ['🎲', '🎰', '💸', '🃏', '🍸']
+    };
+    const set = emojis[city] || ['✨'];
+    for(let i=0; i<30; i++) {
+        const em = document.createElement('div');
+        em.className = 'particle emoji-drop';
+        em.innerText = set[Math.floor(Math.random() * set.length)];
+        em.style.left = Math.random() * 100 + 'vw';
+        em.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(em);
+        setTimeout(() => em.remove(), 4000);
+    }
+}
+
+const hypeQuotes = [
+    "Prepare the Vegas bankroll! 💸",
+    "Only the brave conquer Utah! ⛰️",
+    "In-N-Out Burger is calling! 🍔",
+    "USA 2026: Epic Mode Activated 🚀",
+    "Passports? Check. Vibes? IMMACULATE. ✨",
+    "Ready for the road trip of a lifetime? 🚗"
+];
+
+export function triggerHype() {
+    if(navigator.vibrate) navigator.vibrate(40);
+    const toast = document.getElementById('hype-toast');
+    if(!toast) return;
+    toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
+    toast.style.display = 'block';
+    toast.classList.remove('toast-exit');
+    toast.classList.add('toast-enter');
+    setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.style.display = 'none', 300);
+    }, 3000);
+}
+
+export function spinRoulette() {
+    const res = document.getElementById('roulette-result');
+    const btn = document.getElementById('btn-spin-roulette');
+    if(!res || !btn || btn.disabled) return;
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
+    let families = Array.from(new Set([...state.sheetFamilies, ...customFamilies]));
+    if (families.length === 0) families = ["Family A", "Family B", "The Kids", "The Adults"];
+    
+    let ticks = 0;
+    const maxTicks = 20;
+    const interval = setInterval(() => {
+        if(navigator.vibrate) navigator.vibrate(10);
+        res.innerText = families[Math.floor(Math.random() * families.length)];
+        ticks++;
+        if (ticks >= maxTicks) {
+            clearInterval(interval);
+            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            res.style.transform = 'scale(1.2)';
+            setTimeout(() => res.style.transform = 'scale(1)', 200);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    }, 100);
+}
