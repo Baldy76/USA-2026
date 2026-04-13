@@ -214,14 +214,14 @@ export async function renderItinerary() {
         }
     });
 
-    // The Folder Builder Engine
+    // The Folder Builder Engine (THE FIX: Removed 'open' attribute so they start collapsed!)
     const buildAccordion = (cityObj) => {
         let html = '';
         for (const [date, cards] of Object.entries(cityObj)) {
             const count = cards.length;
             const countBadge = `<span class="item-count">${count} Item${count > 1 ? 's' : ''}</span>`;
             html += `
-            <details class="day-group" open>
+            <details class="day-group">
                 <summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}${countBadge}</span></summary>
                 <div class="day-content">${cards.join('')}</div>
             </details>`;
