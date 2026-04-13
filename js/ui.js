@@ -26,10 +26,25 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// ---- CLOCK & DATE ENGINE ----
+// ---- CLOCK & DATE ENGINE (UPDATED TO INCLUDE CITY HEADERS) ----
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
+        
+        // 1. INJECT THE LOCAL TIME INTO THE CITY HERO HEADERS
+        const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
+        const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
+        const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
+
+        const elLA = document.getElementById('time-la');
+        const elVegas = document.getElementById('time-vegas');
+        const elUtah = document.getElementById('time-utah');
+
+        if(elLA) elLA.innerText = `🕒 Local Time: ${timePT}`;
+        if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`;
+        if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
+
+        // 2. RUN THE DASHBOARD CLOCKS & COUNTDOWN AS USUAL
         const cContainer = document.getElementById('countdown-display');
         const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
