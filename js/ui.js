@@ -26,12 +26,11 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// ---- CLOCK & DATE ENGINE (UPDATED TO INCLUDE CITY HEADERS) ----
+// ---- CLOCK & DATE ENGINE ----
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
         
-        // 1. INJECT THE LOCAL TIME INTO THE CITY HERO HEADERS
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
         const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
         const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
@@ -44,7 +43,6 @@ export function updateTimeAndCountdown() {
         if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`;
         if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
 
-        // 2. RUN THE DASHBOARD CLOCKS & COUNTDOWN AS USUAL
         const cContainer = document.getElementById('countdown-display');
         const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
@@ -97,17 +95,24 @@ export function switchDayView(day) {
     else { tV.style.display = 'none'; tmV.style.display = 'block'; if(bTm) { bTm.style.backgroundColor = 'var(--accent)'; bTm.style.color = 'white'; } if(bT) { bT.style.backgroundColor = 'var(--ios-grey)'; bT.style.color = 'var(--text)'; } }
 }
 
-let currentTipPercent = 18;
-export function setTip(percent, btnElement) { currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); calculateTip(); }
+export function convertCurrency() { 
+    const usd = document.getElementById('usd-input')?.value;
+    if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
+}
+
+// RESTORED TIP CALCULATOR FUNCTIONS
+export let currentTipPercent = 18;
+export function setTip(percent, btnElement) { 
+    currentTipPercent = percent; 
+    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
+    if(btnElement) btnElement.classList.add('active'); 
+    calculateTip(); 
+}
 export function calculateTip() { 
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0, s = parseInt(document.getElementById('split-ways')?.value) || 1;
     const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / state.liveExchangeRate; 
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
-}
-export function convertCurrency() { 
-    const usd = document.getElementById('usd-input')?.value;
-    if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
 // ---- FAMILY FILTERS ----
@@ -179,7 +184,7 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);"><div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div><div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div><div class="WTH-hero-desc">${d.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
 }
 
-// ---- ITINERARY ENGINE (UPGRADED COLLAPSIBLE FOLDERS) ----
+// ---- ITINERARY ENGINE ----
 export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
@@ -288,7 +293,7 @@ export function renderAccommodations() {
         if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
             const checkIn = cols[2]?.trim(); const city = cols[3]?.trim(); const address = escapeHTML(cols[4]?.trim()); const checkOut = cols[5]?.trim(); const link = escapeHTML(cols[6]?.trim()); const imgUrl = escapeHTML(cols[7]?.trim());
             const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(address);
-            const ui = `<div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;"><div style="height: 140px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div><div style="padding: 20px;"><div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div><div style="display: flex; gap: 10px;"><button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>${link ? `<button class="action-btn link-btn" data-url="${link}" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}</div></div></div>`;
+            const ui = `<div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;"><div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div><div style="padding: 20px;"><div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div><div style="display: flex; gap: 10px;"><button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>${link ? `<button class="action-btn link-btn" data-url="${link}" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}</div></div></div>`;
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
             if (checkIn && checkOut) { let sDate = new Date(parseDateTime(checkIn)); let eDate = new Date(parseDateTime(checkOut)); sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999); if (today >= sDate && today <= eDate) htmlToday += ui; }
         }
@@ -301,8 +306,6 @@ export function renderAccommodations() {
 export async function handleFileUpload(event) {
     const file = event.target.files[0];
     if(!file) return;
-    
-    // Prevent massive files from choking IndexedDB
     if (file.size > 10 * 1024 * 1024) { alert("File is too large. Please upload something under 10MB."); return; }
     
     const reader = new FileReader();
@@ -345,21 +348,7 @@ export async function shareDay(dayViewId, titleName) {
     if (navigator.share) { try { await navigator.share({ title: titleName, text }); } catch (e) {} } else { navigator.clipboard.writeText(text); alert('Copied to clipboard!'); }
 }
 
-// ---- SCRATCHPAD & MODALS ----
-export async function openScratchpad() {
-    const modal = document.getElementById('scratchpad-modal');
-    document.getElementById('scratchpad-text').value = await getVal('scratchpadNotes') || '';
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-}
-export function closeScratchpad() {
-    const modal = document.getElementById('scratchpad-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
-}
-export function saveScratchpad() {
-    const val = document.getElementById('scratchpad-text').value;
-    setVal('scratchpadNotes', val);
-    syncToCloud('scratchpad', val); 
-}
-
+// ---- MODALS ----
 export function openCompletionModal(taskId, taskName) {
     document.getElementById('modal-task-name').innerText = taskName; document.getElementById('modal-checkbox').checked = false;
     document.getElementById('btn-confirm-modal').style.opacity = '0.5'; document.getElementById('btn-confirm-modal').style.pointerEvents = 'none';
@@ -463,4 +452,64 @@ export function spinRoulette() {
             btn.style.opacity = '1';
         }
     }, 100);
+}
+
+// =========================================
+// 15. TOP TIPS ENGINE 
+// =========================================
+
+let currentTipsCity = 'la';
+
+export function openTipsModal(city) {
+    if(navigator.vibrate) navigator.vibrate(40);
+    currentTipsCity = city.toLowerCase();
+    
+    const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
+    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[currentTipsCity]} Tips`;
+
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === 'eating');
+    });
+
+    renderTips('eating');
+
+    const modal = document.getElementById('tips-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeTipsModal() {
+    const modal = document.getElementById('tips-modal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+export function renderTips(category) {
+    const filter = document.getElementById('family-selector')?.value || 'All';
+    const contentDiv = document.getElementById('tips-content');
+    let html = '';
+
+    state.vaultAndStaysData.forEach(cols => {
+        if(cols.length < 5) return;
+        const fam = cols[0].trim();
+        const type = cols[1].trim().toLowerCase();
+        const city = cols[2]?.trim().toLowerCase();
+        const cat = cols[3]?.trim().toLowerCase();
+        const details = cols[4]?.trim();
+
+        if (type === 'tip' && city.includes(currentTipsCity) && cat === category) {
+            if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
+                const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; color: white; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(fam)}</span>` : '';
+                html += `
+                <div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
+                    <div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div>
+                </div>`;
+            }
+        }
+    });
+
+    if (!html) {
+        html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved for this category yet!</div></div>`;
+    }
+    contentDiv.innerHTML = html;
 }
