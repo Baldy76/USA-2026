@@ -1,7 +1,6 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
 import { fetchWeather, syncToCloud } from './api.js';
 
-// ---- THEME ENGINE ----
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
@@ -26,7 +25,6 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// ---- CLOCK & DATE ENGINE ----
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
@@ -86,7 +84,6 @@ export function updateTimeAndCountdown() {
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
 
-// ---- DASHBOARD CALCULATORS ----
 export function switchDayView(day) { 
     const tV = document.getElementById('today-view'), tmV = document.getElementById('tomorrow-view');
     const bT = document.getElementById('btn-show-today'), bTm = document.getElementById('btn-show-tomorrow');
@@ -100,7 +97,6 @@ export function convertCurrency() {
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
-// RESTORED TIP CALCULATOR FUNCTIONS
 export let currentTipPercent = 18;
 export function setTip(percent, btnElement) { 
     currentTipPercent = percent; 
@@ -115,7 +111,6 @@ export function calculateTip() {
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
 
-// ---- FAMILY FILTERS ----
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
@@ -137,7 +132,6 @@ export function clearCustomFamilies() {
 
 export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
 
-// ---- WEATHER ENGINE ----
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
@@ -184,7 +178,6 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);"><div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div><div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div><div class="WTH-hero-desc">${d.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
 }
 
-// ---- ITINERARY ENGINE ----
 export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
@@ -200,7 +193,10 @@ export async function renderItinerary() {
         
         if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
             const searchLoc = addr !== '' ? addr : `${act} ${loc}`; 
-            const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(searchLoc);
+            
+            // THE FIX: UPGRADED UNIVERSAL MAP INTENT
+            const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(searchLoc);
+            
             const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -292,7 +288,11 @@ export function renderAccommodations() {
         const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase();
         if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
             const checkIn = cols[2]?.trim(); const city = cols[3]?.trim(); const address = escapeHTML(cols[4]?.trim()); const checkOut = cols[5]?.trim(); const link = escapeHTML(cols[6]?.trim()); const imgUrl = escapeHTML(cols[7]?.trim());
-            const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; const mapLink = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(address);
+            const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; 
+            
+            // THE FIX: UPGRADED UNIVERSAL MAP INTENT
+            const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
+            
             const ui = `<div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;"><div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div><div style="padding: 20px;"><div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div><div style="display: flex; gap: 10px;"><button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>${link ? `<button class="action-btn link-btn" data-url="${link}" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}</div></div></div>`;
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
             if (checkIn && checkOut) { let sDate = new Date(parseDateTime(checkIn)); let eDate = new Date(parseDateTime(checkOut)); sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999); if (today >= sDate && today <= eDate) htmlToday += ui; }
@@ -302,7 +302,6 @@ export function renderAccommodations() {
     const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas; const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
 }
 
-// ---- OFFLINE WALLET UPLOAD ENGINE ----
 export async function handleFileUpload(event) {
     const file = event.target.files[0];
     if(!file) return;
@@ -339,7 +338,6 @@ export async function renderWallet() {
     gallery.innerHTML = html;
 }
 
-// ---- SHARE API ----
 export async function shareDay(dayViewId, titleName) {
     const container = document.getElementById(dayViewId); if(!container) return;
     const cards = container.querySelectorAll('.itin-card:not(.completed)');
@@ -348,7 +346,6 @@ export async function shareDay(dayViewId, titleName) {
     if (navigator.share) { try { await navigator.share({ title: titleName, text }); } catch (e) {} } else { navigator.clipboard.writeText(text); alert('Copied to clipboard!'); }
 }
 
-// ---- MODALS ----
 export function openCompletionModal(taskId, taskName) {
     document.getElementById('modal-task-name').innerText = taskName; document.getElementById('modal-checkbox').checked = false;
     document.getElementById('btn-confirm-modal').style.opacity = '0.5'; document.getElementById('btn-confirm-modal').style.pointerEvents = 'none';
@@ -358,10 +355,6 @@ export function openCompletionModal(taskId, taskName) {
 export function closeCompletionModal() {
     const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
-
-// =========================================
-// 14. THE FUN ENGINE (CONFETTI, HYPE, ROULETTE)
-// =========================================
 
 export function triggerConfetti() {
     if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
@@ -453,10 +446,6 @@ export function spinRoulette() {
         }
     }, 100);
 }
-
-// =========================================
-// 15. TOP TIPS ENGINE 
-// =========================================
 
 let currentTipsCity = 'la';
 
