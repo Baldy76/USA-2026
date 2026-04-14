@@ -2,13 +2,14 @@ import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
-    openScratchpad, closeScratchpad, saveScratchpad, openCompletionModal, 
-    closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
-    switchDayView, setTip, calculateTip, convertCurrency, 
-    populateDropdown, clearCustomFamilies, updateFamilyFilter, // NEW: clearCustomFamilies imported
+    openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
+    switchDayView, convertCurrency, 
+    setTip, calculateTip, // <-- RESTORED TIP CALCULATOR EXPORTS
+    populateDropdown, clearCustomFamilies, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, 
-    triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette
+    triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
+    openTipsModal, closeTipsModal, renderTips
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -45,8 +46,6 @@ export function openTab(pageId, isPopState = false) {
 }
 
 window.addEventListener('popstate', (event) => {
-    const scratchModal = document.getElementById('scratchpad-modal');
-    if (scratchModal && scratchModal.classList.contains('active')) { closeScratchpad(); return; }
     if (event.state && event.state.pageId) openTab(event.state.pageId, true); else openTab('home', true);
 });
 
@@ -102,7 +101,6 @@ function startNotificationEngine() {
 // ---- EVENT BINDING ENGINE ----
 function bindEvents() {
     
-    // SMART IDENTITY ENGINE (UPDATED TO TRACK EXACT NAMES)
     const loginSelector = document.getElementById('login-selector');
     const splashGoBtn = document.getElementById('splash-go-btn');
 
@@ -123,7 +121,6 @@ function bindEvents() {
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
 
-            // THE FIX: Directly map the user's name to the dropdown filter
             let familyName = userName;
 
             const famSel = document.getElementById('family-selector');
@@ -187,7 +184,24 @@ function bindEvents() {
     document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
     document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
 
-    // NEW: Binding the clear memory button
+    // RESTORED TIP CALCULATOR EVENT LISTENERS
+    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
+    document.querySelectorAll('.tip-btn').forEach(btn => { btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }); });
+
+    document.querySelectorAll('.tips-btn').forEach(btn => {
+        btn.addEventListener('click', function() { openTipsModal(this.dataset.city); });
+    });
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if(navigator.vibrate) navigator.vibrate(20);
+            document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderTips(this.dataset.cat);
+        });
+    });
+    document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
+
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
 
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
@@ -195,9 +209,6 @@ function bindEvents() {
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
-    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
-    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
-    document.querySelectorAll('.tip-btn').forEach(btn => { btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }); });
     document.querySelectorAll('.weather-btn').forEach(btn => { btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); }); });
 
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
@@ -211,10 +222,6 @@ function bindEvents() {
         alert("Flushing app cache. The page will reload."); window.location.reload(true);
     });
     
-    document.getElementById('btn-open-scratchpad')?.addEventListener('click', openScratchpad);
-    document.getElementById('btn-close-scratchpad')?.addEventListener('click', closeScratchpad);
-    document.getElementById('scratchpad-text')?.addEventListener('input', saveScratchpad);
-
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal');
