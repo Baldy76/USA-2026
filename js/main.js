@@ -4,7 +4,7 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     switchDayView, convertCurrency, 
-    setTip, calculateTip, // <-- RESTORED TIP CALCULATOR EXPORTS
+    setTip, calculateTip, 
     populateDropdown, clearCustomFamilies, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, 
@@ -15,7 +15,6 @@ import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
-// ---- INSTALL ONBOARDING (PWA) ----
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -23,7 +22,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
     document.getElementById('install-banner').style.display = 'flex';
 });
 
-// ---- ROUTER & NATIVE BACK BUTTON ----
 export function openTab(pageId, isPopState = false) {
     if (navigator.vibrate) navigator.vibrate(40); 
     const activeTab = document.querySelector('.tab-content.active'); let animClass = 'fade-pop'; 
@@ -49,7 +47,6 @@ window.addEventListener('popstate', (event) => {
     if (event.state && event.state.pageId) openTab(event.state.pageId, true); else openTab('home', true);
 });
 
-// ---- PULL TO REFRESH & SWIPES ----
 function initPullToRefresh() {
     let pStart = 0; const spinner = document.getElementById('ptr-spinner');
     document.addEventListener('touchstart', e => { if (window.scrollY === 0) pStart = e.touches[0].clientY; }, {passive: true});
@@ -76,7 +73,6 @@ function initSwipes() {
     }, { passive: true });
 }
 
-// ---- SMART NOTIFICATION CHECKER ----
 function startNotificationEngine() {
     setInterval(async () => {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -98,9 +94,7 @@ function startNotificationEngine() {
     }, 60000); 
 }
 
-// ---- EVENT BINDING ENGINE ----
 function bindEvents() {
-    
     const loginSelector = document.getElementById('login-selector');
     const splashGoBtn = document.getElementById('splash-go-btn');
 
@@ -184,7 +178,6 @@ function bindEvents() {
     document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
     document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
 
-    // RESTORED TIP CALCULATOR EVENT LISTENERS
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
     document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.querySelectorAll('.tip-btn').forEach(btn => { btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }); });
@@ -276,7 +269,6 @@ function bindEvents() {
     });
 }
 
-// ---- BOOTSTRAP ----
 window.addEventListener('load', async () => {
     bindEvents(); initSwipes(); initPullToRefresh();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
