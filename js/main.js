@@ -1,5 +1,6 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
+
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
@@ -9,6 +10,7 @@ import {
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal 
 } from './ui.js';
+
 import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -92,13 +94,12 @@ function bindEvents() {
     if (loginSelector && splashGoBtn) {
         const savedUser = localStorage.getItem('appUser');
         
-        // THE FIX: The elegant dropdown swap animation
         if (savedUser) {
             loginSelector.value = savedUser;
-            loginSelector.style.display = 'none'; // Hide the dropdown entirely
+            loginSelector.style.display = 'none'; 
             
             splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
-            splashGoBtn.style.display = 'block'; // Show the button
+            splashGoBtn.style.display = 'block'; 
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
         }
@@ -108,10 +109,10 @@ function bindEvents() {
             localStorage.setItem('appUser', userName);
             localStorage.setItem('savedFamilyFilter', userName);
 
-            loginSelector.style.display = 'none'; // Hide the dropdown entirely
+            loginSelector.style.display = 'none'; 
             
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
-            splashGoBtn.style.display = 'block'; // Show the button
+            splashGoBtn.style.display = 'block'; 
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
         });
@@ -130,9 +131,7 @@ function bindEvents() {
                     famSel.value = localStorage.getItem('appUser') || 'All';
                     updateFamilyFilter();
                 }
-            } catch(e) {
-                console.log("Data is still downloading... the filter will apply when ready.");
-            }
+            } catch(e) {}
         });
     }
 
@@ -198,25 +197,20 @@ function bindEvents() {
                 state.gateOverrides[flightId] = newGate.trim();
                 await setVal('gateOverrides', state.gateOverrides);
                 syncToCloud('gateUpdate', state.gateOverrides);
-                
                 const gateText = document.getElementById('modal-gate-text');
                 if(gateText) gateText.innerText = newGate.trim();
-                
                 renderTravelVault(); 
-            }
-            return;
+            } return;
         }
 
         const travelCard = e.target.closest('.travel-card');
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-            openTravelModal(travelCard.dataset);
-            return;
+            openTravelModal(travelCard.dataset); return;
         }
 
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) {
-            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
-            return;
+            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return;
         }
 
         const activeCard = e.target.closest('.itin-card:not(.completed)');
@@ -237,14 +231,14 @@ function bindEvents() {
             if(confirm("Delete this document?")) {
                 let docs = await getVal('offline_docs') || [];
                 docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
-                await setVal('offline_docs', docs);
-                renderWallet();
+                await setVal('offline_docs', docs); renderWallet();
             }
         }
     });
 }
 
-window.addEventListener('load', async () => {
+// THE FIX: Unbreakable Boot Sequence. Bypasses Safari's faulty event listener.
+async function bootApp() {
     bindEvents();
     initSwipes(); 
     initPullToRefresh();
@@ -260,7 +254,6 @@ window.addEventListener('load', async () => {
     
     state.gateOverrides = await getVal('gateOverrides') || {};
     
-    // Background fetch - won't crash your button!
     await loadAllData(); 
     populateDropdown(); 
     renderItinerary(); 
@@ -275,6 +268,9 @@ window.addEventListener('load', async () => {
     
     setInterval(updateTimeAndCountdown, 60000);
     startNotificationEngine(); 
-});
+}
+
+// Execute immediately without waiting for Safari's flawed load event
+bootApp();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
