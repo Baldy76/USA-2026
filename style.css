@@ -18,12 +18,6 @@ body.dark-mode {
     --ios-grey: #2c2c2e;
 }
 
-/* THE FIX: Dynamic Location Themes Restored! */
-body.theme-la { --accent: #ff9500; --accent-gradient: linear-gradient(135deg, #ff9500, #ff5e3a); }
-body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, #ff3b30, #ff9500); }
-body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg, #af52de, #5e5ce6); }
-body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135deg, #0284c7, #0ea5e9); }
-
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease; overscroll-behavior-y: none; }
 
@@ -61,14 +55,6 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .admin-card { background: var(--card); border-radius: 24px; padding: 24px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); border: 1px solid var(--ios-grey); transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .itin-card:active { transform: scale(0.98); }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); text-decoration: line-through; border: 2px dashed var(--ios-grey); box-shadow: none; background: transparent; }
-
-/* TIMELINE STYLES */
-.timeline { position: relative; padding-left: 24px; margin-top: 15px; }
-.timeline::before { content: ''; position: absolute; left: 6px; top: 15px; bottom: 30px; width: 2px; background: var(--ios-grey); z-index: 0; }
-.timeline-card-wrapper { position: relative; z-index: 1; }
-.timeline-dot { position: absolute; left: -24px; top: 30px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 3px solid var(--accent); z-index: 2; transition: all 0.3s ease; }
-.timeline-card-wrapper.completed .timeline-dot { border-color: #34c759; background: #34c759; }
-.itin-card.happening-now { border: 2px solid var(--accent); box-shadow: 0 0 20px rgba(0, 122, 255, 0.4); animation: gentlePulse 2s infinite; }
 
 .color-card { border: none; color: white; }
 .color-card .segment { background: transparent; color: rgba(255,255,255,0.7); }
@@ -170,28 +156,3 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 body.theme-la .day-group[open] summary .item-count { background: #ff9500; }
 body.theme-utah .day-group[open] summary .item-count { background: #ff3b30; }
 body.theme-vegas .day-group[open] summary .item-count { background: #af52de; }
-
-.roulette-wheel { 
-    width: 100%; height: 100%; border-radius: 50%; 
-    border: 6px solid #ffd60a; 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.5); 
-    position: absolute; top: 0; left: 0; 
-    transition: transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1); 
-    overflow: hidden; 
-}
-.roulette-label { 
-    position: absolute; top: 0; left: 50%; width: 50px; height: 100%; 
-    transform-origin: center; display: flex; flex-direction: column; 
-    align-items: center; justify-content: flex-start; padding-top: 15px; 
-    pointer-events: none; 
-}
-.roulette-label span { 
-    font-size: 13px; font-weight: 900; color: white; text-transform: uppercase; 
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.9); 
-}
-.roulette-pointer-container { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 10; }
-.roulette-pointer { 
-    width: 0; height: 0; 
-    border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid white; 
-    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
-}
