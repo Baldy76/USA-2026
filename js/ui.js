@@ -86,6 +86,7 @@ export function saveTripSettings() { localStorage.setItem('tripStartDate', docum
 
 export function convertCurrency() { 
     const usd = document.getElementById('usd-input')?.value;
+    // PERFECT MATH: $100 / 1.26 = £79.36
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
@@ -303,7 +304,7 @@ export function renderTravelVault() {
 }
 
 export function renderAccommodations() { 
-    const filter = document.getElementById('family-selector')?.value || 'All'; 
+    const filter = document.getElementById('family-selector')?.value || 'All'; const today = new Date(); today.setHours(0,0,0,0);
     let htmlLA = '', htmlUtah = '', htmlVegas = '';
     
     const leech = ['graeme', 'dawn', 'grace', 'leech'];
