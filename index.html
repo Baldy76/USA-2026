@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.37">
+    <link rel="stylesheet" href="style.css?v=2.1.38">
 </head>
 <body class="light-mode theme-splash">
 
@@ -122,99 +122,6 @@
                 <div style="opacity:0.3; font-size:20px; font-weight: 900;">›</div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; margin-top: 30px;">
-                <button id="btn-show-today" class="action-btn" style="flex: 1;">Today</button>
-                <button id="btn-show-tomorrow" class="action-btn" style="flex: 1; background-color: var(--ios-grey); color: var(--text);">Tomorrow</button>
-            </div>
-            
-            <div id="today-view" style="display: block;">
-                <button id="btn-share-today" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Today's Plan</button>
-                
-                <div id="today-itinerary">
-                    <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-                </div>
-                <div id="today-completed-section" class="completed-section" style="display: none;">
-                    <div class="completed-divider"><span>✅ Completed Today</span></div>
-                    <div id="today-completed-list"></div>
-                </div>
-            </div>
-
-            <div id="tomorrow-view" style="display: none;">
-                <button id="btn-share-tomorrow" class="action-btn share-btn" style="margin-bottom: 15px; background-color: var(--ios-grey); color: var(--accent); font-size: 14px; padding: 12px;">📤 Share Tomorrow's Plan</button>
-
-                <div id="tomorrow-itinerary">Loading...</div>
-                <div id="tomorrow-completed-section" class="completed-section" style="display: none;">
-                    <div class="completed-divider"><span>✅ Completed Tomorrow</span></div>
-                    <div id="tomorrow-completed-list"></div>
-                </div>
-            </div>
-
-            <div id="today-home-card" style="margin-top: 30px;"></div>
-
-            <button id="btn-hype" class="action-btn pulse-btn" style="margin-top: 20px; margin-bottom: 10px; background: var(--accent-gradient); font-size: 16px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); text-transform: uppercase; letter-spacing: 1px;">🔥 Activate Hype 🔥</button>
-
-            <button id="btn-open-admin" class="action-btn" style="margin-bottom: 20px; background: #ffb74d; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #1c1c1e; border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
-                ⚙️ Tools & Settings
-            </button>
-
-        </section>
-
-        <section id="weather-root" class="page tab-content">
-            <div class="theme-segmented-control" style="margin-bottom: 20px;">
-                <button class="segment weather-btn active" id="btn-w-local">📍 Local</button>
-                <button class="segment weather-btn" id="btn-w-la">🌴 LA</button>
-                <button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button>
-                <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
-            </div>
-            <div id="WTH-dashboard">
-                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-            </div>
-        </section>
-
-        <section id="vegas" class="page tab-content">
-            <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg'); cursor: pointer;">
-                <h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
-            </div>
-            
-            <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
-
-            <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary">
-                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
-            </div>
-            <div id="vegas-completed-section" class="completed-section" style="display: none;">
-                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
-                <div id="vegas-completed-list"></div>
-            </div>
-        </section>
-
-        <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
-            <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;">
-                <span class="empty-icon">☁️</span>
-                <div class="empty-text">No Travel Data</div>
-                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
-            </div>
-            
-            <div class="admin-card" style="margin-top: 30px; padding: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div style="font-size: 14px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🗄️ Offline Wallet</div>
-                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">
-                        ➕ Add Doc
-                        <input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden>
-                    </label>
-                </div>
-                <div style="font-size: 12px; opacity: 0.6; margin-bottom: 15px;">Save passports, booking PDFs, or tickets here for offline access.</div>
-                <div id="wallet-gallery" class="wallet-grid"></div>
-            </div>
-        </section>
-
-        <section id="admin" class="page tab-content">
-            <h2>Tools & Settings</h2>
-
             <div class="admin-card" style="display: flex; gap: 15px; align-items: center; padding: 20px; margin-bottom: 24px; background: var(--accent-gradient); color: white; border: none;">
                 <div style="font-size: 36px;">💱</div>
                 <div style="flex: 1;">
@@ -279,7 +186,71 @@
                 <div id="roulette-result" style="font-size: 28px; font-weight: 900; color: var(--accent); margin-bottom: 15px; height: 35px; display: flex; align-items: center; justify-content: center;">Tap to Spin!</div>
                 <button id="btn-spin-roulette" class="action-btn" style="background: var(--accent-gradient); color: white; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);">Spin the Wheel</button>
             </div>
+
+            <button id="btn-hype" class="action-btn pulse-btn" style="margin-top: 20px; margin-bottom: 10px; background: var(--accent-gradient); font-size: 16px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); text-transform: uppercase; letter-spacing: 1px;">🔥 Activate Hype 🔥</button>
+
+            <button id="btn-open-admin" class="action-btn" style="margin-bottom: 20px; background: #ffb74d; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #1c1c1e; border: 1px solid rgba(255,255,255,0.3); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
+                ⚙️ Settings & Setup
+            </button>
+
+        </section>
+
+        <section id="weather-root" class="page tab-content">
+            <div class="theme-segmented-control" style="margin-bottom: 20px;">
+                <button class="segment weather-btn active" id="btn-w-local">📍 Local</button>
+                <button class="segment weather-btn" id="btn-w-la">🌴 LA</button>
+                <button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button>
+                <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
+            </div>
+            <div id="WTH-dashboard">
+                <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
+            </div>
+        </section>
+
+        <section id="vegas" class="page tab-content">
+            <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg'); cursor: pointer;">
+                <h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
+            </div>
             
+            <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
+
+            <div id="vegas-home-card"></div>
+            <div id="vegas-itinerary">
+                <div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div>
+            </div>
+            <div id="vegas-completed-section" class="completed-section" style="display: none;">
+                <div class="completed-divider"><span>✅ Completed Tasks</span></div>
+                <div id="vegas-completed-list"></div>
+            </div>
+        </section>
+
+        <section id="flights" class="page tab-content">
+            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;">
+                <h2>Travel Details</h2>
+            </div>
+            <div id="flights-vault-display"></div>
+            <div class="empty-state" id="empty-vault-state" style="display: none;">
+                <span class="empty-icon">☁️</span>
+                <div class="empty-text">No Travel Data</div>
+                <div style="font-size: 14px; margin-top: 10px; opacity: 0.6;">Syncing with Google Sheets...</div>
+            </div>
+            
+            <div class="admin-card" style="margin-top: 30px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="font-size: 14px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🗄️ Offline Wallet</div>
+                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">
+                        ➕ Add Doc
+                        <input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden>
+                    </label>
+                </div>
+                <div style="font-size: 12px; opacity: 0.6; margin-bottom: 15px;">Save passports, booking PDFs, or tickets here for offline access.</div>
+                <div id="wallet-gallery" class="wallet-grid"></div>
+            </div>
+        </section>
+
+        <section id="admin" class="page tab-content">
+            <h2>Settings & Setup</h2>
+
             <div class="admin-card">
                 <h3>Theme Selection</h3>
                 <div class="theme-segmented-control">
@@ -321,7 +292,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.37</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.38</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -388,6 +359,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Travel</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.37"></script>
+    <script type="module" src="js/main.js?v=2.1.38"></script>
 </body>
 </html>
