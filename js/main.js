@@ -9,7 +9,8 @@ import {
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, 
     triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
-    openTipsModal, closeTipsModal, renderTips
+    openTipsModal, closeTipsModal, renderTips,
+    openStayModal, closeStayModal // NEW MODAL IMPORTS
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -95,6 +96,7 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
+    
     const loginSelector = document.getElementById('login-selector');
     const splashGoBtn = document.getElementById('splash-go-btn');
 
@@ -193,7 +195,12 @@ function bindEvents() {
             renderTips(this.dataset.cat);
         });
     });
+    
+    // MAC CLOSE BUTTON LISTENERS
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
+    document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
+    document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
 
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
 
@@ -215,12 +222,12 @@ function bindEvents() {
         alert("Flushing app cache. The page will reload."); window.location.reload(true);
     });
     
-    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal');
         if(this.checked) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; } 
         else { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
     });
+    
     document.getElementById('btn-confirm-modal')?.addEventListener('click', async () => {
         const modal = document.getElementById('completion-modal');
         if (document.getElementById('modal-checkbox').checked) {
@@ -235,6 +242,14 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+        // Handle Opening Stay Modals
+        const stayCard = e.target.closest('.stay-card');
+        if (stayCard) {
+            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
+            return;
+        }
+
+        // Handle Itinerary Completions
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
         
