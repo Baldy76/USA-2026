@@ -259,17 +259,13 @@ export async function renderItinerary() {
     const nowTime = now.getTime();
     const todayStr = now.toDateString(); 
 
-    // THE FIX: CHRONOLOGICAL SORTING ENGINE
     const sortedData = [...state.itineraryData].sort((a, b) => {
         if(!a || a.length < 4) return 1;
         if(!b || b.length < 4) return -1;
         const dA = (a[0] || '').trim(), tA = (a[3] || '').trim();
         const dB = (b[0] || '').trim(), tB = (b[3] || '').trim();
-        
-        // If time is missing, parseDateTime treats '23:59' as the time so it drops to the bottom
         const dtA = parseDateTime(dA, tA || '23:59') || Number.MAX_SAFE_INTEGER; 
         const dtB = parseDateTime(dB, tB || '23:59') || Number.MAX_SAFE_INTEGER;
-        
         return dtA - dtB;
     });
 
@@ -532,7 +528,6 @@ export function spinRoulette() {
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
-    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
