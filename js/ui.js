@@ -88,12 +88,15 @@ export function calculateTip() {
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
+    
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
     const sheetFams = state.sheetFamilies || [];
     const allFams = new Set([...sheetFams, ...customFamilies]);
+    
     allFams.forEach(f => {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
     });
+
     const appUser = localStorage.getItem('appUser') || 'All';
     if (appUser) {
         if (!allFams.has(appUser) && appUser !== 'All') {
@@ -163,18 +166,25 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
+// THE FIX: ASYNC KEYWORD RESTORED!!
 export async function renderItinerary() {
     if (!state.itineraryData) return;
+    
     const filter = localStorage.getItem('appUser') || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
-    const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; let cLA = '', cUtah = '', cVegas = ''; 
+    
+    const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
+    let cLA = '', cUtah = '', cVegas = ''; 
+    
     const leech = ['graeme', 'dawn', 'grace', 'leech']; 
     const murray = ['david', 'sarah', 'bexs', 'murray'];
 
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
         const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
-        let isMatch = false; const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
+        
+        let isMatch = false; 
+        const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
         
         if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true; 
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true; 
@@ -184,9 +194,21 @@ export async function renderItinerary() {
         if (isMatch) {
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(addr || `${act} ${loc}`);
             const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
-            const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); const isCompleted = completedTasks.includes(taskId);
+            const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
+            const isCompleted = completedTasks.includes(taskId);
+            
+            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
-            const cardHtml = `<div class="admin-card itin-card ${isCompleted?'completed':''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;"><div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;"><strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}</div><div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3; margin-bottom: 8px;">${escapeHTML(act)}</div><div style="font-size: 14px; font-weight: 700; opacity: 0.7; line-height: 1.5;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a>${addrHtml}</div></div>`;
+            
+            const cardHtml = `
+                <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
+                        <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
+                    </div>
+                    <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3; margin-bottom: 8px;">${escapeHTML(act)}</div>
+                    <div style="font-size: 14px; font-weight: 700; opacity: 0.7; line-height: 1.5;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a>${addrHtml}</div>
+                </div>`;
+
             const pg = (city, date) => { if (!grouped[city][date]) grouped[city][date] = []; grouped[city][date].push(cardHtml); };
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pg('la', d); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pg('utah', d); }
@@ -199,10 +221,12 @@ export async function renderItinerary() {
             html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
+
     const updateSec = (id, h, c) => {
         const m = document.getElementById(`${id}-itinerary`); const l = document.getElementById(`${id}-completed-list`); const w = document.getElementById(`${id}-completed-section`);
         if(m) m.innerHTML = h || '<div class="empty-state">No active plans</div>'; if(l && w) { if(c) { l.innerHTML = c; w.style.display = 'block'; } else w.style.display = 'none'; }
     };
+    
     updateSec('la', buildAccordion(grouped['la']), cLA); updateSec('utah', buildAccordion(grouped['utah']), cUtah); updateSec('vegas', buildAccordion(grouped['vegas']), cVegas); 
 }
 
@@ -216,6 +240,7 @@ export function renderTravelVault() {
     sortedData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
         const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        
         let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
         if (filter === 'All' || famL === 'everyone') isMatch = true; 
         else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
@@ -270,7 +295,15 @@ export async function handleFileUpload(event) {
 export async function renderWallet() {
     const docs = await getVal('offline_docs') || []; const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
     if(docs.length === 0) { gallery.innerHTML = '<div style="grid-column: span 2; opacity:0.5; text-align:center; font-size:12px;">No documents saved yet.</div>'; return; }
-    gallery.innerHTML = docs.map(doc => `<div class="wallet-item" style="background: ${doc.type.startsWith('image/')?`url(${doc.data})`:'var(--ios-grey)'}; background-size: cover;">${doc.type.startsWith('image/')?'':'📄'}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`).join('');
+    
+    let html = '';
+    docs.forEach(doc => {
+        const isImg = doc.type.startsWith('image/');
+        const bg = isImg ? `url(${doc.data})` : 'var(--ios-grey)';
+        const icon = isImg ? '' : '📄';
+        html += `<div class="wallet-item" style="background: ${bg};">${icon}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`;
+    });
+    gallery.innerHTML = html;
 }
 
 export function openCompletionModal(taskId, taskName) {
@@ -279,43 +312,96 @@ export function openCompletionModal(taskId, taskName) {
     const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId;
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
 }
-export function closeCompletionModal() { const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+export function closeCompletionModal() {
+    const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
 
 export function triggerConfetti() {
-    if(navigator.vibrate) navigator.vibrate([50, 50, 50]); const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759'];
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a'];
     for(let i=0; i<60; i++) {
-        const conf = document.createElement('div'); conf.className = 'particle confetti'; conf.style.background = colors[Math.floor(Math.random() * colors.length)];
-        conf.style.left = Math.random() * 100 + 'vw'; conf.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(conf); setTimeout(() => conf.remove(), 4000);
+        const conf = document.createElement('div');
+        conf.className = 'particle confetti';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        conf.style.animationDelay = (Math.random() * 0.5) + 's';
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
     }
 }
+
 export function triggerEmojiRain(city) {
     if(navigator.vibrate) navigator.vibrate([30, 30]);
-    const emojis = { 'la': ['🌴', '☀️', '🎬'], 'utah': ['⛰️', '🤠', '🏜️'], 'vegas': ['🎲', '🎰', '🍸'] }; const set = emojis[city] || ['✨'];
+    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
+    const set = emojis[city] || ['✨'];
     for(let i=0; i<30; i++) {
-        const em = document.createElement('div'); em.className = 'particle emoji-drop'; em.innerText = set[Math.floor(Math.random() * set.length)];
-        em.style.left = Math.random() * 100 + 'vw'; em.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(em); setTimeout(() => em.remove(), 4000);
+        const em = document.createElement('div');
+        em.className = 'particle emoji-drop';
+        em.innerText = set[Math.floor(Math.random() * set.length)];
+        em.style.left = Math.random() * 100 + 'vw';
+        em.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(em);
+        setTimeout(() => em.remove(), 4000);
     }
 }
+
+const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
+
 export function triggerHype() {
-    const toast = document.getElementById('hype-toast'); if(!toast) return;
-    toast.innerText = ["Prepare the Vegas bankroll! 💸", "In-N-Out Burger is calling! 🍔", "Road trip mode activated 🚀"][Math.floor(Math.random()*3)];
-    toast.style.display = 'block'; toast.classList.add('toast-enter'); setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.style.display = 'none', 300); }, 3000);
+    if(navigator.vibrate) navigator.vibrate(40);
+    const toast = document.getElementById('hype-toast');
+    if(!toast) return;
+    toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
+    toast.style.display = 'block';
+    toast.classList.remove('toast-exit');
+    toast.classList.add('toast-enter');
+    setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.style.display = 'none', 300);
+    }, 3000);
 }
+
 export function spinRoulette() {
-    const res = document.getElementById('roulette-result'); const btn = document.getElementById('btn-spin-roulette'); const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    if(!res || !btn || btn.disabled) return; btn.disabled = true; btn.style.opacity = '0.5';
+    const res = document.getElementById('roulette-result');
+    const btn = document.getElementById('btn-spin-roulette');
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
+    if(!res || !btn || btn.disabled) return;
+    btn.disabled = true; btn.style.opacity = '0.5';
     let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
-    let ticks = 0; const interval = setInterval(() => { res.innerText = names[Math.floor(Math.random() * names.length)]; ticks++; if (ticks >= 20) { clearInterval(interval); res.style.transform = 'scale(1.2)'; setTimeout(() => res.style.transform = 'scale(1)', 200); btn.disabled = false; btn.style.opacity = '1'; } }, 100);
+    let ticks = 0; const maxTicks = 20;
+    const interval = setInterval(() => {
+        if(navigator.vibrate) navigator.vibrate(10);
+        res.innerText = names[Math.floor(Math.random() * names.length)];
+        ticks++;
+        if (ticks >= maxTicks) {
+            clearInterval(interval);
+            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            res.style.transform = 'scale(1.2)';
+            setTimeout(() => res.style.transform = 'scale(1)', 200);
+            btn.disabled = false; btn.style.opacity = '1';
+        }
+    }, 100);
 }
 
 let currentTipsCity = 'la';
 export function openTipsModal(city) {
     if(navigator.vibrate) navigator.vibrate(40);
-    currentTipsCity = city.toLowerCase(); document.getElementById('tips-modal-title').innerHTML = `💡 ${city.toUpperCase()} Tips`;
-    document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); }); renderTips('eating');
-    const modal = document.getElementById('tips-modal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    currentTipsCity = city.toLowerCase();
+    const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
+    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[currentTipsCity]} Tips`;
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); });
+    renderTips('eating');
+    const modal = document.getElementById('tips-modal');
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
-export function closeTipsModal() { const modal = document.getElementById('tips-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+
+export function closeTipsModal() {
+    const modal = document.getElementById('tips-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
+
 export function renderTips(category) {
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -344,40 +430,87 @@ export function renderTips(category) {
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     if(navigator.vibrate) navigator.vibrate(40);
     const modal = document.getElementById('stay-modal');
-    document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl && imgUrl !== "undefined" && imgUrl !== "" ? `url('${imgUrl}')` : `none`;
-    if(!imgUrl || imgUrl === "undefined" || imgUrl === "") document.getElementById('stay-modal-hero').style.backgroundColor = `var(--accent)`;
+    const hero = document.getElementById('stay-modal-hero');
+    const title = document.getElementById('stay-modal-title');
+    const address = document.getElementById('stay-modal-addr');
+    const btns = document.getElementById('stay-modal-buttons');
+
+    hero.style.backgroundImage = imgUrl && imgUrl !== "undefined" && imgUrl !== "" ? `url('${imgUrl}')` : `none`;
+    if(!imgUrl || imgUrl === "undefined" || imgUrl === "") hero.style.backgroundColor = `var(--accent)`;
     
-    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`;
+    title.innerText = `🏡 ${fam} Stay`; address.innerText = `📍 ${addr}`;
     
     let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
-    document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
+    btns.innerHTML = btnHtml;
 
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
-export function closeStayModal() { const modal = document.getElementById('stay-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+export function closeStayModal() {
+    const modal = document.getElementById('stay-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
 
 export function openTravelModal(cardData) {
     if(navigator.vibrate) navigator.vibrate(40);
-    const modal = document.getElementById('travel-modal'); const wrapper = document.getElementById('travel-modal-wrapper'); const content = document.getElementById('travel-modal-content');
+    const modal = document.getElementById('travel-modal');
+    const wrapper = document.getElementById('travel-modal-wrapper');
+    const content = document.getElementById('travel-modal-content');
 
     if (cardData.type === 'flight') {
-        wrapper.style.background = 'transparent'; wrapper.style.border = 'none'; wrapper.style.boxShadow = 'none';
+        wrapper.style.background = 'transparent';
+        wrapper.style.border = 'none';
+        wrapper.style.boxShadow = 'none';
+        
         const linkHtml = cardData.link !== '#' ? `<a href="${cardData.link}" target="_blank" style="color:white; text-decoration:underline;">${cardData.airline} ${cardData.fnum} ↗</a>` : `${cardData.airline} ${cardData.fnum}`;
         
         content.innerHTML = `
         <div class="flight-card" style="margin-bottom:0; box-shadow:none;">
-            <div class="flight-header"><span class="flight-num">${linkHtml}</span><span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${cardData.date} <br> TIME: ${cardData.ftime}</span></div>
-            <div class="flight-path" style="margin: 25px 0;"><div class="path-node"><span>From</span><strong style="font-size: 20px;">${cardData.dep}</strong></div><div class="plane-icon"></div><div class="path-node"><span>To</span><strong style="font-size: 20px;">${cardData.arr}</strong></div></div>
-            <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;"><span>Term/Gate: <strong id="modal-gate-text" style="color: #ffd60a;">${cardData.term || "Check Screens"}</strong> <button class="edit-gate-btn action-btn" data-flightid="${cardData.flightid}" style="padding: 4px 10px; font-size: 11px; width: auto; margin: 0 0 0 10px; display: inline-block; background: rgba(255,255,255,0.2); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.4);">✏️ Update</button></span><span>Ref: ${cardData.ref}</span></div>
+            <div class="flight-header">
+                <span class="flight-num">${linkHtml}</span>
+                <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${cardData.date} <br> TIME: ${cardData.ftime}</span>
+            </div>
+            <div class="flight-path" style="margin: 25px 0;">
+                <div class="path-node"><span>From</span><strong style="font-size: 20px;">${cardData.dep}</strong></div>
+                <div class="plane-icon"></div>
+                <div class="path-node"><span>To</span><strong style="font-size: 20px;">${cardData.arr}</strong></div>
+            </div>
+            <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                <span>Term/Gate: <strong id="modal-gate-text" style="color: #ffd60a;">${cardData.term || "Check Screens"}</strong> <button class="edit-gate-btn action-btn" data-flightid="${cardData.flightid}" style="padding: 4px 10px; font-size: 11px; width: auto; margin: 0 0 0 10px; display: inline-block; background: rgba(255,255,255,0.2); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.4);">✏️ Update</button></span>
+                <span>Ref: ${cardData.ref}</span>
+            </div>
             <div class="barcode"></div>
         </div>`;
     } else if (cardData.type === 'car') {
-        wrapper.style.background = 'var(--card)'; wrapper.style.border = '1px solid var(--ios-grey)'; wrapper.style.boxShadow = '0 8px 24px var(--shadow)';
+        wrapper.style.background = 'var(--card)';
+        wrapper.style.border = '1px solid var(--ios-grey)';
+        wrapper.style.boxShadow = '0 8px 24px var(--shadow)';
+
         content.innerHTML = `
-        <div style="padding: 24px;"><div style="font-size:12px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 15px;">🚗 Car Rental</div><h3 style="margin: 0 0 20px; font-size: 24px; font-weight: 900;">${cardData.company}</h3><div style="margin-bottom: 16px; padding-left: 12px; border-left: 3px solid var(--ios-grey);"><strong style="font-size: 14px;">Pick-up:</strong><br><span style="font-size: 16px; font-weight: 800;">${cardData.ploc}</span><br><span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.pdate} @ ${cardData.ptime}</span></div><div style="margin-bottom: 20px; padding-left: 12px; border-left: 3px solid var(--ios-grey);"><strong style="font-size: 14px;">Drop-off:</strong><br><span style="font-size: 16px; font-weight: 800;">${cardData.dloc}</span><br><span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.ddate} @ ${cardData.dtime}</span></div><div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 12px; font-size: 15px;"><strong>Ref:</strong> <span style="color: var(--accent); font-weight: 800;">${cardData.ref}</span></div></div>`;
+        <div style="padding: 24px;">
+            <div style="font-size:12px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 15px;">🚗 Car Rental</div>
+            <h3 style="margin: 0 0 20px; font-size: 24px; font-weight: 900;">${cardData.company}</h3>
+            <div style="margin-bottom: 16px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Pick-up:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.ploc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.pdate} @ ${cardData.ptime}</span>
+            </div>
+            <div style="margin-bottom: 20px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Drop-off:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.dloc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.ddate} @ ${cardData.dtime}</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 12px; font-size: 15px;">
+                <strong>Ref:</strong> <span style="color: var(--accent); font-weight: 800;">${cardData.ref}</span>
+            </div>
+        </div>`;
     }
+
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
-export function closeTravelModal() { const modal = document.getElementById('travel-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+
+export function closeTravelModal() {
+    const modal = document.getElementById('travel-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
