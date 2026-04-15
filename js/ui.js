@@ -193,10 +193,7 @@ export async function renderItinerary() {
         
         if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
             const searchLoc = addr !== '' ? addr : `${act} ${loc}`; 
-            
-            // THE FIX: UPGRADED UNIVERSAL MAP INTENT
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(searchLoc);
-            
             const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -280,6 +277,7 @@ export function renderTravelVault() {
     display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
 }
 
+// ---- UPDATED ACCOMMODATION RENDERER (CLICKABLE PILLS) ----
 export function renderAccommodations() { 
     const filter = document.getElementById('family-selector')?.value || 'All'; const today = new Date(); today.setHours(0,0,0,0);
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
@@ -289,11 +287,15 @@ export function renderAccommodations() {
         if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
             const checkIn = cols[2]?.trim(); const city = cols[3]?.trim(); const address = escapeHTML(cols[4]?.trim()); const checkOut = cols[5]?.trim(); const link = escapeHTML(cols[6]?.trim()); const imgUrl = escapeHTML(cols[7]?.trim());
             const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; 
-            
-            // THE FIX: UPGRADED UNIVERSAL MAP INTENT
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
             
-            const ui = `<div class="admin-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;"><div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div><div style="padding: 20px;"><div style="font-size: 14px; opacity: 0.6; font-weight: 700; margin-bottom: 15px;">📍 ${address}</div><div style="display: flex; gap: 10px;"><button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 12px; font-size: 14px;">🚗 Drive</button>${link ? `<button class="action-btn link-btn" data-url="${link}" style="flex: 1; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>` : ''}</div></div></div>`;
+            // Generate just the compressed clickable header
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${address}" data-map="${mapLink}" data-link="${link}" data-img="${imgUrl}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer; transition: transform 0.2s ease;">
+                <div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
+                    <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3>
+                </div>
+            </div>`;
+            
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
             if (checkIn && checkOut) { let sDate = new Date(parseDateTime(checkIn)); let eDate = new Date(parseDateTime(checkOut)); sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999); if (today >= sDate && today <= eDate) htmlToday += ui; }
         }
@@ -447,6 +449,10 @@ export function spinRoulette() {
     }, 100);
 }
 
+// =========================================
+// 15. TOP TIPS & STAY ENGINE 
+// =========================================
+
 let currentTipsCity = 'la';
 
 export function openTipsModal(city) {
@@ -501,4 +507,36 @@ export function renderTips(category) {
         html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved for this category yet!</div></div>`;
     }
     contentDiv.innerHTML = html;
+}
+
+// NEW: OPEN STAY MODAL
+export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
+    if(navigator.vibrate) navigator.vibrate(40);
+    
+    const modal = document.getElementById('stay-modal');
+    const hero = document.getElementById('stay-modal-hero');
+    const title = document.getElementById('stay-modal-title');
+    const address = document.getElementById('stay-modal-addr');
+    const btns = document.getElementById('stay-modal-buttons');
+
+    hero.style.backgroundImage = imgUrl ? `url('${imgUrl}')` : `none`;
+    if(!imgUrl) hero.style.backgroundColor = `var(--accent)`;
+    
+    title.innerText = `🏡 ${fam} Stay`;
+    address.innerText = `📍 ${addr}`;
+    
+    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    if (listLink && listLink !== "undefined" && listLink !== "") {
+        btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`;
+    }
+    btns.innerHTML = btnHtml;
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeStayModal() {
+    const modal = document.getElementById('stay-modal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
 }
