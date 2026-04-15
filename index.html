@@ -7,45 +7,45 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.54">
+    <link rel="stylesheet" href="style.css?v=2.1.53">
 </head>
-<body class="light-mode theme-splash">
+<body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode: Viewing saved itinerary.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
     <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 90%; max-width: 350px;"></div>
 
-    <main id="content">
-        
-        <div id="splash" class="active">
-            <div class="splash-container">
-                <div class="splash-card">
-                    <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo">
-                    <div class="floating-icons">
-                        <span class="icon la-icon">🌴</span>
-                        <span class="icon utah-icon">⛰️</span>
-                        <span class="icon vegas-icon">🎲</span>
-                    </div>
-                    <h1 class="splash-title">USA 2026</h1>
-                    
-                    <select id="login-selector" class="settings-input" style="margin-top: 0; margin-bottom: 20px; text-align: center; text-align-last: center;">
-                        <option value="" disabled selected>Who is logging in?</option>
-                        <optgroup label="Leech Family">
-                            <option value="Graeme">Graeme</option>
-                            <option value="Dawn">Dawn</option>
-                            <option value="Grace">Grace</option>
-                        </optgroup>
-                        <optgroup label="Murray Family">
-                            <option value="David">David</option>
-                            <option value="Sarah">Sarah</option>
-                            <option value="Bexs">Bexs</option>
-                        </optgroup>
-                    </select>
-
-                    <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
+    <div id="splash" class="active">
+        <div class="splash-container">
+            <div class="splash-card">
+                <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo">
+                <div class="floating-icons">
+                    <span class="icon la-icon">🌴</span>
+                    <span class="icon utah-icon">⛰️</span>
+                    <span class="icon vegas-icon">🎲</span>
                 </div>
+                <h1 class="splash-title">USA 2026</h1>
+                
+                <select id="login-selector" class="settings-input" style="margin-top: 0; margin-bottom: 20px; text-align: center; text-align-last: center;">
+                    <option value="" disabled selected>Who is logging in?</option>
+                    <optgroup label="Leech Family">
+                        <option value="Graeme">Graeme</option>
+                        <option value="Dawn">Dawn</option>
+                        <option value="Grace">Grace</option>
+                    </optgroup>
+                    <optgroup label="Murray Family">
+                        <option value="David">David</option>
+                        <option value="Sarah">Sarah</option>
+                        <option value="Bexs">Bexs</option>
+                    </optgroup>
+                </select>
+
+                <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
             </div>
         </div>
+    </div>
+
+    <main id="content">
 
         <section id="la" class="page tab-content">
             <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg'); cursor: pointer;">
@@ -169,7 +169,15 @@
                     <option value="driving" style="color: black;">Who is driving?</option>
                 </select>
 
-                <div id="roulette-result" style="font-size: 28px; font-weight: 900; color: white; margin-bottom: 15px; height: 35px; display: flex; align-items: center; justify-content: center;">Tap to Spin!</div>
+                <div class="roulette-container">
+                    <div id="roulette-result" class="roulette-strip">
+                        <div class="roulette-item winner">Tap to Spin!</div>
+                    </div>
+                    <div class="roulette-overlay"></div>
+                    <div class="roulette-pointer-left">▶</div>
+                    <div class="roulette-pointer-right">◀</div>
+                </div>
+
                 <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Spin the Wheel</button>
             </div>
 
@@ -244,7 +252,7 @@
                 <button id="btn-force-sync" class="action-btn" style="margin-bottom: 10px; background-color: var(--ios-grey); color: var(--text);">☁️ Force Refresh Data</button>
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
-            <div class="version-control">ULTIMATE PLANNER // v2.1.54</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.53</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -357,11 +365,12 @@
             });
 
             splashGoBtn.addEventListener('click', () => {
-                splash.classList.remove('active');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 300);
             });
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.54"></script>
+    <script type="module" src="js/main.js?v=2.1.53"></script>
 </body>
 </html>
