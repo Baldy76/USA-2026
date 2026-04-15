@@ -10,7 +10,7 @@ import {
     handleFileUpload, renderWallet, 
     triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips,
-    openStayModal, closeStayModal // NEW MODAL IMPORTS
+    openStayModal, closeStayModal
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -196,7 +196,6 @@ function bindEvents() {
         });
     });
     
-    // MAC CLOSE BUTTON LISTENERS
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
     document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
@@ -242,14 +241,12 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        // Handle Opening Stay Modals
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) {
             openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
             return;
         }
 
-        // Handle Itinerary Completions
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
         
