@@ -24,33 +24,64 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
+// THE FIX: Bulletproof Time Engine
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
-        const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
-        const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
-        const elLA = document.getElementById('time-la'); const elVegas = document.getElementById('time-vegas'); const elUtah = document.getElementById('time-utah');
-        if(elLA) elLA.innerText = `🕒 Local: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
+        
+        try {
+            const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
+            const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
+            const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 Local: ${timePT}`;
+            const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`;
+            const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
+        } catch(e) { console.error(e); }
 
-        const cContainer = document.getElementById('countdown-display'); const clockContainer = document.getElementById('dual-clocks');
+        const cContainer = document.getElementById('countdown-display'); 
+        const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
 
-        const savedStart = localStorage.getItem('tripStartDate');
-        if (savedStart) {
-            const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
-            const tripDate = new Date(savedStart);
-            if (!isNaN(tripDate.getTime())) {
-                tripDate.setHours(0,0,0,0); const diff = tripDate - now;
-                if (diff > 0) {
-                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    document.getElementById('cd-text').innerHTML = `🚀 ${days} Days!`;
-                    cContainer.style.display = 'block'; clockContainer.style.display = 'none'; return; 
+        try {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString(undefined, options);
+            const cdDateEl = document.getElementById('cd-date'); if(cdDateEl) cdDateEl.textContent = dateString;
+            const clockDateEl = document.getElementById('clock-date'); if(clockDateEl) clockDateEl.textContent = dateString;
+        } catch(e) {}
+
+        let showCountdown = false;
+        try {
+            const savedStart = localStorage.getItem('tripStartDate');
+            if (savedStart) {
+                const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
+                const tripDate = new Date(savedStart);
+                if (!isNaN(tripDate.getTime())) {
+                    tripDate.setHours(0,0,0,0); const diff = tripDate - now;
+                    if (diff > 0) {
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                        const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days!`;
+                        showCountdown = true;
+                    }
                 }
-            }
-        } 
-        cContainer.style.display = 'none'; clockContainer.style.display = 'block';
-    } catch(e) {}
+            } 
+        } catch(e) {}
+
+        if (showCountdown) {
+            cContainer.style.display = 'block'; clockContainer.style.display = 'none';
+        } else {
+            cContainer.style.display = 'none'; clockContainer.style.display = 'block';
+            try {
+                const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
+                let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
+                if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
+                const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
+                const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
+                const ukEl = document.getElementById('clock-uk'); if(ukEl) ukEl.innerText = ukTime;
+                const locEl = document.getElementById('clock-local'); if(locEl) locEl.innerText = localTime;
+                const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
+            } catch(e) { console.error(e); }
+        }
+    } catch(e) { console.error(e); }
 }
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
@@ -97,26 +128,70 @@ export function clearCustomFamilies() {
 
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
 
+// THE FIX: Graceful fail for GPS
 export async function initWeatherPill() {
     const loadSummary = async (lat, lon, id) => {
         try {
             const data = await fetchWeather(lat, lon);
-            document.getElementById(id).innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
-        } catch(e) { document.getElementById(id).innerHTML = '🚫'; }
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
+        } catch(e) { 
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = '🚫'; 
+        }
     };
     loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
+    
+    const locEl = document.getElementById('wp-local');
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'),
+            err => { if(locEl) locEl.innerHTML = '🚫'; },
+            { timeout: 5000, maximumAge: 60000 }
+        );
+    } else {
+        if(locEl) locEl.innerHTML = '🚫';
+    }
 }
 
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
+    
+    const wDash = document.getElementById('WTH-dashboard');
+    if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
     try {
-        let lat = 34.0522, lon = -118.2437;
-        if (target === 'utah') { lat = 37.0965; lon = -113.5684; }
-        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; }
+        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
+        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
+        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
+        else if (target === 'local') {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => { 
+                        try {
+                            const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                            renderWeatherDOM(data, "Local GPS"); 
+                        } catch(e) {
+                            const fallbackData = await fetchWeather(lat, lon);
+                            renderWeatherDOM(fallbackData, "Los Angeles");
+                        }
+                    }, 
+                    async () => { 
+                        const fallbackData = await fetchWeather(lat, lon);
+                        renderWeatherDOM(fallbackData, "Los Angeles"); 
+                    }, 
+                    { timeout: 5000 }
+                ); 
+                return;
+            }
+            locName = "Local (Default LA)";
+        }
         const data = await fetchWeather(lat, lon);
-        renderWeatherDOM(data, target);
-    } catch(e) {}
+        renderWeatherDOM(data, locName);
+    } catch(e) {
+        if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">🚫</span><div class="empty-text">Weather Offline</div></div>`;
+    }
 }
 
 export function openWeatherModal() {
@@ -131,11 +206,11 @@ export function closeWeatherModal() {
 }
 
 function renderWeatherDOM(data, fallbackName) {
-    const d = data.current;
+    const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
         return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--ios-grey);"><span>${new Date(day.dt*1000).toLocaleDateString('en-GB',{weekday:'short'})}</span><span>${getWeatherIcon(day.weather[0].icon)}</span><span>${Math.round(day.main.temp)}°C</span></div>`;
     }).join('');
-    document.getElementById('WTH-dashboard').innerHTML = `<div style="text-align:center; padding:20px; background:rgba(0,122,255,0.1); border-radius:15px; margin-bottom:20px;"><div style="font-size:50px;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size:40px; font-weight:900;">${Math.round(d.main.temp)}°C</div><div style="text-transform:capitalize;">${d.weather[0].description}</div></div>${forecastHtml}`;
+    document.getElementById('WTH-dashboard').innerHTML = `<div style="text-align:center; padding:20px; background:rgba(0,122,255,0.1); border-radius:15px; margin-bottom:20px;"><div style="font-size:50px;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size:40px; font-weight:900;">${Math.round(d.main.temp)}°C</div><div style="text-transform:capitalize;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
@@ -166,9 +241,10 @@ export async function renderItinerary() {
         }
     });
 
+    // THE FIX: Restored item counts
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
-            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content">${cards.join('')}</div></details>`;
+            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
     document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
@@ -293,11 +369,12 @@ export function triggerEmojiRain(city) {
     }
 }
 
+const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
+
 export function triggerHype() {
     if(navigator.vibrate) navigator.vibrate(40);
     const toast = document.getElementById('hype-toast');
     if(!toast) return;
-    const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
     toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
     toast.style.display = 'block';
     toast.classList.remove('toast-exit');
@@ -309,7 +386,6 @@ export function triggerHype() {
     }, 3000);
 }
 
-// THE FIX: INITIALIZE THE 3D WHEEL
 export function initWheel() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     const wheel = document.getElementById('roulette-wheel');
@@ -344,7 +420,6 @@ export function initWheel() {
     if(resText) { resText.innerText = "Tap to Spin!"; resText.style.color = "white"; }
 }
 
-// THE FIX: THE PHYSICS SPIN ENGINE
 export function spinRoulette() {
     const wheel = document.getElementById('roulette-wheel');
     const btn = document.getElementById('btn-spin-roulette');
@@ -436,7 +511,7 @@ export function renderTips(category) {
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
-export function openStayModal(fam, addr, imgUrl, listLink) {
+export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     document.body.classList.add('no-scroll');
     if(navigator.vibrate) navigator.vibrate(40);
     const modal = document.getElementById('stay-modal');
@@ -450,7 +525,7 @@ export function openStayModal(fam, addr, imgUrl, listLink) {
     
     title.innerText = `🏡 ${fam} Stay`; address.innerText = `📍 ${addr}`;
     
-    let btnHtml = `<button class="action-btn link-btn" data-url="${"https://maps.google.com/?q="+encodeURIComponent(addr)}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     btns.innerHTML = btnHtml;
 
