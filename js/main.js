@@ -1,7 +1,5 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
-
-// THE CRITICAL FIX: The orphaned "autoSetWeatherCity" has been deleted from this import list!
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
@@ -11,7 +9,6 @@ import {
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal 
 } from './ui.js';
-
 import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -104,32 +101,20 @@ function bindEvents() {
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
-            localStorage.setItem('savedFamilyFilter', userName);
 
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
         });
 
+        // THE FIX: Unbreakable Click Event! Just hide the UI and open the tab.
         splashGoBtn.addEventListener('click', () => {
-            // Forcibly clear the splash screen immediately
             const splash = document.getElementById('splash');
             if (splash) {
                 splash.classList.remove('active');
                 splash.style.display = 'none';
             }
             openTab('home');
-            
-            // Re-apply filter to the rest of the app quietly
-            try {
-                const famSel = document.getElementById('family-selector');
-                if (famSel) {
-                    famSel.value = localStorage.getItem('appUser') || 'All';
-                    updateFamilyFilter();
-                }
-            } catch(e) {
-                console.log("Data is still downloading... the filter will apply when ready.");
-            }
         });
     }
 
@@ -205,7 +190,7 @@ function bindEvents() {
         }
 
         const travelCard = e.target.closest('.travel-card');
-        if (travelCard && e.target.tagName.toLowerCase() !== 'a' && e.target.tagName.toLowerCase() !== 'button') {
+        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
             openTravelModal(travelCard.dataset);
             return;
         }
@@ -217,15 +202,12 @@ function bindEvents() {
         }
 
         const activeCard = e.target.closest('.itin-card:not(.completed)');
-        if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
+        if (activeCard && e.target.tagName !== 'A') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
         
         const completedCard = e.target.closest('.itin-card.completed');
-        if (completedCard && e.target.tagName.toLowerCase() !== 'a') {
-            let completedTasks = await getVal('completedTasks') || [];
-            completedTasks = completedTasks.filter(id => id !== completedCard.dataset.taskId);
-            await setVal('completedTasks', completedTasks); 
-            syncToCloud('completion', completedTasks);
-            renderItinerary();
+        if (completedCard && e.target.tagName !== 'A') {
+            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
+            await setVal('completedTasks', tasks); renderItinerary();
         }
 
         const linkBtn = e.target.closest('.link-btn');
@@ -260,7 +242,6 @@ window.addEventListener('load', async () => {
     
     state.gateOverrides = await getVal('gateOverrides') || {};
     
-    // Asynchronous background load
     await loadAllData(); 
     populateDropdown(); 
     renderItinerary(); 
