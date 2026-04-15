@@ -166,10 +166,9 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
-// THE FIX: Restored the vital `async` keyword so the code compiles flawlessly
+// THE FIX: "async" keyword explicitly restored!
 export async function renderItinerary() {
     if (!state.itineraryData) return;
-    
     const filter = localStorage.getItem('appUser') || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
     
