@@ -99,7 +99,6 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .empty-icon { font-size: 48px; margin-bottom: 15px; display: block; filter: grayscale(100%); }
 .empty-text { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-/* THE FIX: Splash screen is now a pure overlay */
 #splash { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 10000; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
 #splash.active { display: flex !important; }
 .splash-container { width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -130,6 +129,15 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .completed-divider { text-align: center; margin-bottom: 20px; position: relative; }
 .completed-divider::before { content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: var(--ios-grey); z-index: 1; }
 .completed-divider span { background: var(--bg); padding: 0 15px; position: relative; z-index: 2; font-size: 12px; font-weight: 800; color: var(--text); opacity: 0.5; text-transform: uppercase; }
+
+/* THE FIX: SPINNING DRUM CSS CLASSES */
+.roulette-container { position: relative; height: 70px; background: rgba(0,0,0,0.2); border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: inset 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+.roulette-strip { display: flex; flex-direction: column; transition: transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1); margin: 0; padding: 0; }
+.roulette-item { height: 70px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+.roulette-item.winner { color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+.roulette-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.6) 100%); pointer-events: none; border-radius: 16px; }
+.roulette-pointer-left { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #ffd60a; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.roulette-pointer-right { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #ffd60a; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
 body.theme-la { --accent: #ff9500; --accent-gradient: linear-gradient(135deg, #ff9500, #ff5e3a); }
 body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, #ff3b30, #ff9500); }
