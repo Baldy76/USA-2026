@@ -88,9 +88,6 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
-    // The splash button is completely isolated in the inline HTML now to guarantee it works.
-    
-    // Attach UI tools
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
@@ -199,7 +196,7 @@ function bindEvents() {
     });
 }
 
-// Attach functions to window so the isolated inline HTML can trigger them!
+// Global update function for the inline HTML to trigger safely
 window.forceAppUpdate = () => {
     populateDropdown();
     renderItinerary();
@@ -207,7 +204,6 @@ window.forceAppUpdate = () => {
     renderAccommodations();
 };
 
-// THE FIX: Unbreakable Boot Sequence. No waiting for DOMContentLoaded!
 async function bootApp() {
     try {
         bindEvents();
@@ -225,7 +221,6 @@ async function bootApp() {
         
         try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
         
-        // Let the data load in the background so it never freezes the UI!
         loadAllData().then(() => {
             populateDropdown(); 
             renderItinerary(); 
@@ -246,7 +241,17 @@ async function bootApp() {
     }
 }
 
-// Fire instantly.
-bootApp();
+// THE ROCK-SOLID DOM HOOK
+function runBoot() {
+    if (window.appBooted) return;
+    window.appBooted = true;
+    bootApp();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runBoot);
+} else {
+    runBoot();
+}
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
