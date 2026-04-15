@@ -7,13 +7,13 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.59">
+    <link rel="stylesheet" href="style.css?v=2.1.60">
 </head>
 <body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
-    <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; backdrop-filter: blur(10px);"></div>
+    <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; backdrop-filter: blur(10px); width: 90%; max-width: 350px;"></div>
 
     <div id="splash">
         <div class="splash-container">
@@ -155,7 +155,7 @@
             <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Data</div></div>
             <div class="admin-card" style="margin-top: 30px; padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div style="font-size: 14px; font-weight: 900; opacity: 0.7;">🗄️ Offline Wallet</div>
+                    <div style="font-size: 14px; opacity: 0.7;">🗄️ Offline Wallet</div>
                     <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0;">➕ Add Doc<input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden></label>
                 </div>
                 <div id="wallet-gallery" class="wallet-grid"></div>
@@ -172,7 +172,7 @@
             </div>
             <div class="admin-card">
                 <h3>App Settings</h3>
-                <label style="font-size: 14px; font-weight: 700;">Name:</label><select id="family-selector" class="settings-input"></select>
+                <label>Name:</label><select id="family-selector" class="settings-input"></select>
                 <button id="btn-clear-families" class="action-btn" style="background: #ff3b30; margin-top: 20px;">🗑️ Clear Memory</button>
             </div>
             <div class="admin-card">
@@ -180,12 +180,12 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.59</div>
+            <div class="version-control">v2.1.60</div>
         </section>
 
-        <div id="completion-modal" class="modal-overlay"><div class="modal-content admin-card"><button id="btn-close-completion-x" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 style="margin-top:0;">Complete?</h3><p id="modal-task-name"></p><label style="display:flex; gap:10px; margin-bottom:20px; font-weight:800;"><input type="checkbox" id="modal-checkbox" style="width:20px; height:20px;"> Mark as done</label><div style="display:flex; gap:10px;"><button id="btn-cancel-modal" class="action-btn" style="flex:1; background: var(--ios-grey); color: var(--text);">Cancel</button><button id="btn-confirm-modal" class="action-btn" style="flex:1; opacity:0.5; pointer-events:none;">Confirm</button></div></div></div>
+        <div id="completion-modal" class="modal-overlay"><div class="modal-content admin-card"><button id="btn-close-completion-x" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 style="margin-top:0;">Complete?</h3><p id="modal-task-name"></p><label style="display:flex; gap:10px; margin-bottom:20px;"><input type="checkbox" id="modal-checkbox"> Mark as done</label><div style="display:flex; gap:10px;"><button id="btn-cancel-modal" class="action-btn" style="flex:1; background: var(--ios-grey); color: var(--text);">Cancel</button><button id="btn-confirm-modal" class="action-btn" style="flex:1;">Confirm</button></div></div></div>
         <div id="tips-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; display:flex; flex-direction:column; height:500px;"><button id="btn-close-tips" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="tips-modal-title">💡 Tips</h3><div class="theme-segmented-control"><button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button><button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button><button class="segment tips-tab-btn" data-cat="shopping">🛍️ Shopping</button></div><div id="tips-content" style="overflow-y:auto; flex:1;"></div></div></div>
-        <div id="stay-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-stay" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="stay-modal-hero" style="height:200px; border-radius:24px 24px 0 0; background-size:cover;"></div><div style="padding:24px;"><h3 id="stay-modal-title" style="margin: 0 0 10px;"></h3><div id="stay-modal-addr"></div><div id="stay-modal-buttons" style="display:flex; gap:10px; margin-top:20px;"></div></div></div></div>
+        <div id="stay-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-stay" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="stay-modal-hero" style="height:200px; border-radius:24px 24px 0 0; background-size:cover;"></div><div style="padding:24px;"><h3 id="stay-modal-title"></h3><div id="stay-modal-addr"></div><div id="stay-modal-buttons" style="display:flex; gap:10px; margin-top:20px;"></div></div></div></div>
         <div id="travel-modal" class="modal-overlay"><div id="travel-modal-wrapper" class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-travel" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="travel-modal-content"></div></div></div>
         <div id="weather-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; height:600px;"><button id="btn-close-weather" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="weather-modal-title">🌤️ Weather</h3><div class="theme-segmented-control"><button class="segment weather-btn active" id="btn-w-local">📍 Local</button><button class="segment weather-btn" id="btn-w-la">🌴 LA</button><button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button><button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button></div><div id="WTH-dashboard" style="overflow-y:auto;"></div></div></div>
 
@@ -223,8 +223,8 @@
             });
 
             splashGoBtn.addEventListener('click', function() {
-                splash.style.pointerEvents = 'none'; 
-                splash.style.opacity = '0'; 
+                splash.style.pointerEvents = 'none'; // SHATTERS THE SHIELD
+                splash.classList.add('hidden'); // Fades out
                 setTimeout(function() {
                     splash.style.display = 'none';
                 }, 400);
@@ -232,6 +232,6 @@
         })();
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.59"></script>
+    <script type="module" src="js/main.js?v=2.1.60"></script>
 </body>
 </html>
