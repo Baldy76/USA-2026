@@ -11,7 +11,7 @@ import {
     triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips,
     openStayModal, closeStayModal,
-    openTravelModal, closeTravelModal // NEW TRAVEL MODAL EXPORTS
+    openTravelModal, closeTravelModal
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -199,8 +199,6 @@ function bindEvents() {
     
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
     document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
-    
-    // NEW CLOSE LISTENER
     document.getElementById('btn-close-travel')?.addEventListener('click', closeTravelModal);
 
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
@@ -246,9 +244,28 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        // Handle Opening Travel Modals
+        // THE FIX: LIVE GATE OVERRIDE LISTENER
+        const editGateBtn = e.target.closest('.edit-gate-btn');
+        if (editGateBtn) {
+            const flightId = editGateBtn.dataset.flightid;
+            const newGate = prompt("Enter new Terminal / Gate info:");
+            if (newGate !== null && newGate.trim() !== "") {
+                if (!state.gateOverrides) state.gateOverrides = {};
+                state.gateOverrides[flightId] = newGate.trim();
+                await setVal('gateOverrides', state.gateOverrides);
+                syncToCloud('gateUpdate', state.gateOverrides);
+                
+                // Update UI instantly
+                const gateText = document.getElementById('modal-gate-text');
+                if(gateText) gateText.innerText = newGate.trim();
+                
+                renderTravelVault(); 
+            }
+            return;
+        }
+
         const travelCard = e.target.closest('.travel-card');
-        if (travelCard && e.target.tagName.toLowerCase() !== 'a') {
+        if (travelCard && e.target.tagName.toLowerCase() !== 'a' && e.target.tagName.toLowerCase() !== 'button') {
             openTravelModal(travelCard.dataset);
             return;
         }
@@ -304,6 +321,9 @@ window.addEventListener('load', async () => {
 
     history.replaceState({ pageId: 'splash' }, '', '#splash');
     
+    // LOAD SAVED OVERRIDES ON BOOT
+    state.gateOverrides = await getVal('gateOverrides') || {};
+
     await loadAllData();
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet();
     
