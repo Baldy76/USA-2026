@@ -1,24 +1,20 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
+
+// THE FIX: "autoSetWeatherCity" and "switchDayView" have been permanently removed from this list!
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
-    setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
+    setWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal 
 } from './ui.js';
+
 import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
-
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('install-banner').style.display = 'flex';
-});
 
 export function openTab(pageId, isPopState = false) {
     if (navigator.vibrate) navigator.vibrate(40); 
@@ -41,9 +37,7 @@ export function openTab(pageId, isPopState = false) {
     if (!isPopState) history.pushState({ pageId: pageId }, '', `#${pageId}`);
 }
 
-window.addEventListener('popstate', (event) => {
-    if (event.state && event.state.pageId) openTab(event.state.pageId, true); else openTab('home', true);
-});
+window.addEventListener('popstate', (e) => { if (e.state && e.state.pageId) openTab(e.state.pageId, true); else openTab('home', true); });
 
 function initPullToRefresh() {
     let pStart = 0; const spinner = document.getElementById('ptr-spinner');
@@ -117,19 +111,21 @@ function bindEvents() {
             splashGoBtn.style.opacity = '1';
         });
 
-        // THE FIX: Unbreakable Click Event
+        // THE FIX: Bulletproof Splash Go Button
         splashGoBtn.addEventListener('click', () => {
             
-            // 1. Immediately hide the splash screen so the user is never blocked
+            // 1. Forcibly strip the splash screen out of the way immediately.
             const splash = document.getElementById('splash');
             if (splash) {
                 splash.classList.remove('active');
                 splash.style.display = 'none';
             }
+            
+            // 2. Open the home tab
             openTab('home');
             
-            // 2. Try to apply the filter. If data is still downloading, it silently fails 
-            // and the app will organically render when the download finishes in the background.
+            // 3. Gracefully try to filter the data. If the data is still downloading, it will 
+            // naturally render itself when it finishes in the background. No crashing allowed!
             try {
                 const famSel = document.getElementById('family-selector');
                 if (famSel) {
@@ -137,162 +133,73 @@ function bindEvents() {
                     updateFamilyFilter();
                 }
             } catch(e) {
-                console.log("Data still loading, filter will apply shortly...");
+                console.log("Data is still downloading... the filter will apply when ready.");
             }
         });
     }
 
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
-    document.getElementById('btn-install-app')?.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
-            deferredPrompt = null;
-        }
-    });
-
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
-    
-    const notifBtn = document.getElementById('btn-enable-notifs');
-    if (notifBtn) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            notifBtn.style.backgroundColor = '#34c759'; 
-            notifBtn.style.color = 'white';
-            notifBtn.innerText = '✅ Notifications Enabled';
-        }
-        notifBtn.addEventListener('click', async function() {
-            if (!('Notification' in window)) { alert("Your browser does not support notifications."); return; }
-            if (Notification.permission === 'granted') { alert("Notifications are already enabled!"); return; }
-            const perm = await Notification.requestPermission();
-            if (perm === 'granted') {
-                this.style.backgroundColor = '#34c759';
-                this.style.color = 'white';
-                this.innerText = '✅ Notifications Enabled';
-                if(navigator.vibrate) navigator.vibrate([50, 50]);
-            } else { alert("Notification permission denied by your browser settings."); }
-        });
-    }
-
+    document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
+    document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
+    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
+    document.querySelectorAll('.tip-btn').forEach(btn => btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }));
+    document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     
     document.getElementById('home-weather-pill')?.addEventListener('click', openWeatherModal);
     document.getElementById('btn-close-weather')?.addEventListener('click', closeWeatherModal);
+    document.querySelectorAll('.weather-btn').forEach(btn => btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); }));
     
-    document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
-    document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
-    document.getElementById('hero-la')?.addEventListener('click', () => triggerEmojiRain('la'));
-    document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
-    document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
-
-    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
-    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
-    document.querySelectorAll('.tip-btn').forEach(btn => { btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }); });
-
-    document.querySelectorAll('.tips-btn').forEach(btn => {
-        btn.addEventListener('click', function() { openTipsModal(this.dataset.city); });
-    });
-    document.querySelectorAll('.tips-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if(navigator.vibrate) navigator.vibrate(20);
-            document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            renderTips(this.dataset.cat);
-        });
-    });
-    
+    document.querySelectorAll('.tips-btn').forEach(btn => btn.addEventListener('click', function() { openTipsModal(this.dataset.city); }));
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => btn.addEventListener('click', function() {
+        document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderTips(this.dataset.cat);
+    }));
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
     document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
     document.getElementById('btn-close-travel')?.addEventListener('click', closeTravelModal);
-
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
-
+    
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
-
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
-    document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
-    document.querySelectorAll('.weather-btn').forEach(btn => { btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); }); });
-
+    
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
         this.innerText = "⏳ Syncing..."; await loadAllData(); 
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages();
         this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
     });
-    
-    document.getElementById('btn-update-version')?.addEventListener('click', () => {
-        if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
-        alert("Flushing app cache. The page will reload."); window.location.reload(true);
-    });
+    document.getElementById('btn-update-version')?.addEventListener('click', () => { window.location.reload(true); });
     
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
-        const btn = document.getElementById('btn-confirm-modal');
-        if(this.checked) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; } 
-        else { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
+        const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
     
     document.getElementById('btn-confirm-modal')?.addEventListener('click', async () => {
         const modal = document.getElementById('completion-modal');
-        if (document.getElementById('modal-checkbox').checked) {
-            let completedTasks = await getVal('completedTasks') || [];
-            completedTasks.push(modal.dataset.activeTaskId);
-            await setVal('completedTasks', completedTasks);
-            syncToCloud('completion', completedTasks); 
-            
-            triggerConfetti(); 
-            closeCompletionModal(); renderItinerary(); 
-        }
+        let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
+        await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); 
     });
-
+    
     document.body.addEventListener('click', async (e) => {
-        const editGateBtn = e.target.closest('.edit-gate-btn');
-        if (editGateBtn) {
-            const flightId = editGateBtn.dataset.flightid;
-            const newGate = prompt("Enter new Terminal / Gate info:");
-            if (newGate !== null && newGate.trim() !== "") {
-                if (!state.gateOverrides) state.gateOverrides = {};
-                state.gateOverrides[flightId] = newGate.trim();
-                await setVal('gateOverrides', state.gateOverrides);
-                syncToCloud('gateUpdate', state.gateOverrides);
-                
-                const gateText = document.getElementById('modal-gate-text');
-                if(gateText) gateText.innerText = newGate.trim();
-                
-                renderTravelVault(); 
-            }
-            return;
-        }
-
-        const travelCard = e.target.closest('.travel-card');
-        if (travelCard && e.target.tagName.toLowerCase() !== 'a' && e.target.tagName.toLowerCase() !== 'button') {
-            openTravelModal(travelCard.dataset);
-            return;
-        }
-
-        const stayCard = e.target.closest('.stay-card');
-        if (stayCard) {
-            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
-            return;
-        }
-
-        const activeCard = e.target.closest('.itin-card:not(.completed)');
-        if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
+        const stayCard = e.target.closest('.stay-card'); if (stayCard) return openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
+        const travelCard = e.target.closest('.travel-card'); if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') return openTravelModal(travelCard.dataset);
         
-        const completedCard = e.target.closest('.itin-card.completed');
-        if (completedCard && e.target.tagName.toLowerCase() !== 'a') {
-            let completedTasks = await getVal('completedTasks') || [];
-            completedTasks = completedTasks.filter(id => id !== completedCard.dataset.taskId);
-            await setVal('completedTasks', completedTasks); 
-            syncToCloud('completion', completedTasks);
-            renderItinerary();
+        const editGate = e.target.closest('.edit-gate-btn'); if (editGate) {
+            const newGate = prompt("New Gate Info:"); if (newGate) { if (!state.gateOverrides) state.gateOverrides = {}; state.gateOverrides[editGate.dataset.flightid] = newGate; await setVal('gateOverrides', state.gateOverrides); document.getElementById('modal-gate-text').innerText = newGate; renderTravelVault(); } return;
         }
-
-        const linkBtn = e.target.closest('.link-btn');
-        if (linkBtn && linkBtn.dataset.url) window.open(linkBtn.dataset.url, '_blank');
-
+        
+        const activeCard = e.target.closest('.itin-card:not(.completed)'); if (activeCard && e.target.tagName !== 'A') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
+        
+        const completedCard = e.target.closest('.itin-card.completed'); if (completedCard && e.target.tagName !== 'A') {
+            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
+            await setVal('completedTasks', tasks); renderItinerary();
+        }
+        
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -304,31 +211,30 @@ function bindEvents() {
             }
         }
     });
-
-    window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('active'));
-    window.addEventListener('online', () => {
-        document.getElementById('offline-banner').classList.remove('active');
-        loadAllData().then(() => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); }); 
-    });
 }
 
 window.addEventListener('load', async () => {
-    bindEvents(); initSwipes(); initPullToRefresh();
-    if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
-
+    bindEvents();
+    initSwipes(); 
+    initPullToRefresh();
+    
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
     applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
     prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
 
-    history.replaceState({ pageId: 'splash' }, '', '#splash');
-    
     state.gateOverrides = await getVal('gateOverrides') || {};
-
-    await loadAllData();
-    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet();
     
-    initLiveCurrency(); autoSetWeatherCity(); updateTimeAndCountdown();
+    await loadAllData(); 
+    populateDropdown(); 
+    renderItinerary(); 
+    renderTravelVault(); 
+    renderAccommodations(); 
+    preCacheImages(); 
+    renderWallet();
+    
+    initLiveCurrency(); 
+    updateTimeAndCountdown(); 
     initWeatherPill();
     
     setInterval(updateTimeAndCountdown, 60000);
