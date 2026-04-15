@@ -20,7 +20,7 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
-    else if (pageId === 'splash') metaColor = isDark ? '#000000' : '#f2f2f7';
+    else if (pageId === 'splash') metaColor = isDark ? '#000000' : '#ffffff';
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
@@ -362,26 +362,57 @@ export function triggerHype() {
     }, 3000);
 }
 
+// THE FIX: iOS STYLE SPINNING DRUM WHEEL
 export function spinRoulette() {
     const res = document.getElementById('roulette-result');
     const btn = document.getElementById('btn-spin-roulette');
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     if(!res || !btn || btn.disabled) return;
+    
     btn.disabled = true; btn.style.opacity = '0.5';
-    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
-    let ticks = 0; const maxTicks = 20;
-    const interval = setInterval(() => {
+    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it"];
+    
+    let html = '';
+    const spins = 40;
+    const winningIndex = Math.floor(Math.random() * names.length);
+    const winner = names[winningIndex];
+    
+    // Build the giant strip of names
+    for(let i = 0; i < spins - 1; i++) {
+        html += `<div class="roulette-item">${names[Math.floor(Math.random() * names.length)]}</div>`;
+    }
+    // The final winner
+    html += `<div class="roulette-item winner">${winner}</div>`;
+    
+    // Instantly reset the wheel back to the top
+    res.style.transition = 'none';
+    res.style.transform = 'translateY(0px)';
+    res.innerHTML = html;
+    
+    // Force the browser to register the reset before animating
+    res.offsetHeight; 
+    
+    // Fire the spinning animation
+    res.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1)';
+    const itemHeight = 70; // This MUST match the CSS height
+    const targetY = -((spins - 1) * itemHeight);
+    res.style.transform = `translateY(${targetY}px)`;
+    
+    // Vibration Ticks as it spins
+    let ticks = 0;
+    const tickInterval = setInterval(() => {
         if(navigator.vibrate) navigator.vibrate(10);
-        res.innerText = names[Math.floor(Math.random() * names.length)];
         ticks++;
-        if (ticks >= maxTicks) {
-            clearInterval(interval);
-            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
-            res.style.transform = 'scale(1.2)';
-            setTimeout(() => res.style.transform = 'scale(1)', 200);
-            btn.disabled = false; btn.style.opacity = '1';
-        }
-    }, 100);
+        if(ticks > 25) clearInterval(tickInterval);
+    }, 150);
+
+    // End of spin
+    setTimeout(() => {
+        clearInterval(tickInterval);
+        if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+        btn.disabled = false; btn.style.opacity = '1';
+        triggerConfetti(); // FIRE CONFETTI!
+    }, 4500);
 }
 
 let currentTipsCity = 'la';
