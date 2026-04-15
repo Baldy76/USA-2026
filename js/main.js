@@ -139,7 +139,7 @@ function bindEvents() {
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') { openTravelModal(travelCard.dataset); return; }
 
         const stayCard = e.target.closest('.stay-card');
-        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.img, stayCard.dataset.link); return; }
+        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
 
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
@@ -196,7 +196,6 @@ async function bootApp() {
     updateTimeAndCountdown(); 
     initWeatherPill();
     
-    // Initialize Vegas Wheel if it exists on DOM
     if (document.getElementById('roulette-wheel')) initWheel();
 }
 
