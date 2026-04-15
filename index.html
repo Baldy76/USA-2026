@@ -7,18 +7,18 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.53">
+    <link rel="stylesheet" href="style.css?v=2.1.57">
 </head>
 <body class="light-mode theme-home">
 
-    <div id="offline-banner">✈️ Offline Mode: Viewing saved itinerary.</div>
+    <div id="offline-banner">✈️ Offline Mode.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
-    <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 90%; max-width: 350px;"></div>
+    <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; backdrop-filter: blur(10px);"></div>
 
-    <div id="splash" class="active">
+    <div id="splash">
         <div class="splash-container">
             <div class="splash-card">
-                <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo">
+                <img src="img/logo.png" alt="Logo" class="splash-logo">
                 <div class="floating-icons">
                     <span class="icon la-icon">🌴</span>
                     <span class="icon utah-icon">⛰️</span>
@@ -26,7 +26,7 @@
                 </div>
                 <h1 class="splash-title">USA 2026</h1>
                 
-                <select id="login-selector" class="settings-input" style="margin-top: 0; margin-bottom: 20px; text-align: center; text-align-last: center;">
+                <select id="login-selector" class="settings-input" style="margin-bottom: 20px; text-align: center; text-align-last: center;">
                     <option value="" disabled selected>Who is logging in?</option>
                     <optgroup label="Leech Family">
                         <option value="Graeme">Graeme</option>
@@ -39,61 +39,44 @@
                         <option value="Bexs">Bexs</option>
                     </optgroup>
                 </select>
-
-                <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
+                <button id="splash-go-btn" class="action-btn" style="display: none;">Let's go!</button>
             </div>
         </div>
     </div>
 
     <main id="content">
-
         <section id="la" class="page tab-content">
-            <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg'); cursor: pointer;">
-                <h2>Los Angeles<span id="time-la" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
-            </div>
-            <button class="action-btn tips-btn" data-city="la" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 LA Top Tips</button>
+            <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg');"><h2>Los Angeles<span id="time-la" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
+            <button class="action-btn tips-btn" data-city="la">💡 LA Top Tips</button>
             <div id="la-home-card"></div>
-            <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div></div> 
-            <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="la-completed-list"></div></div>
+            <div id="la-itinerary"></div> 
+            <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="la-completed-list"></div></div>
         </section>
 
         <section id="utah" class="page tab-content">
-            <div id="hero-utah" class="city-hero" style="background-image: url('img/utah.jpg'); cursor: pointer;">
-                <h2>Utah<span id="time-utah" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
-            </div>
-            <button class="action-btn tips-btn" data-city="utah" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Utah Top Tips</button>
+            <div id="hero-utah" class="city-hero" style="background-image: url('img/utah.jpg');"><h2>Utah<span id="time-utah" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
+            <button class="action-btn tips-btn" data-city="utah">💡 Utah Top Tips</button>
             <div id="utah-home-card"></div>
-            <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div><div class="skeleton skel-p short"></div></div></div>
-            <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="utah-completed-list"></div></div>
+            <div id="utah-itinerary"></div>
+            <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
         </section>
 
         <section id="home" class="page tab-content active">
-            
-            <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.3);">
-                <h2 style="margin: 0; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">USA 2026</h2>
-                <div style="font-size: 15px; font-weight: 800; opacity: 0.9; margin-top: 5px;">Road Trip Dashboard</div>
+            <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 32px; font-weight: 900; letter-spacing: 2px;">USA 2026</h2>
+                <div style="font-size: 15px; font-weight: 800; opacity: 0.9;">Road Trip Dashboard</div>
             </div>
             
             <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="countdown-display" style="display: none; background: linear-gradient(135deg, #ff3b30, #d0021b); color: white; padding: 24px 20px; border-radius: 24px; text-align: center; box-shadow: 0 8px 24px rgba(255, 59, 48, 0.3);">
-                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days to Go!</div>
-                    <div id="cd-date" style="font-size: 14px; font-weight: 800; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 12px; display: inline-block;">Loading Date...</div>
+                <div id="countdown-display" style="display: none; background: linear-gradient(135deg, #ff3b30, #d0021b); color: white; padding: 24px 20px; border-radius: 24px; text-align: center;">
+                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days!</div>
+                    <div id="cd-date" style="font-size: 14px; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 12px; display: inline-block;">...</div>
                 </div>
-
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
+                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px;">
                     <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇬🇧 UK Time</div>
-                            <div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent); transition: color 0.3s ease;">--:--</div>
-                        </div>
-                        <div style="width: 2px; background: var(--ios-grey); border-radius: 2px;"></div>
-                        <div>
-                            <div id="local-tz-label" style="font-size: 12px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">🇺🇸 Local</div>
-                            <div id="clock-local" style="font-size: 32px; font-weight: 900; color: var(--text);">--:--</div>
-                        </div>
-                    </div>
-                    <div id="clock-date" style="text-align: center; font-size: 15px; font-weight: 800; color: var(--accent); background: var(--bg); padding: 10px; border-radius: 16px; transition: color 0.3s ease;">
-                        Loading Date...
+                        <div><div style="font-size: 12px; opacity: 0.5;">🇬🇧 UK</div><div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div></div>
+                        <div style="width: 2px; background: var(--ios-grey);"></div>
+                        <div><div id="local-tz-label" style="font-size: 12px; opacity: 0.5;">🇺🇸 LOCAL</div><div id="clock-local" style="font-size: 32px; font-weight: 900;">--:--</div></div>
                     </div>
                 </div>
             </div>
@@ -108,222 +91,95 @@
                 <div class="w-col"><span class="w-lbl">Vegas</span><div class="w-val" id="wp-vegas">⏳</div></div>
             </div>
 
-            <div class="admin-card color-card" style="display: flex; gap: 15px; align-items: center; padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745); box-shadow: 0 8px 24px rgba(52, 199, 89, 0.3);">
-                <div style="font-size: 36px;">💷</div>
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 11px; font-weight: 900; opacity: 0.9; text-transform: uppercase;">Quick Converter</div>
-                        <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">£1 = $--.--</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 12px; width: 100px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; text-align: center; outline: none;">
-                        <span style="font-weight: 900; opacity: 0.9;">=</span>
-                        <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; color: white; text-align: center; min-width: 70px;">£0.00</strong>
-                    </div>
+            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase;">Converter</div>
+                    <div id="live-rate-tag" style="font-size: 9px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">£1 = $--.--</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="usd-input" placeholder="$ USD" style="padding: 12px; width: 100px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; outline: none;">
+                    <span style="font-weight: 900;">=</span>
+                    <strong id="gbp-output" style="font-size: 20px; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                    <div style="font-size: 12px; font-weight: 900; opacity: 0.9; text-transform: uppercase;">🍽️ Tip & Split Calculator</div>
+            <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22);">
+                <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🍽️ Tip & Split</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="number" id="bill-total" placeholder="Bill $" style="padding: 14px 10px; font-size: 18px; width: 60%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
+                    <select id="split-ways" style="padding: 14px 10px; font-size: 16px; width: 40%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
+                        <option value="1">1 Fam</option><option value="2" selected>2 Fams</option>
+                    </select>
                 </div>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
-                    <div style="flex: 2;">
-                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
-                        <input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
-                    </div>
-                    <div style="flex: 1.5;">
-                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
-                        <select id="split-ways" style="margin: 0; padding: 14px 10px; font-size: 16px; font-weight: 800; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
-                            <option value="1" style="color: black;">1 Family</option>
-                            <option value="2" selected style="color: black;">2 Families</option>
-                        </select>
-                    </div>
+                <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); margin-bottom: 15px;">
+                    <button class="segment tip-btn" data-tip="15">15%</button><button class="segment tip-btn active" data-tip="18">18%</button><button class="segment tip-btn" data-tip="20">20%</button>
                 </div>
-                
-                <div class="theme-segmented-control" style="margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px;">
-                    <button class="segment tip-btn" data-tip="15">15%</button>
-                    <button class="segment tip-btn active" data-tip="18">18%</button>
-                    <button class="segment tip-btn" data-tip="20">20%</button>
-                    <button class="segment tip-btn" data-tip="22">22%</button>
-                </div>
-                
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">Per Family (USD)</div>
-                        <div id="tip-usd" style="font-size: 24px; font-weight: 900; color: white;">$0.00</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">In GBP</div>
-                        <div id="tip-gbp" style="font-size: 24px; font-weight: 900; color: white; opacity: 0.9;">£0.00</div>
-                    </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between;">
+                    <div><div style="font-size: 10px; opacity: 0.8;">Per Fam ($)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900;">$0.00</div></div>
+                    <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.8;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900;">£0.00</div></div>
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.3);">
-                <div style="font-size: 12px; font-weight: 900; opacity: 0.9; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
-                
-                <select id="roulette-mode" style="margin-bottom: 15px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center;">
-                    <option value="bill" style="color: black;">Who is picking up the bill?</option>
-                    <option value="driving" style="color: black;">Who is driving?</option>
-                </select>
-
+            <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6);">
+                <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
                 <div class="roulette-container">
-                    <div id="roulette-result" class="roulette-strip">
-                        <div class="roulette-item winner">Tap to Spin!</div>
-                    </div>
+                    <div id="roulette-result" class="roulette-strip"><div class="roulette-item winner">Tap to Spin!</div></div>
                     <div class="roulette-overlay"></div>
-                    <div class="roulette-pointer-left">▶</div>
-                    <div class="roulette-pointer-right">◀</div>
                 </div>
-
-                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Spin the Wheel</button>
+                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6;">Spin the Wheel</button>
             </div>
 
-            <button id="btn-hype" class="action-btn pulse-btn" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff2d55, #ffcc00); font-size: 16px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); text-transform: uppercase; letter-spacing: 1px;">🔥 Activate Hype 🔥</button>
-            <button id="btn-open-admin" class="action-btn" style="margin-bottom: 20px; background: var(--card); color: var(--text); border: 2px solid var(--ios-grey); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">⚙️ Settings & Setup</button>
+            <button id="btn-hype" class="action-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00);">🔥 Activate Hype 🔥</button>
+            <button id="btn-open-admin" class="action-btn" style="background: var(--card); color: var(--text); border: 2px solid var(--ios-grey);">⚙️ Settings & Setup</button>
         </section>
 
         <section id="vegas" class="page tab-content">
-            <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg'); cursor: pointer;">
-                <h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
-            </div>
-            <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
+            <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg');"><h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
+            <button class="action-btn tips-btn" data-city="vegas">💡 Vegas Top Tips</button>
             <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
-            <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
+            <div id="vegas-itinerary"></div>
+            <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="vegas-completed-list"></div></div>
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('img/flights.jpg');"><h2>Travel Details</h2></div>
             <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Travel Data</div></div>
-            
+            <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Data</div></div>
             <div class="admin-card" style="margin-top: 30px; padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div style="font-size: 14px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🗄️ Offline Wallet</div>
-                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">
-                        ➕ Add Doc
-                        <input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden>
-                    </label>
+                    <div style="font-size: 14px; opacity: 0.7;">🗄️ Offline Wallet</div>
+                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px;">➕ Add Doc<input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden></label>
                 </div>
-                <div style="font-size: 12px; opacity: 0.6; margin-bottom: 15px;">Save passports, booking PDFs, or tickets here for offline access.</div>
                 <div id="wallet-gallery" class="wallet-grid"></div>
             </div>
         </section>
 
         <section id="admin" class="page tab-content">
-            <h2>Settings & Setup</h2>
+            <h2>Settings</h2>
             <div class="admin-card">
-                <h3>Theme Selection</h3>
+                <h3>Theme</h3>
                 <div class="theme-segmented-control">
-                    <button id="btnLight" class="segment active">☀️ Light</button>
-                    <button id="btnDark" class="segment">🌙 Dark</button>
+                    <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
-                <div style="font-size: 11px; opacity: 0.6; margin-top: 8px; text-align: center;">Defaults to your system setting if untouched.</div>
-            </div>
-            <div class="admin-card">
-                <h3>🔔 Smart Notifications</h3>
-                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
-                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text);">Enable Push Notifications</button>
-            </div>
-            <div class="admin-card">
-                <h3>✈️ Trip Settings</h3>
-                <label style="font-size: 14px; font-weight: 700; opacity: 0.7;">Trip Start Date:</label>
-                <input type="date" id="trip-start-date" class="settings-input" />
             </div>
             <div class="admin-card">
                 <h3>App Settings</h3>
-                <label style="font-size: 14px; font-weight: 700; opacity: 0.7;">Select Your Name:</label>
-                <select id="family-selector" class="settings-input"></select>
+                <label>Name:</label><select id="family-selector" class="settings-input"></select>
+                <button id="btn-clear-families" class="action-btn" style="background: #ff3b30; margin-top: 20px;">🗑️ Clear Memory</button>
             </div>
             <div class="admin-card">
-                <h3>Manage Custom Names</h3>
-                <div style="font-size: 11px; opacity: 0.7; margin-bottom: 10px;">Clear out old testing names from this device.</div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button id="btn-clear-families" class="action-btn" style="flex: 1; background: #ff3b30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);">🗑️ Clear Memory</button>
-                </div>
+                <h3>System</h3>
+                <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
+                <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="admin-card">
-                <h3>App Maintenance</h3>
-                <button id="btn-force-sync" class="action-btn" style="margin-bottom: 10px; background-color: var(--ios-grey); color: var(--text);">☁️ Force Refresh Data</button>
-                <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
-            </div>
-            <div class="version-control">ULTIMATE PLANNER // v2.1.53</div>
+            <div class="version-control">v2.1.57</div>
         </section>
 
-        <div id="completion-modal" class="modal-overlay">
-            <div class="modal-content admin-card">
-                <button id="btn-close-completion-x" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px;">Complete Activity?</h3>
-                <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px; font-size: 16px;"></p>
-                <label style="display:flex; align-items:center; gap:12px; font-weight:800; cursor:pointer; margin-bottom:24px; background: var(--bg); padding: 15px; border-radius: 12px;">
-                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0; accent-color:var(--accent);">
-                    Yes, mark as completed
-                </label>
-                <div style="display:flex; gap:10px;">
-                    <button id="btn-cancel-modal" class="action-btn" style="background:var(--ios-grey); color:var(--text); flex:1;">Cancel</button>
-                    <button id="btn-confirm-modal" class="action-btn" style="flex:1; opacity:0.5; pointer-events:none;">Confirm</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tips-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 80vh; height: 500px; position: relative;">
-                <button id="btn-close-tips" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between; align-items: center;">
-                    <span id="tips-modal-title">💡 City Tips</span>
-                </h3>
-                <div class="theme-segmented-control" style="margin-bottom: 15px;">
-                    <button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button>
-                    <button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button>
-                    <button class="segment tips-tab-btn" data-cat="shopping">🛍️ Shopping</button>
-                </div>
-                <div id="tips-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
-            </div>
-        </div>
-
-        <div id="stay-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 0; overflow: visible; display: flex; flex-direction: column; max-height: 80vh;">
-                <button id="btn-close-stay" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <div id="stay-modal-hero" style="height: 200px; background-size: cover; background-position: center; position: relative; border-radius: 24px 24px 0 0;">
-                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); border-radius: 24px 24px 0 0;"></div>
-                    <h3 id="stay-modal-title" style="position: absolute; bottom: 15px; left: 20px; margin: 0; color: white; font-size: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;"></h3>
-                </div>
-                <div style="padding: 24px;">
-                    <div id="stay-modal-addr" style="font-size: 15px; font-weight: 700; margin-bottom: 24px; opacity: 0.8; line-height: 1.4;"></div>
-                    <div id="stay-modal-buttons" style="display: flex; gap: 10px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="travel-modal" class="modal-overlay">
-            <div id="travel-modal-wrapper" class="modal-content admin-card" style="padding: 0; overflow: visible; display: flex; flex-direction: column; max-height: 80vh;">
-                <button id="btn-close-travel" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <div id="travel-modal-content" style="padding: 0;"></div>
-            </div>
-        </div>
-
-        <div id="weather-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 85vh; height: 600px; position: relative;">
-                <button id="btn-close-weather" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <span id="weather-modal-title">🌤️ Radar & Forecast</span>
-                </h3>
-                <div class="theme-segmented-control" style="margin-bottom: 20px;">
-                    <button class="segment weather-btn active" id="btn-w-local">📍 Local</button>
-                    <button class="segment weather-btn" id="btn-w-la">🌴 LA</button>
-                    <button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button>
-                    <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
-                </div>
-                <div id="WTH-dashboard" style="overflow-y: auto; flex: 1; padding-right: 5px;">
-                    <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-                </div>
-            </div>
-        </div>
+        <div id="completion-modal" class="modal-overlay"><div class="modal-content admin-card"><button id="btn-close-completion-x" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3>Complete?</h3><p id="modal-task-name"></p><label style="display:flex; gap:10px; margin-bottom:20px;"><input type="checkbox" id="modal-checkbox"> Mark as done</label><div style="display:flex; gap:10px;"><button id="btn-cancel-modal" class="action-btn" style="flex:1;">Cancel</button><button id="btn-confirm-modal" class="action-btn" style="flex:1;">Confirm</button></div></div></div>
+        <div id="tips-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; display:flex; flex-direction:column; height:500px;"><button id="btn-close-tips" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="tips-modal-title">💡 Tips</h3><div class="theme-segmented-control"><button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button><button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button><button class="segment tips-tab-btn" data-cat="shopping">🛍️ Shopping</button></div><div id="tips-content" style="overflow-y:auto; flex:1;"></div></div></div>
+        <div id="stay-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-stay" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="stay-modal-hero" style="height:200px; border-radius:24px 24px 0 0; background-size:cover;"></div><div style="padding:24px;"><h3 id="stay-modal-title"></h3><div id="stay-modal-addr"></div><div id="stay-modal-buttons" style="display:flex; gap:10px; margin-top:20px;"></div></div></div></div>
+        <div id="travel-modal" class="modal-overlay"><div id="travel-modal-wrapper" class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-travel" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="travel-modal-content"></div></div></div>
+        <div id="weather-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; height:600px;"><button id="btn-close-weather" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="weather-modal-title">🌤️ Weather</h3><div class="theme-segmented-control"><button class="segment weather-btn active" id="btn-w-local">📍 Local</button><button class="segment weather-btn" id="btn-w-la">🌴 LA</button><button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button><button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button></div><div id="WTH-dashboard" style="overflow-y:auto;"></div></div></div>
 
     </main>
 
@@ -336,7 +192,7 @@
     </nav>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        (function() {
             const loginSelector = document.getElementById('login-selector');
             const splashGoBtn = document.getElementById('splash-go-btn');
             const splash = document.getElementById('splash');
@@ -344,33 +200,30 @@
             const savedUser = localStorage.getItem('appUser');
             if (savedUser) {
                 loginSelector.style.display = 'none';
-                splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+                splashGoBtn.innerText = "Let's go, " + savedUser + "! ✈️";
                 splashGoBtn.style.display = 'block';
-                splashGoBtn.disabled = false;
-                splashGoBtn.style.opacity = '1';
             }
 
             loginSelector.addEventListener('change', function() {
                 const userName = this.value;
                 localStorage.setItem('appUser', userName);
                 localStorage.setItem('savedFamilyFilter', userName);
-                
                 loginSelector.style.display = 'none';
-                splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
+                splashGoBtn.innerText = "Let's go, " + userName + "! ✈️";
                 splashGoBtn.style.display = 'block';
-                splashGoBtn.disabled = false;
-                splashGoBtn.style.opacity = '1';
-                
                 if (window.forceAppUpdate) window.forceAppUpdate();
             });
 
-            splashGoBtn.addEventListener('click', () => {
-                splash.style.opacity = '0';
-                setTimeout(() => splash.style.display = 'none', 300);
+            splashGoBtn.addEventListener('click', function() {
+                splash.style.pointerEvents = 'none'; // SHATTERS THE SHIELD
+                splash.classList.add('hidden'); // Fades out
+                setTimeout(function() {
+                    splash.style.display = 'none';
+                }, 400);
             });
-        });
+        })();
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.53"></script>
+    <script type="module" src="js/main.js?v=2.1.57"></script>
 </body>
 </html>
