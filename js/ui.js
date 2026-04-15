@@ -24,86 +24,33 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-export function updateGreeting() {
-    const user = localStorage.getItem('appUser');
-    let nameStr = "";
-    if (user && user !== 'All') { nameStr = ", " + user.split(' ')[0]; }
-    
-    const hour = new Date().getHours();
-    let greetings = [];
-    
-    if (hour >= 4 && hour < 12) {
-        greetings = ["Good Morning", "Rise and shine", "Ready for today", "Let's go"];
-    } else if (hour >= 12 && hour < 18) {
-        greetings = ["Good Afternoon", "Halfway there", "Adventure awaits", "Keep exploring"];
-    } else {
-        greetings = ["Good Evening", "Vegas time", "What a day", "Time to relax"];
-    }
-    
-    const randomGreet = greetings[Math.floor(Math.random() * greetings.length)];
-    const titleEl = document.getElementById('greeting-title');
-    if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
-}
-
 export function updateTimeAndCountdown() { 
     try {
-        updateGreeting();
-        
         const now = new Date();
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
-        
-        try {
-            const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
-            const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
-            const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 Local: ${timePT}`;
-            const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`;
-            const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
-        } catch(e) { console.error(e); }
+        const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
+        const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
+        const elLA = document.getElementById('time-la'); const elVegas = document.getElementById('time-vegas'); const elUtah = document.getElementById('time-utah');
+        if(elLA) elLA.innerText = `🕒 Local: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
 
-        const cContainer = document.getElementById('countdown-display'); 
-        const clockContainer = document.getElementById('dual-clocks');
+        const cContainer = document.getElementById('countdown-display'); const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
 
-        try {
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            const dateString = now.toLocaleDateString(undefined, options);
-            const cdDateEl = document.getElementById('cd-date'); if(cdDateEl) cdDateEl.textContent = dateString;
-            const clockDateEl = document.getElementById('clock-date'); if(clockDateEl) clockDateEl.textContent = dateString;
-        } catch(e) {}
-
-        let showCountdown = false;
-        try {
-            const savedStart = localStorage.getItem('tripStartDate');
-            if (savedStart) {
-                const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
-                const tripDate = new Date(savedStart);
-                if (!isNaN(tripDate.getTime())) {
-                    tripDate.setHours(0,0,0,0); const diff = tripDate - now;
-                    if (diff > 0) {
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                        const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days!`;
-                        showCountdown = true;
-                    }
+        const savedStart = localStorage.getItem('tripStartDate');
+        if (savedStart) {
+            const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
+            const tripDate = new Date(savedStart);
+            if (!isNaN(tripDate.getTime())) {
+                tripDate.setHours(0,0,0,0); const diff = tripDate - now;
+                if (diff > 0) {
+                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    document.getElementById('cd-text').innerHTML = `🚀 ${days} Days!`;
+                    cContainer.style.display = 'block'; clockContainer.style.display = 'none'; return; 
                 }
-            } 
-        } catch(e) {}
-
-        if (showCountdown) {
-            cContainer.style.display = 'block'; clockContainer.style.display = 'none';
-        } else {
-            cContainer.style.display = 'none'; clockContainer.style.display = 'block';
-            try {
-                const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
-                let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
-                if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
-                const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
-                const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
-                const ukEl = document.getElementById('clock-uk'); if(ukEl) ukEl.innerText = ukTime;
-                const locEl = document.getElementById('clock-local'); if(locEl) locEl.innerText = localTime;
-                const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
-            } catch(e) { console.error(e); }
-        }
-    } catch(e) { console.error(e); }
+            }
+        } 
+        cContainer.style.display = 'none'; clockContainer.style.display = 'block';
+    } catch(e) {}
 }
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
@@ -112,7 +59,7 @@ export function convertCurrency() {
     const usdInput = document.getElementById('usd-input');
     const clearBtn = document.getElementById('clear-usd');
     const usd = usdInput?.value;
-    const rate = state.liveExchangeRate || 1.25; // Safety fallback
+    const rate = state.liveExchangeRate || 1.25; 
     
     if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
     
@@ -127,12 +74,11 @@ export function setTip(percent, btnElement) {
     if(btnElement) btnElement.classList.add('active'); calculateTip(); 
 }
 
-// THE FIX: Parses the new 1-Tap Split Buttons correctly!
 export function calculateTip() { 
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
     const splitBtn = document.querySelector('.split-btn.active');
     const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
-    const rate = state.liveExchangeRate || 1.25; // Safety fallback
+    const rate = state.liveExchangeRate || 1.25; 
     
     const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
@@ -152,7 +98,7 @@ export function populateDropdown() {
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
     if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
-    renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting();
+    renderItinerary(); renderTravelVault(); renderAccommodations();
 }
 
 export function clearCustomFamilies() {
@@ -243,11 +189,10 @@ export function closeWeatherModal() {
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
+        return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--ios-grey);"><span>${new Date(day.dt*1000).toLocaleDateString('en-GB',{weekday:'short'})}</span><span>${getWeatherIcon(day.weather[0].icon)}</span><span>${Math.round(day.main.temp)}°C</span></div>`;
     }).join('');
     const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
+    if (wDash) wDash.innerHTML = `<div style="text-align:center; padding:20px; background:rgba(0,122,255,0.1); border-radius:15px; margin-bottom:20px;"><div style="font-size:50px;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size:40px; font-weight:900;">${Math.round(d.main.temp)}°C</div><div style="text-transform:capitalize;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
@@ -257,10 +202,6 @@ export async function renderItinerary() {
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
     let cLA = '', cUtah = '', cVegas = ''; 
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
-
-    const now = new Date();
-    const nowTime = now.getTime();
-    const todayStr = now.toDateString(); 
 
     const sortedData = [...state.itineraryData].sort((a, b) => {
         if(!a || a.length < 4) return 1;
@@ -286,60 +227,23 @@ export async function renderItinerary() {
             const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
-            
-            let isHappening = false;
-            const taskDateObj = parseDateTime(d, time);
-            if (taskDateObj && !isCompleted) {
-                if (nowTime >= taskDateObj && nowTime < taskDateObj + (90 * 60000)) {
-                    isHappening = true;
-                }
-            }
-            
-            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
-            if (isHappening) cardClass += ' happening-now pulse-btn';
-            
-            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
-            
-            let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
-
-            const cardHtml = `
-                <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
-                    <div class="timeline-dot"></div>
-                    <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding: 20px; margin-bottom: 16px; cursor: pointer;">
-                        ${extraLabel}
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
-                            <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
-                        </div>
-                        <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a></div>` : ''}
-                    </div>
-                </div>`;
-
-            const pg = (city, date) => { if (!grouped[city][date]) grouped[city][date] = []; grouped[city][date].push(cardHtml); };
-            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pg('la', d); }
-            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pg('utah', d); }
-            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pg('vegas', d); }
+            const cardHtml = `<div class="admin-card itin-card ${isCompleted?'completed':''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding:20px; margin-bottom:16px; cursor:pointer;"><div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--ios-grey); padding-bottom:10px; margin-bottom:10px;"><strong style="font-size:15px;">${escapeHTML(time)}</strong></div><div style="font-size:17px; font-weight:900;">${escapeHTML(act)}</div><div style="font-size:12px; opacity:0.6;">${escapeHTML(who)}</div></div>`;
+            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (grouped['la'][d] = grouped['la'][d] || [], grouped['la'][d].push(cardHtml)); }
+            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (grouped['utah'][d] = grouped['utah'][d] || [], grouped['utah'][d].push(cardHtml)); }
+            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (grouped['vegas'][d] = grouped['vegas'][d] || [], grouped['vegas'][d].push(cardHtml)); }
         }
     });
 
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
-            let dObj = new Date(date);
-            let isOpen = (!isNaN(dObj) && dObj.toDateString() === todayStr) ? 'open' : '';
-            html += `<details class="day-group" ${isOpen}><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content timeline">${cards.join('')}</div></details>`;
+            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
     
-    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); 
-    document.getElementById('la-completed-list').innerHTML = cLA ? `<div class="timeline">${cLA}</div>` : '';
-    
-    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); 
-    document.getElementById('utah-completed-list').innerHTML = cUtah ? `<div class="timeline">${cUtah}</div>` : '';
-    
-    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); 
-    document.getElementById('vegas-completed-list').innerHTML = cVegas ? `<div class="timeline">${cVegas}</div>` : '';
-    
-    document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
+    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
+    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah;
+    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas;
+    document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('div:last-child').innerHTML ? 'block' : 'none'; });
 }
 
 export function renderTravelVault() { 
@@ -475,87 +379,6 @@ export function triggerHype() {
         toast.classList.add('toast-exit');
         setTimeout(() => toast.style.display = 'none', 300);
     }, 3000);
-}
-
-export function initWheel() {
-    const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    const wheel = document.getElementById('roulette-wheel');
-    if(!wheel) return;
-    
-    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it"];
-    wheel.dataset.names = JSON.stringify(names);
-    
-    let gradient = [];
-    let html = '';
-    const sliceDeg = 360 / names.length;
-    
-    names.forEach((name, i) => {
-        let color = i % 2 === 0 ? '#d0021b' : '#1c1c1e'; 
-        if (name === "Split it") color = '#34c759'; 
-        
-        const startDeg = i * sliceDeg;
-        const endDeg = (i + 1) * sliceDeg;
-        gradient.push(`${color} ${startDeg}deg ${endDeg}deg`);
-        
-        const textRotate = startDeg + (sliceDeg / 2);
-        html += `<div class="roulette-label" style="transform: translateX(-50%) rotate(${textRotate}deg);"><span>${name}</span></div>`;
-    });
-    
-    wheel.style.background = `conic-gradient(${gradient.join(', ')})`;
-    wheel.innerHTML = html;
-    wheel.style.transition = 'none';
-    wheel.style.transform = `rotate(0deg)`;
-    wheel.dataset.currentRotation = 0;
-    
-    const resText = document.getElementById('roulette-result-text');
-    if(resText) { resText.innerText = "Tap to Spin!"; resText.style.color = "white"; }
-}
-
-export function spinRoulette() {
-    const wheel = document.getElementById('roulette-wheel');
-    const btn = document.getElementById('btn-spin-roulette');
-    const resText = document.getElementById('roulette-result-text');
-    if(!wheel || !btn || btn.disabled) return;
-    
-    btn.disabled = true; btn.style.opacity = '0.5';
-    if(resText) { resText.innerText = "Spinning..."; resText.style.color = "rgba(255,255,255,0.7)"; }
-    
-    let names = JSON.parse(wheel.dataset.names || '[]');
-    let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
-    
-    const extraSpins = 360 * 6; // 6 full spins!
-    const randomStop = Math.floor(Math.random() * 360);
-    const totalRotation = currentRot + extraSpins + randomStop;
-    
-    wheel.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1)';
-    wheel.style.transform = `rotate(${totalRotation}deg)`;
-    wheel.dataset.currentRotation = totalRotation;
-    
-    // Math to track what is exactly under the pointer!
-    const pointerAngle = (360 - (totalRotation % 360)) % 360;
-    const sliceDeg = 360 / names.length;
-    const winningIndex = Math.floor(pointerAngle / sliceDeg);
-    const winner = names[winningIndex];
-    
-    let ticks = 0;
-    const tickInterval = setInterval(() => {
-        if(navigator.vibrate) navigator.vibrate(10);
-        ticks++;
-        if(ticks > 25) clearInterval(tickInterval);
-    }, 150);
-
-    setTimeout(() => {
-        clearInterval(tickInterval);
-        if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
-        btn.disabled = false; btn.style.opacity = '1';
-        if(resText) {
-            resText.innerText = `${winner} Wins!`;
-            resText.style.color = "#ffd60a"; 
-            resText.style.transform = 'scale(1.2)';
-            setTimeout(() => resText.style.transform = 'scale(1)', 200);
-        }
-        triggerConfetti();
-    }, 4500);
 }
 
 let currentTipsCity = 'la';
