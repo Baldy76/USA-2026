@@ -1,9 +1,9 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
 import { 
-    renderItinerary, renderTravelVault, renderAccommodations, 
+    renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
-    convertCurrency, 
+    switchDayView, convertCurrency, 
     setTip, calculateTip, 
     populateDropdown, clearCustomFamilies, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
@@ -11,7 +11,8 @@ import {
     triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips,
     openStayModal, closeStayModal,
-    openTravelModal, closeTravelModal
+    openTravelModal, closeTravelModal,
+    initWeatherPill, openWeatherModal, closeWeatherModal // NEW WEATHER MODAL EXPORTS
 } from './ui.js';
 import { syncToCloud } from './api.js';
 
@@ -169,7 +170,10 @@ function bindEvents() {
     }
 
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
-    document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
+    
+    // NEW WEATHER MODAL BINDINGS
+    document.getElementById('home-weather-pill')?.addEventListener('click', openWeatherModal);
+    document.getElementById('btn-close-weather')?.addEventListener('click', closeWeatherModal);
     
     document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
     document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
@@ -320,7 +324,10 @@ window.addEventListener('load', async () => {
     await loadAllData();
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet();
     
-    initLiveCurrency(); autoSetWeatherCity(); updateTimeAndCountdown();
+    initLiveCurrency(); updateTimeAndCountdown();
+    
+    // NEW WEATHER INITIALIZER
+    initWeatherPill();
     
     setInterval(updateTimeAndCountdown, 60000);
     startNotificationEngine(); 
