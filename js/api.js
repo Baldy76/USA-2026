@@ -1,8 +1,5 @@
 import { state, setVal, getVal } from './store.js';
 
-// ==========================================
-// 🔗 LIVE GOOGLE SHEETS CONNECTIONS
-// ==========================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
@@ -68,11 +65,10 @@ export async function fetchWeather(lat, lon) {
     }
 }
 
-// ---- SMART OFFLINE CURRENCY CACHING (FIXED FOR £1 = $1.xx) ----
+// THE FIX: Pointed the API request to the new "api.frankfurter.dev" server!
 export async function initLiveCurrency() {
     try {
-        // Fetch how many Dollars you get for 1 Pound
-        const response = await fetch('https://api.frankfurter.app/latest?from=GBP&to=USD');
+        const response = await fetch('https://api.frankfurter.dev/v1/latest?base=GBP&symbols=USD');
         if (!response.ok) throw new Error("Offline");
         
         const data = await response.json();
