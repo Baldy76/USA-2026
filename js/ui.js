@@ -12,6 +12,7 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
+
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
@@ -24,9 +25,32 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// THE FIX: Bulletproof Time Engine
+// THE FIX: DYNAMIC PERSONAL GREETINGS
+export function updateGreeting() {
+    const user = localStorage.getItem('appUser');
+    let nameStr = "";
+    if (user && user !== 'All') { nameStr = ", " + user.split(' ')[0]; }
+    
+    const hour = new Date().getHours();
+    let greetings = [];
+    
+    if (hour >= 4 && hour < 12) {
+        greetings = ["Good Morning", "Rise and shine", "Ready for today", "Let's go"];
+    } else if (hour >= 12 && hour < 18) {
+        greetings = ["Good Afternoon", "Halfway there", "Adventure awaits", "Keep exploring"];
+    } else {
+        greetings = ["Good Evening", "Vegas time", "What a day", "Time to relax"];
+    }
+    
+    const randomGreet = greetings[Math.floor(Math.random() * greetings.length)];
+    const titleEl = document.getElementById('greeting-title');
+    if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
+}
+
 export function updateTimeAndCountdown() { 
     try {
+        updateGreeting(); // Update the greeting seamlessly
+        
         const now = new Date();
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
         
@@ -87,8 +111,16 @@ export function updateTimeAndCountdown() {
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
 
 export function convertCurrency() { 
-    const usd = document.getElementById('usd-input')?.value;
-    if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
+    const usdInput = document.getElementById('usd-input');
+    const clearBtn = document.getElementById('clear-usd');
+    const usd = usdInput?.value;
+    
+    // Toggle the (x) button visibility based on input
+    if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
+    
+    if(document.getElementById('gbp-output')) {
+        document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
+    }
 }
 
 export let currentTipPercent = 18;
@@ -96,8 +128,13 @@ export function setTip(percent, btnElement) {
     currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
     if(btnElement) btnElement.classList.add('active'); calculateTip(); 
 }
+
+// THE FIX: Smart 1-Tap Tip Splitting
 export function calculateTip() { 
-    const b = parseFloat(document.getElementById('bill-total')?.value) || 0, s = parseInt(document.getElementById('split-ways')?.value) || 1;
+    const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
+    const splitBtn = document.querySelector('.split-btn.active');
+    const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
+    
     const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / state.liveExchangeRate; 
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
@@ -116,7 +153,7 @@ export function populateDropdown() {
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
     if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
-    renderItinerary(); renderTravelVault(); renderAccommodations();
+    renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting();
 }
 
 export function clearCustomFamilies() {
@@ -128,7 +165,6 @@ export function clearCustomFamilies() {
 
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
 
-// THE FIX: Graceful fail for GPS
 export async function initWeatherPill() {
     const loadSummary = async (lat, lon, id) => {
         try {
@@ -208,11 +244,14 @@ export function closeWeatherModal() {
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-        return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--ios-grey);"><span>${new Date(day.dt*1000).toLocaleDateString('en-GB',{weekday:'short'})}</span><span>${getWeatherIcon(day.weather[0].icon)}</span><span>${Math.round(day.main.temp)}°C</span></div>`;
+        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
     }).join('');
-    document.getElementById('WTH-dashboard').innerHTML = `<div style="text-align:center; padding:20px; background:rgba(0,122,255,0.1); border-radius:15px; margin-bottom:20px;"><div style="font-size:50px;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size:40px; font-weight:900;">${Math.round(d.main.temp)}°C</div><div style="text-transform:capitalize;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
+// THE FIX: TIMELINES & HAPPENING NOW GLOW
 export async function renderItinerary() {
     if (!state.itineraryData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -221,10 +260,15 @@ export async function renderItinerary() {
     let cLA = '', cUtah = '', cVegas = ''; 
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
 
+    const now = new Date();
+    const nowTime = now.getTime();
+    const todayStr = now.toDateString(); // Standardized to compare dates
+
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
-        const d = cols[0].trim(), loc = cols[1].trim(), act = cols[2].trim(), time = cols[3].trim(), who = cols[4].trim(), addr = cols[5] || '';
-        let isMatch = false; const whoL = who.toLowerCase(), filterL = filter.toLowerCase();
+        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
+        
+        let isMatch = false; const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
         if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true; 
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true; 
         else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true; 
@@ -234,51 +278,93 @@ export async function renderItinerary() {
             const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
-            const cardHtml = `<div class="admin-card itin-card ${isCompleted?'completed':''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding:20px; margin-bottom:16px; cursor:pointer;"><div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--ios-grey); padding-bottom:10px; margin-bottom:10px;"><strong style="font-size:15px;">${escapeHTML(time)}</strong></div><div style="font-size:17px; font-weight:900;">${escapeHTML(act)}</div><div style="font-size:12px; opacity:0.6;">${escapeHTML(who)}</div></div>`;
-            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (grouped['la'][d] = grouped['la'][d] || [], grouped['la'][d].push(cardHtml)); }
-            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (grouped['utah'][d] = grouped['utah'][d] || [], grouped['utah'][d].push(cardHtml)); }
-            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (grouped['vegas'][d] = grouped['vegas'][d] || [], grouped['vegas'][d].push(cardHtml)); }
+            
+            // Checking if happening right now (within 90 minutes)
+            let isHappening = false;
+            const taskDateObj = parseDateTime(d, time);
+            if (taskDateObj && !isCompleted) {
+                if (nowTime >= taskDateObj && nowTime < taskDateObj + (90 * 60000)) {
+                    isHappening = true;
+                }
+            }
+            
+            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
+            if (isHappening) cardClass += ' happening-now pulse-btn';
+            
+            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
+            
+            let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
+
+            // Wraps the card in the visual timeline node
+            const cardHtml = `
+                <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
+                    <div class="timeline-dot"></div>
+                    <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding: 20px; margin-bottom: 16px; cursor: pointer;">
+                        ${extraLabel}
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
+                            <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
+                        </div>
+                        <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
+                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a></div>` : ''}
+                    </div>
+                </div>`;
+
+            const pg = (city, date) => { if (!grouped[city][date]) grouped[city][date] = []; grouped[city][date].push(cardHtml); };
+            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pg('la', d); }
+            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pg('utah', d); }
+            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pg('vegas', d); }
         }
     });
 
-    // THE FIX: Restored item counts
+    // THE FIX: Auto-Opening the Accords!
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
-            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
+            let dObj = new Date(date);
+            let isOpen = (!isNaN(dObj) && dObj.toDateString() === todayStr) ? 'open' : '';
+            html += `<details class="day-group" ${isOpen}><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content timeline">${cards.join('')}</div></details>`;
         } return html;
     };
-    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
-    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah;
-    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas;
-    document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('div:last-child').innerHTML ? 'block' : 'none'; });
+    
+    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); 
+    document.getElementById('la-completed-list').innerHTML = cLA ? `<div class="timeline">${cLA}</div>` : '';
+    
+    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); 
+    document.getElementById('utah-completed-list').innerHTML = cUtah ? `<div class="timeline">${cUtah}</div>` : '';
+    
+    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); 
+    document.getElementById('vegas-completed-list').innerHTML = cVegas ? `<div class="timeline">${cVegas}</div>` : '';
+    
+    document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
 }
 
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
-    const display = document.getElementById('flights-vault-display');
-    let html = ''; const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
+    if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
-    state.vaultAndStaysData.forEach(cols => {
+    sortedData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
-        const fam = cols[0].trim(), type = cols[1].trim().toLowerCase(); 
-        let isMatch = false; const filterL = filter.toLowerCase();
-        if (filter === 'All' || fam.toLowerCase() === 'everyone') isMatch = true; 
-        else if (fam.toLowerCase().includes(filterL)) isMatch = true; 
-        else if (leech.includes(filterL) && fam.toLowerCase().includes('leech')) isMatch = true; 
-        else if (murray.includes(filterL) && fam.toLowerCase().includes('murray')) isMatch = true;
+        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
         
         if (isMatch) {
             if (type === 'flight') {
-                const date = cols[2], dep = cols[3], arr = cols[4], air = cols[5], fn = cols[6], ft = cols[7], term = cols[8], ref = cols[9];
-                const flightId = btoa(encodeURIComponent(`${date}-${air}-${fn}`)).replace(/=/g, '');
-                const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : term;
-                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${air}" data-fnum="${fn}" data-ftime="${ft}" data-term="${activeTerm}" data-ref="${ref}" style="border-left:5px solid var(--accent); cursor:pointer;"><div style="display:flex; justify-content:space-between;"><span>✈️ ${date}</span><strong>${air} ${fn}</strong></div><div style="font-size:18px; font-weight:900; margin-top:10px;">${dep} → ${arr}</div></div>`;
+                hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
+                const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
+                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${activeTerm}" data-ref="${escapeHTML(cols[9]?.trim() || '')}" data-link="https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent); cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">✈️ Flight • ${date}</div><strong style="font-size: 18px;">${dep} → ${arr}</strong></div><div style="text-align: right;"><div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.6;">${ftime}</div></div></div>`;
             } else if (type === 'car') {
-                html += `<div class="admin-card travel-card" data-type="car" data-company="${cols[4]}" data-ploc="${cols[5]}" data-pdate="${cols[2]}" data-dloc="${cols[8]}" data-ddate="${cols[3]}" data-ref="${cols[9]}" style="border-left:5px solid #34c759; cursor:pointer;">🚗 ${cols[4]} Rental</div>`;
+                hasData = true; const pdate = escapeHTML(cols[2]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim());
+                html += `<div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${escapeHTML(cols[6]?.trim())}" data-ploc="${ploc}" data-ddate="${escapeHTML(cols[3]?.trim())}" data-dtime="${escapeHTML(cols[7]?.trim())}" data-dloc="${escapeHTML(cols[8]?.trim())||ploc}" data-ref="${escapeHTML(cols[9]?.trim())}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid #34c759; cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">🚗 Car Rental • ${pdate}</div><strong style="font-size: 18px;">${company}</strong></div><div style="text-align: right;"><div style="color: #34c759; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.6;">${ploc}</div></div></div>`;
             }
         }
-    }); display.innerHTML = html;
+    }); display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
 }
 
 export function renderAccommodations() { 
@@ -288,21 +374,22 @@ export function renderAccommodations() {
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
     state.vaultAndStaysData.forEach(cols => {
-        if(!cols || cols.length < 2) return; 
-        const fam = cols[0].trim(), type = cols[1].trim().toLowerCase(); 
-        let isMatch = false; const filterL = filter.toLowerCase();
-        if (filter === 'All' || fam.toLowerCase() === 'everyone') isMatch = true; 
-        else if (fam.toLowerCase().includes(filterL)) isMatch = true; 
-        else if (leech.includes(filterL) && fam.toLowerCase().includes('leech')) isMatch = true; 
-        else if (murray.includes(filterL) && fam.toLowerCase().includes('murray')) isMatch = true;
+        if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
         
         if (type === 'stay' && isMatch) {
-            const addr = cols[4], img = cols[7], city = cols[3];
-            const ui = `<div class="admin-card stay-card" data-fam="${fam}" data-addr="${addr}" data-img="${img}" data-link="${cols[6]||''}" style="padding:0; overflow:hidden; cursor:pointer;"><div style="height:100px; background:${img?`url('${img}') center/cover`:`var(--accent)`}; display:flex; align-items:flex-end; padding:20px;"><h3 style="margin:0; color:white; font-size:20px;">🏡 ${fam} Stay</h3></div></div>`;
+            const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://maps.google.com/?q="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
+            const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
     });
-    document.getElementById('la-home-card').innerHTML = htmlLA; document.getElementById('utah-home-card').innerHTML = htmlUtah; document.getElementById('vegas-home-card').innerHTML = htmlVegas;
+    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
+    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
 }
 
 export async function handleFileUpload(event) {
@@ -369,12 +456,11 @@ export function triggerEmojiRain(city) {
     }
 }
 
-const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
-
 export function triggerHype() {
     if(navigator.vibrate) navigator.vibrate(40);
     const toast = document.getElementById('hype-toast');
     if(!toast) return;
+    const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
     toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
     toast.style.display = 'block';
     toast.classList.remove('toast-exit');
