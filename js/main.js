@@ -201,50 +201,52 @@ function bindEvents() {
 
 // Attach functions to window so the isolated inline HTML can trigger them!
 window.forceAppUpdate = () => {
-    const famSel = document.getElementById('family-selector');
-    if (famSel) {
-        famSel.value = localStorage.getItem('appUser') || 'All';
-        updateFamilyFilter();
-    }
+    populateDropdown();
+    renderItinerary();
+    renderTravelVault();
+    renderAccommodations();
 };
 
+// THE FIX: Unbreakable Boot Sequence. No waiting for DOMContentLoaded!
 async function bootApp() {
-    bindEvents();
-    initSwipes(); 
-    initPullToRefresh();
-    
-    if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+    try {
+        bindEvents();
+        initSwipes(); 
+        initPullToRefresh();
+        
+        if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
-    applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
-    prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
+        applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
+        prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
 
-    history.replaceState({ pageId: 'home' }, '', '#home');
-    
-    try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
-    
-    try { await loadAllData(); } catch(e) {}
-    
-    populateDropdown(); 
-    renderItinerary(); 
-    renderTravelVault(); 
-    renderAccommodations(); 
-    preCacheImages(); 
-    renderWallet();
-    
-    initLiveCurrency(); 
-    updateTimeAndCountdown(); 
-    initWeatherPill();
-    
-    setInterval(updateTimeAndCountdown, 60000);
-    startNotificationEngine(); 
+        history.replaceState({ pageId: 'home' }, '', '#home');
+        
+        try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
+        
+        // Let the data load in the background so it never freezes the UI!
+        loadAllData().then(() => {
+            populateDropdown(); 
+            renderItinerary(); 
+            renderTravelVault(); 
+            renderAccommodations(); 
+            preCacheImages(); 
+            renderWallet();
+        }).catch(e => console.error("Data load failed:", e));
+        
+        initLiveCurrency(); 
+        updateTimeAndCountdown(); 
+        initWeatherPill();
+        
+        setInterval(updateTimeAndCountdown, 60000);
+        startNotificationEngine(); 
+    } catch(e) {
+        console.error("Boot Error:", e);
+    }
 }
 
-// THE FIX: Standard, stable boot.
-document.addEventListener('DOMContentLoaded', bootApp);
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    bootApp();
-}
+// Fire instantly.
+bootApp();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
