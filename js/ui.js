@@ -112,11 +112,12 @@ export function convertCurrency() {
     const usdInput = document.getElementById('usd-input');
     const clearBtn = document.getElementById('clear-usd');
     const usd = usdInput?.value;
+    const rate = state.liveExchangeRate || 1.25; // Safety fallback
     
     if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
     
     if(document.getElementById('gbp-output')) {
-        document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
+        document.getElementById('gbp-output').innerText = usd ? `£${(usd / rate).toFixed(2)}` : `£0.00`;
     }
 }
 
@@ -126,12 +127,14 @@ export function setTip(percent, btnElement) {
     if(btnElement) btnElement.classList.add('active'); calculateTip(); 
 }
 
+// THE FIX: Parses the new 1-Tap Split Buttons correctly!
 export function calculateTip() { 
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
     const splitBtn = document.querySelector('.split-btn.active');
     const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
+    const rate = state.liveExchangeRate || 1.25; // Safety fallback
     
-    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / state.liveExchangeRate; 
+    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
@@ -528,6 +531,7 @@ export function spinRoulette() {
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
+    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
