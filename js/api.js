@@ -7,7 +7,6 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
 
-// Weather API Key (OpenWeatherMap)
 const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
 export async function loadAllData() {
@@ -69,30 +68,27 @@ export async function fetchWeather(lat, lon) {
     }
 }
 
-// ---- SMART OFFLINE CURRENCY CACHING ----
+// ---- SMART OFFLINE CURRENCY CACHING (FIXED FOR £1 = $1.xx) ----
 export async function initLiveCurrency() {
     try {
-        const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=GBP');
+        // Fetch how many Dollars you get for 1 Pound
+        const response = await fetch('https://api.frankfurter.app/latest?from=GBP&to=USD');
         if (!response.ok) throw new Error("Offline");
         
         const data = await response.json();
-        state.liveExchangeRate = data.rates.GBP;
+        state.liveExchangeRate = data.rates.USD; 
         
-        // SAVE IT FOR OFFLINE USE
         localStorage.setItem('offline_exchange_rate', state.liveExchangeRate);
         
         const tag = document.getElementById('live-rate-tag');
-        if(tag) tag.innerText = `RATE: ${state.liveExchangeRate.toFixed(3)}`;
+        if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
         
     } catch (error) {
-        // WE ARE OFFLINE - GRAB THE SAVED RATE
         const savedRate = localStorage.getItem('offline_exchange_rate');
-        
-        // If we have a saved rate, use it. If not, use a hardcoded 0.78 fallback.
-        state.liveExchangeRate = savedRate ? parseFloat(savedRate) : 0.78; 
+        state.liveExchangeRate = savedRate ? parseFloat(savedRate) : 1.25; 
         
         const tag = document.getElementById('live-rate-tag');
-        if(tag) tag.innerText = `RATE: ${state.liveExchangeRate.toFixed(3)} (OFFLINE)`;
+        if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)} (OFFLINE)`;
     }
 }
 
