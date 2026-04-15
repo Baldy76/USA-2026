@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.40">
+    <link rel="stylesheet" href="style.css?v=2.1.41">
 </head>
 <body class="light-mode theme-splash">
 
@@ -68,7 +68,6 @@
         </section>
 
         <section id="home" class="page tab-content">
-            
             <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.3);">
                 <h2 style="margin: 0; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">USA 2026</h2>
                 <div style="font-size: 15px; font-weight: 800; opacity: 0.9; margin-top: 5px;">Road Trip Dashboard</div>
@@ -127,7 +126,6 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                     <div style="font-size: 12px; font-weight: 900; opacity: 0.9; text-transform: uppercase;">🍽️ Tip & Split Calculator</div>
                 </div>
-                
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
                     <div style="flex: 2;">
                         <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
@@ -141,14 +139,12 @@
                         </select>
                     </div>
                 </div>
-                
                 <div class="theme-segmented-control" style="margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px;">
                     <button class="segment tip-btn" data-tip="15">15%</button>
                     <button class="segment tip-btn active" data-tip="18">18%</button>
                     <button class="segment tip-btn" data-tip="20">20%</button>
                     <button class="segment tip-btn" data-tip="22">22%</button>
                 </div>
-                
                 <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">Per Family (USD)</div>
@@ -163,22 +159,16 @@
 
             <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.3);">
                 <div style="font-size: 12px; font-weight: 900; opacity: 0.9; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
-                
                 <select id="roulette-mode" style="margin-bottom: 15px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center;">
                     <option value="bill" style="color: black;">Who is picking up the bill?</option>
                     <option value="driving" style="color: black;">Who is driving?</option>
                 </select>
-
                 <div id="roulette-result" style="font-size: 28px; font-weight: 900; color: white; margin-bottom: 15px; height: 35px; display: flex; align-items: center; justify-content: center;">Tap to Spin!</div>
                 <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Spin the Wheel</button>
             </div>
 
             <button id="btn-hype" class="action-btn pulse-btn" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff2d55, #ffcc00); font-size: 16px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); text-transform: uppercase; letter-spacing: 1px;">🔥 Activate Hype 🔥</button>
-
-            <button id="btn-open-admin" class="action-btn" style="margin-bottom: 20px; background: var(--card); color: var(--text); border: 2px solid var(--ios-grey); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
-                ⚙️ Settings & Setup
-            </button>
-
+            <button id="btn-open-admin" class="action-btn" style="margin-bottom: 20px; background: var(--card); color: var(--text); border: 2px solid var(--ios-grey); font-weight: 900; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">⚙️ Settings & Setup</button>
         </section>
 
         <section id="vegas" class="page tab-content">
@@ -192,80 +182,52 @@
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;">
-                <h2>Travel Details</h2>
-            </div>
+            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;"><h2>Travel Details</h2></div>
             <div id="flights-vault-display"></div>
             <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Travel Data</div></div>
-            
             <div class="admin-card" style="margin-top: 30px; padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div style="font-size: 14px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🗄️ Offline Wallet</div>
-                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">
-                        ➕ Add Doc
-                        <input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden>
-                    </label>
+                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0; display: inline-block;">➕ Add Doc<input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden></label>
                 </div>
-                <div style="font-size: 12px; opacity: 0.6; margin-bottom: 15px;">Save passports, booking PDFs, or tickets here for offline access.</div>
                 <div id="wallet-gallery" class="wallet-grid"></div>
             </div>
         </section>
 
         <section id="admin" class="page tab-content">
             <h2>Settings & Setup</h2>
-
             <div class="admin-card">
                 <h3>Theme Selection</h3>
                 <div class="theme-segmented-control">
                     <button id="btnLight" class="segment active">☀️ Light</button>
                     <button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
-                <div style="font-size: 11px; opacity: 0.6; margin-top: 8px; text-align: center;">Defaults to your system setting if untouched.</div>
             </div>
-
-            <div class="admin-card">
-                <h3>🔔 Smart Notifications</h3>
-                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
-                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text);">Enable Push Notifications</button>
-            </div>
-
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
                 <label>Trip Start Date:</label>
                 <input type="date" id="trip-start-date" />
             </div>
-
             <div class="admin-card">
                 <h3>App Settings</h3>
                 <label>Select Your Name:</label>
                 <select id="family-selector"></select>
             </div>
-
-            <div class="admin-card">
-                <h3>Manage Custom Names</h3>
-                <div style="font-size: 11px; opacity: 0.7; margin-bottom: 10px;">Clear out old testing names from this device.</div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button id="btn-clear-families" class="action-btn" style="flex: 1; background: #ff3b30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);">🗑️ Clear Memory</button>
-                </div>
-            </div>
-            
             <div class="admin-card">
                 <h3>App Maintenance</h3>
                 <button id="btn-force-sync" class="action-btn" style="margin-bottom: 10px; background-color: var(--ios-grey); color: var(--text);">☁️ Force Refresh Data</button>
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
-
-            <div class="version-control">ULTIMATE PLANNER // v2.1.40</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.41</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="position: relative;">
+            <div class="modal-content admin-card">
                 <button id="btn-close-completion-x" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px;">Complete Activity?</h3>
-                <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px; font-size: 16px;"></p>
+                <h3 style="margin-top:0;">Complete Activity?</h3>
+                <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px;"></p>
                 <label style="display:flex; align-items:center; gap:12px; font-weight:800; cursor:pointer; margin-bottom:24px; background: var(--bg); padding: 15px; border-radius: 12px;">
-                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0; accent-color:var(--accent);">
-                    Yes, mark as completed
+                    <input type="checkbox" id="modal-checkbox" style="width:24px; height:24px; margin:0;"> Yes, mark as completed
                 </label>
                 <div style="display:flex; gap:10px;">
                     <button id="btn-cancel-modal" class="action-btn" style="background:var(--ios-grey); color:var(--text); flex:1;">Cancel</button>
@@ -275,11 +237,9 @@
         </div>
 
         <div id="tips-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 80vh; height: 500px; position: relative;">
+            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 80vh; height: 500px;">
                 <button id="btn-close-tips" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between; align-items: center;">
-                    <span id="tips-modal-title">💡 City Tips</span>
-                </h3>
+                <h3 id="tips-modal-title">💡 City Tips</h3>
                 <div class="theme-segmented-control" style="margin-bottom: 15px;">
                     <button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button>
                     <button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button>
@@ -294,10 +254,10 @@
                 <button id="btn-close-stay" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
                 <div id="stay-modal-hero" style="height: 200px; background-size: cover; background-position: center; position: relative; border-radius: 24px 24px 0 0;">
                     <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); border-radius: 24px 24px 0 0;"></div>
-                    <h3 id="stay-modal-title" style="position: absolute; bottom: 15px; left: 20px; margin: 0; color: white; font-size: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;"></h3>
+                    <h3 id="stay-modal-title" style="position: absolute; bottom: 15px; left: 20px; color: white; font-size: 28px; font-weight: 900;"></h3>
                 </div>
                 <div style="padding: 24px;">
-                    <div id="stay-modal-addr" style="font-size: 15px; font-weight: 700; margin-bottom: 24px; opacity: 0.8; line-height: 1.4;"></div>
+                    <div id="stay-modal-addr" style="font-size: 15px; font-weight: 700; margin-bottom: 24px; opacity: 0.8;"></div>
                     <div id="stay-modal-buttons" style="display: flex; gap: 10px;"></div>
                 </div>
             </div>
@@ -311,20 +271,16 @@
         </div>
 
         <div id="weather-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 85vh; height: 600px; position: relative;">
+            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 85vh; height: 600px;">
                 <button id="btn-close-weather" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
-                <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <span id="weather-modal-title">🌤️ Radar & Forecast</span>
-                </h3>
+                <h3 id="weather-modal-title">🌤️ Radar & Forecast</h3>
                 <div class="theme-segmented-control" style="margin-bottom: 20px;">
                     <button class="segment weather-btn active" id="btn-w-local">📍 Local</button>
                     <button class="segment weather-btn" id="btn-w-la">🌴 LA</button>
                     <button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button>
                     <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
                 </div>
-                <div id="WTH-dashboard" style="overflow-y: auto; flex: 1; padding-right: 5px;">
-                    <div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>
-                </div>
+                <div id="WTH-dashboard" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
             </div>
         </div>
 
@@ -338,6 +294,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Travel</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.40"></script>
+    <script type="module" src="js/main.js?v=2.1.41"></script>
 </body>
 </html>
