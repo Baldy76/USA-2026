@@ -1,6 +1,7 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
 import { fetchWeather, syncToCloud } from './api.js';
 
+// ---- THEME ENGINE ----
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
@@ -25,6 +26,7 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
+// ---- CLOCK & DATE ENGINE ----
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
@@ -84,6 +86,7 @@ export function updateTimeAndCountdown() {
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
 
+// ---- DASHBOARD CALCULATORS ----
 export function switchDayView(day) { 
     const tV = document.getElementById('today-view'), tmV = document.getElementById('tomorrow-view');
     const bT = document.getElementById('btn-show-today'), bTm = document.getElementById('btn-show-tomorrow');
@@ -111,6 +114,7 @@ export function calculateTip() {
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
 
+// ---- FAMILY FILTERS ----
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
@@ -132,6 +136,7 @@ export function clearCustomFamilies() {
 
 export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
 
+// ---- WEATHER ENGINE ----
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
@@ -152,11 +157,13 @@ export async function setWeatherCity(target) {
         renderWeatherDOM(await fetchWeather(lat, lon), locName);
     } catch(e) { if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; }
 }
+
 export function autoSetWeatherCity() {
     const now = new Date(); const savedStart = localStorage.getItem('tripStartDate'); let target = 'la'; 
     if (savedStart) { const tripDate = new Date(savedStart); if (now >= tripDate) target = 'local'; }
     setWeatherCity(target);
 }
+
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
     if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
@@ -178,6 +185,7 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);"><div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div><div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div><div class="WTH-hero-desc">${d.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
 }
 
+// ---- ITINERARY ENGINE ----
 export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
@@ -277,7 +285,7 @@ export function renderTravelVault() {
     display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
 }
 
-// ---- UPDATED ACCOMMODATION RENDERER (CLICKABLE PILLS) ----
+// ---- ACCOMMODATIONS RENDERING (CLICKABLE PILLS) ----
 export function renderAccommodations() { 
     const filter = document.getElementById('family-selector')?.value || 'All'; const today = new Date(); today.setHours(0,0,0,0);
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
@@ -289,7 +297,6 @@ export function renderAccommodations() {
             const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; 
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
             
-            // Generate just the compressed clickable header
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${address}" data-map="${mapLink}" data-link="${link}" data-img="${imgUrl}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer; transition: transform 0.2s ease;">
                 <div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
                     <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3>
@@ -304,6 +311,7 @@ export function renderAccommodations() {
     const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas; const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
 }
 
+// ---- OFFLINE WALLET UPLOAD ENGINE ----
 export async function handleFileUpload(event) {
     const file = event.target.files[0];
     if(!file) return;
@@ -330,12 +338,7 @@ export async function renderWallet() {
         const isImg = doc.type.startsWith('image/');
         const bg = isImg ? `url(${doc.data})` : 'var(--ios-grey)';
         const icon = isImg ? '' : '📄';
-        html += `
-        <div class="wallet-item" style="background: ${bg};">
-            ${icon}
-            <button class="delete-doc-btn" data-id="${doc.id}">×</button>
-            <a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a>
-        </div>`;
+        html += `<div class="wallet-item" style="background: ${bg};">${icon}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`;
     });
     gallery.innerHTML = html;
 }
@@ -358,6 +361,7 @@ export function closeCompletionModal() {
     const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
 
+// ---- FUN ENGINE ----
 export function triggerConfetti() {
     if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
     const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a'];
@@ -375,11 +379,7 @@ export function triggerConfetti() {
 
 export function triggerEmojiRain(city) {
     if(navigator.vibrate) navigator.vibrate([30, 30]);
-    const emojis = {
-        'la': ['🌴', '☀️', '🎬', '⭐', '🏄'],
-        'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'],
-        'vegas': ['🎲', '🎰', '💸', '🃏', '🍸']
-    };
+    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
     const set = emojis[city] || ['✨'];
     for(let i=0; i<30; i++) {
         const em = document.createElement('div');
@@ -392,14 +392,7 @@ export function triggerEmojiRain(city) {
     }
 }
 
-const hypeQuotes = [
-    "Prepare the Vegas bankroll! 💸",
-    "Only the brave conquer Utah! ⛰️",
-    "In-N-Out Burger is calling! 🍔",
-    "USA 2026: Epic Mode Activated 🚀",
-    "Passports? Check. Vibes? IMMACULATE. ✨",
-    "Ready for the road trip of a lifetime? 🚗"
-];
+const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
 
 export function triggerHype() {
     if(navigator.vibrate) navigator.vibrate(40);
@@ -421,19 +414,9 @@ export function spinRoulette() {
     const btn = document.getElementById('btn-spin-roulette');
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     if(!res || !btn || btn.disabled) return;
-    
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-    
-    let names = [];
-    if (mode === 'driving') {
-        names = ["Graeme", "Dave"];
-    } else {
-        names = ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
-    }
-    
-    let ticks = 0;
-    const maxTicks = 20;
+    btn.disabled = true; btn.style.opacity = '0.5';
+    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
+    let ticks = 0; const maxTicks = 20;
     const interval = setInterval(() => {
         if(navigator.vibrate) navigator.vibrate(10);
         res.innerText = names[Math.floor(Math.random() * names.length)];
@@ -443,76 +426,50 @@ export function spinRoulette() {
             if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
             res.style.transform = 'scale(1.2)';
             setTimeout(() => res.style.transform = 'scale(1)', 200);
-            btn.disabled = false;
-            btn.style.opacity = '1';
+            btn.disabled = false; btn.style.opacity = '1';
         }
     }, 100);
 }
 
-// =========================================
-// 15. TOP TIPS & STAY ENGINE 
-// =========================================
-
+// ---- TOP TIPS ENGINE ----
 let currentTipsCity = 'la';
-
 export function openTipsModal(city) {
     if(navigator.vibrate) navigator.vibrate(40);
     currentTipsCity = city.toLowerCase();
-    
     const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
     document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[currentTipsCity]} Tips`;
-
-    document.querySelectorAll('.tips-tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.cat === 'eating');
-    });
-
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); });
     renderTips('eating');
-
     const modal = document.getElementById('tips-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function closeTipsModal() {
     const modal = document.getElementById('tips-modal');
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = 'none', 300);
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
 
 export function renderTips(category) {
     const filter = document.getElementById('family-selector')?.value || 'All';
     const contentDiv = document.getElementById('tips-content');
     let html = '';
-
     state.vaultAndStaysData.forEach(cols => {
         if(cols.length < 5) return;
-        const fam = cols[0].trim();
-        const type = cols[1].trim().toLowerCase();
-        const city = cols[2]?.trim().toLowerCase();
-        const cat = cols[3]?.trim().toLowerCase();
-        const details = cols[4]?.trim();
-
+        const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase(); const city = cols[2]?.trim().toLowerCase(); const cat = cols[3]?.trim().toLowerCase(); const details = cols[4]?.trim();
         if (type === 'tip' && city.includes(currentTipsCity) && cat === category) {
             if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
                 const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; color: white; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(fam)}</span>` : '';
-                html += `
-                <div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
-                    <div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div>
-                </div>`;
+                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div></div>`;
             }
         }
     });
-
-    if (!html) {
-        html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved for this category yet!</div></div>`;
-    }
+    if (!html) html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved for this category yet!</div></div>`;
     contentDiv.innerHTML = html;
 }
 
-// NEW: OPEN STAY MODAL
+// ---- STAY MODAL ENGINE ----
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     if(navigator.vibrate) navigator.vibrate(40);
-    
     const modal = document.getElementById('stay-modal');
     const hero = document.getElementById('stay-modal-hero');
     const title = document.getElementById('stay-modal-title');
@@ -522,21 +479,16 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     hero.style.backgroundImage = imgUrl ? `url('${imgUrl}')` : `none`;
     if(!imgUrl) hero.style.backgroundColor = `var(--accent)`;
     
-    title.innerText = `🏡 ${fam} Stay`;
-    address.innerText = `📍 ${addr}`;
+    title.innerText = `🏡 ${fam} Stay`; address.innerText = `📍 ${addr}`;
     
     let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
-    if (listLink && listLink !== "undefined" && listLink !== "") {
-        btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`;
-    }
+    if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     btns.innerHTML = btnHtml;
 
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function closeStayModal() {
     const modal = document.getElementById('stay-modal');
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = 'none', 300);
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
