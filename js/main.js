@@ -88,53 +88,9 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
-    const loginSelector = document.getElementById('login-selector');
-    const splashGoBtn = document.getElementById('splash-go-btn');
-
-    if (loginSelector && splashGoBtn) {
-        const savedUser = localStorage.getItem('appUser');
-        
-        if (savedUser) {
-            loginSelector.value = savedUser;
-            loginSelector.style.display = 'none'; 
-            
-            splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
-            splashGoBtn.style.display = 'block'; 
-            splashGoBtn.disabled = false;
-            splashGoBtn.style.opacity = '1';
-        }
-
-        loginSelector.addEventListener('change', function() {
-            const userName = this.value;
-            localStorage.setItem('appUser', userName);
-            localStorage.setItem('savedFamilyFilter', userName);
-
-            loginSelector.style.display = 'none'; 
-            
-            splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
-            splashGoBtn.style.display = 'block'; 
-            splashGoBtn.disabled = false;
-            splashGoBtn.style.opacity = '1';
-        });
-
-        splashGoBtn.addEventListener('click', () => {
-            const splash = document.getElementById('splash');
-            if (splash) {
-                splash.classList.remove('active');
-                splash.style.display = 'none';
-            }
-            openTab('home');
-            
-            try {
-                const famSel = document.getElementById('family-selector');
-                if (famSel) {
-                    famSel.value = localStorage.getItem('appUser') || 'All';
-                    updateFamilyFilter();
-                }
-            } catch(e) {}
-        });
-    }
-
+    // The splash button is completely isolated in the inline HTML now to guarantee it works.
+    
+    // Attach UI tools
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
@@ -243,7 +199,15 @@ function bindEvents() {
     });
 }
 
-// THE FIX: Direct Execution Boot Engine! Guaranteed to run immediately without missing DOM hooks.
+// Attach functions to window so the isolated inline HTML can trigger them!
+window.forceAppUpdate = () => {
+    const famSel = document.getElementById('family-selector');
+    if (famSel) {
+        famSel.value = localStorage.getItem('appUser') || 'All';
+        updateFamilyFilter();
+    }
+};
+
 async function bootApp() {
     bindEvents();
     initSwipes(); 
@@ -256,11 +220,12 @@ async function bootApp() {
     applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
     prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
 
-    history.replaceState({ pageId: 'splash' }, '', '#splash');
+    history.replaceState({ pageId: 'home' }, '', '#home');
     
-    state.gateOverrides = await getVal('gateOverrides') || {};
+    try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
     
-    await loadAllData(); 
+    try { await loadAllData(); } catch(e) {}
+    
     populateDropdown(); 
     renderItinerary(); 
     renderTravelVault(); 
@@ -276,6 +241,10 @@ async function bootApp() {
     startNotificationEngine(); 
 }
 
-bootApp();
+// THE FIX: Standard, stable boot.
+document.addEventListener('DOMContentLoaded', bootApp);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    bootApp();
+}
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
