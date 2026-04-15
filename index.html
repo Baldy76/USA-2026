@@ -9,46 +9,43 @@
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <link rel="stylesheet" href="style.css?v=2.1.52">
 </head>
-<body class="light-mode theme-splash">
+<body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode: Viewing saved itinerary.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
     <div id="hype-toast" style="display:none; position:fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 20px; z-index: 10000; font-weight: 900; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 90%; max-width: 350px;"></div>
 
-    <main id="content">
-        
-        <section id="splash" class="page tab-content active">
-            <div class="splash-container">
-                <div class="splash-card">
-                    
-                    <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo">
-                    
-                    <div class="floating-icons">
-                        <span class="icon la-icon">🌴</span>
-                        <span class="icon utah-icon">⛰️</span>
-                        <span class="icon vegas-icon">🎲</span>
-                    </div>
-                    
-                    <h1 class="splash-title">USA 2026</h1>
-                    
-                    <select id="login-selector" class="settings-input" style="margin-top: 0; margin-bottom: 20px; text-align: center; text-align-last: center;">
-                        <option value="" disabled selected>Who is logging in?</option>
-                        <optgroup label="Leech Family">
-                            <option value="Graeme">Graeme</option>
-                            <option value="Dawn">Dawn</option>
-                            <option value="Grace">Grace</option>
-                        </optgroup>
-                        <optgroup label="Murray Family">
-                            <option value="David">David</option>
-                            <option value="Sarah">Sarah</option>
-                            <option value="Bexs">Bexs</option>
-                        </optgroup>
-                    </select>
-
-                    <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
+    <div id="splash" class="active">
+        <div class="splash-container">
+            <div class="splash-card">
+                <img src="img/logo.png" alt="USA 2026 Logo" class="splash-logo">
+                <div class="floating-icons">
+                    <span class="icon la-icon">🌴</span>
+                    <span class="icon utah-icon">⛰️</span>
+                    <span class="icon vegas-icon">🎲</span>
                 </div>
+                <h1 class="splash-title">USA 2026</h1>
+                
+                <select id="login-selector" class="settings-input" style="margin-top: 0; margin-bottom: 20px; text-align: center; text-align-last: center;">
+                    <option value="" disabled selected>Who is logging in?</option>
+                    <optgroup label="Leech Family">
+                        <option value="Graeme">Graeme</option>
+                        <option value="Dawn">Dawn</option>
+                        <option value="Grace">Grace</option>
+                    </optgroup>
+                    <optgroup label="Murray Family">
+                        <option value="David">David</option>
+                        <option value="Sarah">Sarah</option>
+                        <option value="Bexs">Bexs</option>
+                    </optgroup>
+                </select>
+
+                <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
             </div>
-        </section>
+        </div>
+    </div>
+
+    <main id="content">
 
         <section id="la" class="page tab-content">
             <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg'); cursor: pointer;">
@@ -70,7 +67,7 @@
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="utah-completed-list"></div></div>
         </section>
 
-        <section id="home" class="page tab-content">
+        <section id="home" class="page tab-content active">
             
             <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.3);">
                 <h2 style="margin: 0; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">USA 2026</h2>
@@ -325,10 +322,47 @@
     <nav class="bottom-nav">
         <button id="nav-btn-la" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
         <button id="nav-btn-utah" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
-        <button id="nav-btn-home" class="nav-btn"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button id="nav-btn-home" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button id="nav-btn-vegas" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Travel</span></button>
     </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginSelector = document.getElementById('login-selector');
+            const splashGoBtn = document.getElementById('splash-go-btn');
+            const splash = document.getElementById('splash');
+
+            const savedUser = localStorage.getItem('appUser');
+            if (savedUser) {
+                loginSelector.style.display = 'none';
+                splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+                splashGoBtn.style.display = 'block';
+                splashGoBtn.disabled = false;
+                splashGoBtn.style.opacity = '1';
+            }
+
+            loginSelector.addEventListener('change', function() {
+                const userName = this.value;
+                localStorage.setItem('appUser', userName);
+                localStorage.setItem('savedFamilyFilter', userName);
+                
+                loginSelector.style.display = 'none';
+                splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
+                splashGoBtn.style.display = 'block';
+                splashGoBtn.disabled = false;
+                splashGoBtn.style.opacity = '1';
+                
+                // If app is already loaded in background, force refresh
+                if (window.forceAppUpdate) window.forceAppUpdate();
+            });
+
+            splashGoBtn.addEventListener('click', () => {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 300);
+            });
+        });
+    </script>
 
     <script type="module" src="js/main.js?v=2.1.52"></script>
 </body>
