@@ -52,7 +52,6 @@ function initPullToRefresh() {
 
 function bindEvents() {
     
-    // Non-click bindings
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -65,21 +64,16 @@ function bindEvents() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
-    // THE FIX: MASTER CLICK DELEGATION
-    // This absolutely guarantees that no matter when the DOM loads, the buttons will work.
     document.body.addEventListener('click', async (e) => {
         
-        // Weather
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
         if (e.target.closest('#btn-close-weather')) { closeWeatherModal(); return; }
         
-        // Navigation
         const navBtn = e.target.closest('.nav-btn');
         if (navBtn) { openTab(navBtn.id.replace('nav-btn-', '')); return; }
         
-        // Tips
         const tipsBtn = e.target.closest('.tips-btn');
         if (tipsBtn) { openTipsModal(tipsBtn.dataset.city); return; }
         const tipsTabBtn = e.target.closest('.tips-tab-btn');
@@ -89,7 +83,6 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
         
-        // Settings & Actions
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
@@ -113,12 +106,10 @@ function bindEvents() {
             window.location.reload(true); return;
         }
         
-        // Emoji Rain
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
         
-        // Modals
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-travel')) { closeTravelModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
@@ -129,7 +120,6 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
         }
 
-        // Cards
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
             const flightId = editGateBtn.dataset.flightid;
@@ -205,7 +195,8 @@ async function bootApp() {
     initLiveCurrency(); 
     updateTimeAndCountdown(); 
     initWeatherPill();
-    initWheel(); // Draws the Vegas wheel!
+    
+    if (document.getElementById('roulette-wheel')) initWheel();
 }
 
 function runBoot() {
