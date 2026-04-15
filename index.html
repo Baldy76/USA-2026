@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.57">
+    <link rel="stylesheet" href="style.css?v=2.1.59">
 </head>
 <body class="light-mode theme-home">
 
@@ -18,12 +18,14 @@
     <div id="splash">
         <div class="splash-container">
             <div class="splash-card">
-                <img src="img/logo.png" alt="Logo" class="splash-logo">
+                <img src="img/logo.png" alt="USA 2026" class="splash-logo">
+                
                 <div class="floating-icons">
                     <span class="icon la-icon">🌴</span>
                     <span class="icon utah-icon">⛰️</span>
                     <span class="icon vegas-icon">🎲</span>
                 </div>
+                
                 <h1 class="splash-title">USA 2026</h1>
                 
                 <select id="login-selector" class="settings-input" style="margin-bottom: 20px; text-align: center; text-align-last: center;">
@@ -39,25 +41,29 @@
                         <option value="Bexs">Bexs</option>
                     </optgroup>
                 </select>
-                <button id="splash-go-btn" class="action-btn" style="display: none;">Let's go!</button>
+                <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
             </div>
         </div>
     </div>
 
     <main id="content">
         <section id="la" class="page tab-content">
-            <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg');"><h2>Los Angeles<span id="time-la" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
-            <button class="action-btn tips-btn" data-city="la">💡 LA Top Tips</button>
+            <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg'); cursor: pointer;">
+                <h2>Los Angeles<span id="time-la" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
+            </div>
+            <button class="action-btn tips-btn" data-city="la" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 LA Top Tips</button>
             <div id="la-home-card"></div>
-            <div id="la-itinerary"></div> 
+            <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div> 
             <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="la-completed-list"></div></div>
         </section>
 
         <section id="utah" class="page tab-content">
-            <div id="hero-utah" class="city-hero" style="background-image: url('img/utah.jpg');"><h2>Utah<span id="time-utah" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
-            <button class="action-btn tips-btn" data-city="utah">💡 Utah Top Tips</button>
+            <div id="hero-utah" class="city-hero" style="background-image: url('img/utah.jpg'); cursor: pointer;">
+                <h2>Utah<span id="time-utah" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
+            </div>
+            <button class="action-btn tips-btn" data-city="utah" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Utah Top Tips</button>
             <div id="utah-home-card"></div>
-            <div id="utah-itinerary"></div>
+            <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
         </section>
 
@@ -72,11 +78,11 @@
                     <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days!</div>
                     <div id="cd-date" style="font-size: 14px; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 12px; display: inline-block;">...</div>
                 </div>
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px;">
+                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
                     <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
-                        <div><div style="font-size: 12px; opacity: 0.5;">🇬🇧 UK</div><div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div></div>
+                        <div><div style="font-size: 12px; font-weight: 800; opacity: 0.5;">🇬🇧 UK</div><div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div></div>
                         <div style="width: 2px; background: var(--ios-grey);"></div>
-                        <div><div id="local-tz-label" style="font-size: 12px; opacity: 0.5;">🇺🇸 LOCAL</div><div id="clock-local" style="font-size: 32px; font-weight: 900;">--:--</div></div>
+                        <div><div id="local-tz-label" style="font-size: 12px; font-weight: 800; opacity: 0.5;">🇺🇸 LOCAL</div><div id="clock-local" style="font-size: 32px; font-weight: 900;">--:--</div></div>
                     </div>
                 </div>
             </div>
@@ -91,139 +97,33 @@
                 <div class="w-col"><span class="w-lbl">Vegas</span><div class="w-val" id="wp-vegas">⏳</div></div>
             </div>
 
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745);">
+            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745); box-shadow: 0 8px 24px rgba(52, 199, 89, 0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div style="font-size: 11px; font-weight: 900; text-transform: uppercase;">Converter</div>
-                    <div id="live-rate-tag" style="font-size: 9px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">£1 = $--.--</div>
+                    <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">£1 = $--.--</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="number" id="usd-input" placeholder="$ USD" style="padding: 12px; width: 100px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; outline: none;">
                     <span style="font-weight: 900;">=</span>
-                    <strong id="gbp-output" style="font-size: 20px; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
+                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22);">
+            <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
                 <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🍽️ Tip & Split</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <input type="number" id="bill-total" placeholder="Bill $" style="padding: 14px 10px; font-size: 18px; width: 60%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
-                    <select id="split-ways" style="padding: 14px 10px; font-size: 16px; width: 40%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
-                        <option value="1">1 Fam</option><option value="2" selected>2 Fams</option>
+                    <select id="split-ways" style="padding: 14px 10px; font-size: 16px; font-weight: 800; width: 40%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
+                        <option value="1" style="color: black;">1 Fam</option><option value="2" selected style="color: black;">2 Fams</option>
                     </select>
                 </div>
                 <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); margin-bottom: 15px;">
                     <button class="segment tip-btn" data-tip="15">15%</button><button class="segment tip-btn active" data-tip="18">18%</button><button class="segment tip-btn" data-tip="20">20%</button>
                 </div>
                 <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between;">
-                    <div><div style="font-size: 10px; opacity: 0.8;">Per Fam ($)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900;">$0.00</div></div>
-                    <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.8;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900;">£0.00</div></div>
+                    <div><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">Per Fam ($)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900;">$0.00</div></div>
+                    <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900;">£0.00</div></div>
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6);">
-                <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
-                <div class="roulette-container">
-                    <div id="roulette-result" class="roulette-strip"><div class="roulette-item winner">Tap to Spin!</div></div>
-                    <div class="roulette-overlay"></div>
-                </div>
-                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6;">Spin the Wheel</button>
-            </div>
-
-            <button id="btn-hype" class="action-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00);">🔥 Activate Hype 🔥</button>
-            <button id="btn-open-admin" class="action-btn" style="background: var(--card); color: var(--text); border: 2px solid var(--ios-grey);">⚙️ Settings & Setup</button>
-        </section>
-
-        <section id="vegas" class="page tab-content">
-            <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg');"><h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px;">🕒 --:--</span></h2></div>
-            <button class="action-btn tips-btn" data-city="vegas">💡 Vegas Top Tips</button>
-            <div id="vegas-home-card"></div>
-            <div id="vegas-itinerary"></div>
-            <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="vegas-completed-list"></div></div>
-        </section>
-
-        <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('img/flights.jpg');"><h2>Travel Details</h2></div>
-            <div id="flights-vault-display"></div>
-            <div class="empty-state" id="empty-vault-state" style="display: none;"><span class="empty-icon">☁️</span><div class="empty-text">No Data</div></div>
-            <div class="admin-card" style="margin-top: 30px; padding: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div style="font-size: 14px; opacity: 0.7;">🗄️ Offline Wallet</div>
-                    <label class="action-btn" style="width: auto; padding: 8px 16px; font-size: 12px;">➕ Add Doc<input type="file" id="wallet-upload" accept="image/*,application/pdf" hidden></label>
-                </div>
-                <div id="wallet-gallery" class="wallet-grid"></div>
-            </div>
-        </section>
-
-        <section id="admin" class="page tab-content">
-            <h2>Settings</h2>
-            <div class="admin-card">
-                <h3>Theme</h3>
-                <div class="theme-segmented-control">
-                    <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
-                </div>
-            </div>
-            <div class="admin-card">
-                <h3>App Settings</h3>
-                <label>Name:</label><select id="family-selector" class="settings-input"></select>
-                <button id="btn-clear-families" class="action-btn" style="background: #ff3b30; margin-top: 20px;">🗑️ Clear Memory</button>
-            </div>
-            <div class="admin-card">
-                <h3>System</h3>
-                <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
-                <button id="btn-update-version" class="action-btn">🔄 Update App</button>
-            </div>
-            <div class="version-control">v2.1.57</div>
-        </section>
-
-        <div id="completion-modal" class="modal-overlay"><div class="modal-content admin-card"><button id="btn-close-completion-x" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3>Complete?</h3><p id="modal-task-name"></p><label style="display:flex; gap:10px; margin-bottom:20px;"><input type="checkbox" id="modal-checkbox"> Mark as done</label><div style="display:flex; gap:10px;"><button id="btn-cancel-modal" class="action-btn" style="flex:1;">Cancel</button><button id="btn-confirm-modal" class="action-btn" style="flex:1;">Confirm</button></div></div></div>
-        <div id="tips-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; display:flex; flex-direction:column; height:500px;"><button id="btn-close-tips" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="tips-modal-title">💡 Tips</h3><div class="theme-segmented-control"><button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button><button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button><button class="segment tips-tab-btn" data-cat="shopping">🛍️ Shopping</button></div><div id="tips-content" style="overflow-y:auto; flex:1;"></div></div></div>
-        <div id="stay-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-stay" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="stay-modal-hero" style="height:200px; border-radius:24px 24px 0 0; background-size:cover;"></div><div style="padding:24px;"><h3 id="stay-modal-title"></h3><div id="stay-modal-addr"></div><div id="stay-modal-buttons" style="display:flex; gap:10px; margin-top:20px;"></div></div></div></div>
-        <div id="travel-modal" class="modal-overlay"><div id="travel-modal-wrapper" class="modal-content admin-card" style="padding:0; overflow:visible;"><button id="btn-close-travel" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><div id="travel-modal-content"></div></div></div>
-        <div id="weather-modal" class="modal-overlay"><div class="modal-content admin-card" style="padding:20px; height:600px;"><button id="btn-close-weather" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button><h3 id="weather-modal-title">🌤️ Weather</h3><div class="theme-segmented-control"><button class="segment weather-btn active" id="btn-w-local">📍 Local</button><button class="segment weather-btn" id="btn-w-la">🌴 LA</button><button class="segment weather-btn" id="btn-w-utah">⛰️ Utah</button><button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button></div><div id="WTH-dashboard" style="overflow-y:auto;"></div></div></div>
-
-    </main>
-
-    <nav class="bottom-nav">
-        <button id="nav-btn-la" class="nav-btn"><span class="nav-icon">🌴</span><span>LA</span></button>
-        <button id="nav-btn-utah" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
-        <button id="nav-btn-home" class="nav-btn active"><span class="nav-icon">🏠</span><span>Home</span></button>
-        <button id="nav-btn-vegas" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
-        <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Travel</span></button>
-    </nav>
-
-    <script>
-        (function() {
-            const loginSelector = document.getElementById('login-selector');
-            const splashGoBtn = document.getElementById('splash-go-btn');
-            const splash = document.getElementById('splash');
-
-            const savedUser = localStorage.getItem('appUser');
-            if (savedUser) {
-                loginSelector.style.display = 'none';
-                splashGoBtn.innerText = "Let's go, " + savedUser + "! ✈️";
-                splashGoBtn.style.display = 'block';
-            }
-
-            loginSelector.addEventListener('change', function() {
-                const userName = this.value;
-                localStorage.setItem('appUser', userName);
-                localStorage.setItem('savedFamilyFilter', userName);
-                loginSelector.style.display = 'none';
-                splashGoBtn.innerText = "Let's go, " + userName + "! ✈️";
-                splashGoBtn.style.display = 'block';
-                if (window.forceAppUpdate) window.forceAppUpdate();
-            });
-
-            splashGoBtn.addEventListener('click', function() {
-                splash.style.pointerEvents = 'none'; // SHATTERS THE SHIELD
-                splash.classList.add('hidden'); // Fades out
-                setTimeout(function() {
-                    splash.style.display = 'none';
-                }, 400);
-            });
-        })();
-    </script>
-
-    <script type="module" src="js/main.js?v=2.1.57"></script>
-</body>
-</html>
+            <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 2
