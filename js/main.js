@@ -196,12 +196,8 @@ function bindEvents() {
     });
 }
 
-// Global update function for the inline HTML to trigger safely
 window.forceAppUpdate = () => {
-    populateDropdown();
-    renderItinerary();
-    renderTravelVault();
-    renderAccommodations();
+    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations();
 };
 
 async function bootApp() {
@@ -222,36 +218,21 @@ async function bootApp() {
         try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
         
         loadAllData().then(() => {
-            populateDropdown(); 
-            renderItinerary(); 
-            renderTravelVault(); 
-            renderAccommodations(); 
-            preCacheImages(); 
-            renderWallet();
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet();
         }).catch(e => console.error("Data load failed:", e));
         
-        initLiveCurrency(); 
-        updateTimeAndCountdown(); 
-        initWeatherPill();
+        initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
         
         setInterval(updateTimeAndCountdown, 60000);
         startNotificationEngine(); 
-    } catch(e) {
-        console.error("Boot Error:", e);
-    }
+    } catch(e) { console.error("Boot Error:", e); }
 }
 
-// THE ROCK-SOLID DOM HOOK
 function runBoot() {
     if (window.appBooted) return;
     window.appBooted = true;
     bootApp();
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', runBoot);
-} else {
-    runBoot();
-}
-
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', runBoot); } else { runBoot(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
