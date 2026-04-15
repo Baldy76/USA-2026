@@ -131,7 +131,9 @@ function bindEvents() {
                     famSel.value = localStorage.getItem('appUser') || 'All';
                     updateFamilyFilter();
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.log("Data is still downloading... the filter will apply when ready.");
+            }
         });
     }
 
@@ -197,20 +199,25 @@ function bindEvents() {
                 state.gateOverrides[flightId] = newGate.trim();
                 await setVal('gateOverrides', state.gateOverrides);
                 syncToCloud('gateUpdate', state.gateOverrides);
+                
                 const gateText = document.getElementById('modal-gate-text');
                 if(gateText) gateText.innerText = newGate.trim();
+                
                 renderTravelVault(); 
-            } return;
+            }
+            return;
         }
 
         const travelCard = e.target.closest('.travel-card');
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-            openTravelModal(travelCard.dataset); return;
+            openTravelModal(travelCard.dataset);
+            return;
         }
 
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) {
-            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return;
+            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
+            return;
         }
 
         const activeCard = e.target.closest('.itin-card:not(.completed)');
@@ -231,14 +238,15 @@ function bindEvents() {
             if(confirm("Delete this document?")) {
                 let docs = await getVal('offline_docs') || [];
                 docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
-                await setVal('offline_docs', docs); renderWallet();
+                await setVal('offline_docs', docs);
+                renderWallet();
             }
         }
     });
 }
 
-// THE FIX: Unbreakable Boot Sequence. Bypasses Safari's faulty event listener.
-async function bootApp() {
+// THE FIX: The absolute standard, unbreakable boot sequence
+window.addEventListener('DOMContentLoaded', async () => {
     bindEvents();
     initSwipes(); 
     initPullToRefresh();
@@ -268,9 +276,6 @@ async function bootApp() {
     
     setInterval(updateTimeAndCountdown, 60000);
     startNotificationEngine(); 
-}
-
-// Execute immediately without waiting for Safari's flawed load event
-bootApp();
+});
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
