@@ -91,9 +91,14 @@ function bindEvents() {
 
     if (loginSelector && splashGoBtn) {
         const savedUser = localStorage.getItem('appUser');
+        
+        // THE FIX: The elegant dropdown swap animation
         if (savedUser) {
             loginSelector.value = savedUser;
+            loginSelector.style.display = 'none'; // Hide the dropdown entirely
+            
             splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+            splashGoBtn.style.display = 'block'; // Show the button
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
         }
@@ -101,13 +106,16 @@ function bindEvents() {
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
+            localStorage.setItem('savedFamilyFilter', userName);
 
+            loginSelector.style.display = 'none'; // Hide the dropdown entirely
+            
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
+            splashGoBtn.style.display = 'block'; // Show the button
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
         });
 
-        // THE FIX: Unbreakable Click Event! Just hide the UI and open the tab.
         splashGoBtn.addEventListener('click', () => {
             const splash = document.getElementById('splash');
             if (splash) {
@@ -115,6 +123,16 @@ function bindEvents() {
                 splash.style.display = 'none';
             }
             openTab('home');
+            
+            try {
+                const famSel = document.getElementById('family-selector');
+                if (famSel) {
+                    famSel.value = localStorage.getItem('appUser') || 'All';
+                    updateFamilyFilter();
+                }
+            } catch(e) {
+                console.log("Data is still downloading... the filter will apply when ready.");
+            }
         });
     }
 
@@ -242,6 +260,7 @@ window.addEventListener('load', async () => {
     
     state.gateOverrides = await getVal('gateOverrides') || {};
     
+    // Background fetch - won't crash your button!
     await loadAllData(); 
     populateDropdown(); 
     renderItinerary(); 
