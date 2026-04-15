@@ -54,7 +54,6 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .itin-card:active { transform: scale(0.98); }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); text-decoration: line-through; border: 2px dashed var(--ios-grey); box-shadow: none; background: transparent; }
 
-/* THE FIX: Support for colorful cards */
 .color-card { border: none; color: white; }
 .color-card .segment { background: transparent; color: rgba(255,255,255,0.7); }
 .color-card .segment.active { background: #ffffff; color: #000000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
@@ -113,8 +112,13 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .icon.vegas-icon { animation-delay: 1s; }
 @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-.weather-pill { background: var(--card); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); cursor: pointer; transition: transform 0.2s ease; border: 1px solid var(--ios-grey); }
-.weather-pill:active { transform: scale(0.96); }
+/* THE FIX: MULTI-CITY WEATHER PILL STYLING */
+.weather-pill-multi { background: var(--card); border-radius: 20px; padding: 18px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; box-shadow: 0 8px 24px var(--shadow); cursor: pointer; transition: transform 0.2s ease; border: 1px solid var(--ios-grey); }
+.weather-pill-multi:active { transform: scale(0.96); }
+.w-col { flex: 1; text-align: center; }
+.w-lbl { font-size: 10px; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+.w-val { font-size: 15px; font-weight: 900; color: var(--text); }
+.w-pipe { width: 1px; height: 30px; background: var(--ios-grey); border-radius: 1px; }
 
 .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .wallet-item { background: var(--ios-grey); border-radius: 16px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 30px; position: relative; overflow: hidden; background-size: cover !important; background-position: center !important; box-shadow: 0 4px 10px var(--shadow); }
