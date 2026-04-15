@@ -31,15 +31,10 @@ export function updateTimeAndCountdown() {
         const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
         const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
         const elLA = document.getElementById('time-la'); const elVegas = document.getElementById('time-vegas'); const elUtah = document.getElementById('time-utah');
-        if(elLA) elLA.innerText = `🕒 Local Time: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
+        if(elLA) elLA.innerText = `🕒 Local: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
 
         const cContainer = document.getElementById('countdown-display'); const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
-
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        const dateString = now.toLocaleDateString(undefined, options);
-        if (document.getElementById('cd-date')) document.getElementById('cd-date').textContent = dateString;
-        if (document.getElementById('clock-date')) document.getElementById('clock-date').textContent = dateString;
 
         const savedStart = localStorage.getItem('tripStartDate');
         if (savedStart) {
@@ -49,20 +44,12 @@ export function updateTimeAndCountdown() {
                 tripDate.setHours(0,0,0,0); const diff = tripDate - now;
                 if (diff > 0) {
                     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days to Go!`;
+                    document.getElementById('cd-text').innerHTML = `🚀 ${days} Days!`;
                     cContainer.style.display = 'block'; clockContainer.style.display = 'none'; return; 
                 }
             }
         } 
         cContainer.style.display = 'none'; clockContainer.style.display = 'block';
-        const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
-        let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
-        if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
-        const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
-        const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
-        if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
-        if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = localTime;
-        if(document.getElementById('local-tz-label')) document.getElementById('local-tz-label').innerText = localTzLabel;
     } catch(e) {}
 }
 
@@ -134,21 +121,47 @@ export async function initWeatherPill() {
     if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'), err => { const el = document.getElementById('wp-local'); if(el) el.innerHTML = '🚫'; }); }
 }
 
+// THE FIX: Unbreakable Weather Loader with GPS Fallbacks
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
-    const wDash = document.getElementById('WTH-dashboard'); if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
+    const wDash = document.getElementById('WTH-dashboard'); 
+    if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
     try {
         let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
         if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
         else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
         else if (target === 'local') {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => { renderWeatherDOM(await fetchWeather(pos.coords.latitude, pos.coords.longitude), "Local GPS"); }, async (err) => { renderWeatherDOM(await fetchWeather(lat, lon), locName); }, { timeout: 5000 }); return;
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => { 
+                        try {
+                            const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                            renderWeatherDOM(data, "Local GPS"); 
+                        } catch(err) {
+                            const fallbackData = await fetchWeather(lat, lon);
+                            renderWeatherDOM(fallbackData, "Los Angeles");
+                        }
+                    }, 
+                    async () => { 
+                        const fallbackData = await fetchWeather(lat, lon);
+                        renderWeatherDOM(fallbackData, "Los Angeles"); 
+                    }, 
+                    { timeout: 5000 }
+                ); 
+                return; // Wait for GPS callback
             }
+            locName = "Local (Default LA)";
         }
-        renderWeatherDOM(await fetchWeather(lat, lon), locName);
-    } catch(e) {}
+        
+        const data = await fetchWeather(lat, lon);
+        renderWeatherDOM(data, locName);
+        
+    } catch(e) {
+        if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">🚫</span><div class="empty-text">Weather Offline</div></div>`;
+    }
 }
 
 export function openWeatherModal() {
@@ -194,7 +207,7 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(addr || `${act} ${loc}`);
+            const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
             const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -220,7 +233,7 @@ export async function renderItinerary() {
 
     const buildAccordion = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
-            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
+            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
 
@@ -278,7 +291,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://maps.google.com/?q="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
