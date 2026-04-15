@@ -97,14 +97,13 @@ export function populateDropdown() {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
     });
 
-    const appUser = localStorage.getItem('appUser');
+    const appUser = localStorage.getItem('appUser') || 'All';
     if (appUser) {
         if (!allFams.has(appUser) && appUser !== 'All') {
             const opt = document.createElement('option'); opt.value = appUser; opt.textContent = appUser; sel.appendChild(opt);
         }
         sel.value = appUser;
     }
-    updateFamilyFilter();
 }
 
 export function clearCustomFamilies() {
@@ -115,8 +114,8 @@ export function clearCustomFamilies() {
 
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
-    if(sel) localStorage.setItem('appUser', sel.value); 
-    renderItinerary(); renderTravelVault(); renderAccommodations(); 
+    if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
+    renderItinerary(); renderTravelVault(); renderAccommodations(); renderTips(document.querySelector('.tips-tab-btn.active')?.dataset.cat || 'eating');
 }
 
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
@@ -169,52 +168,93 @@ function renderWeatherDOM(data, fallbackName) {
 
 export async function renderItinerary() {
     if (!state.itineraryData) return;
-    const filter = document.getElementById('family-selector')?.value || 'All'; const completedTasks = await getVal('completedTasks') || [];
-    const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; let cLA = '', cUtah = '', cVegas = ''; 
+    
+    // DIRECT SOURCE OF TRUTH
+    const filter = localStorage.getItem('appUser') || 'All'; 
+    const completedTasks = await getVal('completedTasks') || [];
+    
+    const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
+    let cLA = '', cUtah = '', cVegas = ''; 
+    
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; 
+    const murray = ['david', 'sarah', 'bexs', 'murray'];
+
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
         const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
-        if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
+        
+        let isMatch = false; 
+        const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
+        
+        if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true; 
+        else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true; 
+        else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
+
+        if (isMatch) {
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(addr || `${act} ${loc}`);
-            const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); const isCompleted = completedTasks.includes(taskId);
-            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px;">${escapeHTML(who)}</span>`;
-            const cardHtml = `<div class="admin-card itin-card ${isCompleted?'completed':''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding: 20px; margin-bottom: 16px;"><div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;"><strong style="font-size: 15px;">${escapeHTML(time)}</strong>${badgeHtml}</div><div style="font-size: 17px; font-weight: 900; margin-bottom: 8px;">${escapeHTML(act)}</div><div style="font-size: 14px; opacity: 0.7;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a>${addr ? '<br>'+escapeHTML(addr) : ''}</div></div>`;
+            const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
+            const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
+            const isCompleted = completedTasks.includes(taskId);
+            
+            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
+            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
+            
+            const cardHtml = `
+                <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
+                        <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
+                    </div>
+                    <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3; margin-bottom: 8px;">${escapeHTML(act)}</div>
+                    <div style="font-size: 14px; font-weight: 700; opacity: 0.7; line-height: 1.5;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a>${addrHtml}</div>
+                </div>`;
+
             const pg = (city, date) => { if (!grouped[city][date]) grouped[city][date] = []; grouped[city][date].push(cardHtml); };
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pg('la', d); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pg('utah', d); }
             else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pg('vegas', d); }
         }
     });
+
     const buildAccordion = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
             html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
+
     const updateSec = (id, h, c) => {
         const m = document.getElementById(`${id}-itinerary`); const l = document.getElementById(`${id}-completed-list`); const w = document.getElementById(`${id}-completed-section`);
         if(m) m.innerHTML = h || '<div class="empty-state">No active plans</div>'; if(l && w) { if(c) { l.innerHTML = c; w.style.display = 'block'; } else w.style.display = 'none'; }
     };
+    
     updateSec('la', buildAccordion(grouped['la']), cLA); updateSec('utah', buildAccordion(grouped['utah']), cUtah); updateSec('vegas', buildAccordion(grouped['vegas']), cVegas); 
 }
 
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
-    const filter = document.getElementById('family-selector')?.value || 'All'; const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
+    const filter = localStorage.getItem('appUser') || 'All'; 
+    const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
     if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    
     sortedData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
         const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        
         let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-        if (filter === 'All' || famL === 'everyone') isMatch = true; else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        
         if (isMatch) {
             if (type === 'flight') {
                 hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
                 const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
-                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${activeTerm}" data-ref="${escapeHTML(cols[9]?.trim() || '')}" data-link="https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent);"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">✈️ Flight • ${date}</div><strong>${dep} → ${arr}</strong></div><div style="text-align: right;"><div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.6;">${ftime}</div></div></div>`;
+                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${activeTerm}" data-ref="${escapeHTML(cols[9]?.trim() || '')}" data-link="https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent); cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">✈️ Flight • ${date}</div><strong style="font-size: 18px;">${dep} → ${arr}</strong></div><div style="text-align: right;"><div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.6;">${ftime}</div></div></div>`;
             } else if (type === 'car') {
                 hasData = true; const pdate = escapeHTML(cols[2]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim());
-                html += `<div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${escapeHTML(cols[6]?.trim())}" data-ploc="${ploc}" data-ddate="${escapeHTML(cols[3]?.trim())}" data-dtime="${escapeHTML(cols[7]?.trim())}" data-dloc="${escapeHTML(cols[8]?.trim())||ploc}" data-ref="${escapeHTML(cols[9]?.trim())}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid #34c759;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">🚗 Car Rental • ${pdate}</div><strong>${company}</strong></div><div style="text-align: right;"><div style="color: #34c759; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.6;">${ploc}</div></div></div>`;
+                html += `<div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${escapeHTML(cols[6]?.trim())}" data-ploc="${ploc}" data-ddate="${escapeHTML(cols[3]?.trim())}" data-dtime="${escapeHTML(cols[7]?.trim())}" data-dloc="${escapeHTML(cols[8]?.trim())||ploc}" data-ref="${escapeHTML(cols[9]?.trim())}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid #34c759; cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">🚗 Car Rental • ${pdate}</div><strong style="font-size: 18px;">${company}</strong></div><div style="text-align: right;"><div style="color: #34c759; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.6;">${ploc}</div></div></div>`;
             }
         }
     }); display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
@@ -222,11 +262,19 @@ export function renderTravelVault() {
 
 export function renderAccommodations() { 
     if (!state.vaultAndStaysData) return;
-    const filter = document.getElementById('family-selector')?.value || 'All'; let htmlLA = '', htmlUtah = '', htmlVegas = '';
+    const filter = localStorage.getItem('appUser') || 'All'; 
+    let htmlLA = '', htmlUtah = '', htmlVegas = '';
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    
     state.vaultAndStaysData.forEach(cols => {
-        if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-        if (filter === 'All' || famL === 'everyone') isMatch = true; else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
@@ -293,15 +341,27 @@ export function openTipsModal(city) {
 export function closeTipsModal() { const modal = document.getElementById('tips-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
 export function renderTips(category) {
     if (!state.vaultAndStaysData) return;
-    const filter = document.getElementById('family-selector')?.value || 'All'; const contentDiv = document.getElementById('tips-content'); let html = '';
+    const filter = localStorage.getItem('appUser') || 'All'; 
+    const contentDiv = document.getElementById('tips-content'); let html = '';
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+
     state.vaultAndStaysData.forEach(cols => {
-        if(!cols || cols.length < 5) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase();
-        if (type === 'tip' && cols[2]?.toLowerCase().includes(currentTipsCity) && cols[3]?.toLowerCase() === category) {
-            if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
-                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(cols[4]?.trim())}<br>${fam.toLowerCase()!=='everyone'?`<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${fam}</span>`:''}</div></div>`;
-            }
+        if(!cols || cols.length < 5) return; 
+        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        const city = (cols[2] || '').trim().toLowerCase(); const cat = (cols[3] || '').trim().toLowerCase(); const details = (cols[4] || '').trim();
+        
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+
+        if (type === 'tip' && city.includes(currentTipsCity) && cat === category && isMatch) {
+            const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${escapeHTML(fam)}</span>` : '';
+            html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(details)}<br>${badge}</div></div>`;
         }
-    }); contentDiv.innerHTML = html || 'No tips yet!';
+    }); 
+    contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
