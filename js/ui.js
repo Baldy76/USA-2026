@@ -4,6 +4,7 @@ import { fetchWeather, syncToCloud } from './api.js';
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
+    
     const btnLight = document.getElementById('btnLight'); const btnDark = document.getElementById('btnDark');
     if (btnLight && btnDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
@@ -27,13 +28,21 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
 export function updateTimeAndCountdown() { 
     try {
         const now = new Date();
+        
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
         const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
         const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
-        const elLA = document.getElementById('time-la'); const elVegas = document.getElementById('time-vegas'); const elUtah = document.getElementById('time-utah');
-        if(elLA) elLA.innerText = `🕒 Local Time: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
 
-        const cContainer = document.getElementById('countdown-display'); const clockContainer = document.getElementById('dual-clocks');
+        const elLA = document.getElementById('time-la');
+        const elVegas = document.getElementById('time-vegas');
+        const elUtah = document.getElementById('time-utah');
+
+        if(elLA) elLA.innerText = `🕒 Local Time: ${timePT}`;
+        if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`;
+        if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
+
+        const cContainer = document.getElementById('countdown-display');
+        const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
 
         const options = { weekday: 'long', month: 'long', day: 'numeric' };
@@ -43,23 +52,30 @@ export function updateTimeAndCountdown() {
 
         const savedStart = localStorage.getItem('tripStartDate');
         if (savedStart) {
-            const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
+            const input = document.getElementById('trip-start-date');
+            if(input) input.value = savedStart;
             const tripDate = new Date(savedStart);
             if (!isNaN(tripDate.getTime())) {
-                tripDate.setHours(0,0,0,0); const diff = tripDate - now;
+                tripDate.setHours(0,0,0,0);
+                const diff = tripDate - now;
                 if (diff > 0) {
                     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days to Go!`;
-                    cContainer.style.display = 'block'; clockContainer.style.display = 'none'; return; 
+                    const cdText = document.getElementById('cd-text');
+                    if(cdText) cdText.innerHTML = `🚀 ${days} Days to Go!`;
+                    cContainer.style.display = 'block'; clockContainer.style.display = 'none';
+                    return; 
                 }
             }
         } 
         cContainer.style.display = 'none'; clockContainer.style.display = 'block';
+        
         const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
         let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
         if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
+        
         const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
         const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
+        
         if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
         if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = localTime;
         if(document.getElementById('local-tz-label')) document.getElementById('local-tz-label').innerText = localTzLabel;
@@ -75,8 +91,10 @@ export function convertCurrency() {
 
 export let currentTipPercent = 18;
 export function setTip(percent, btnElement) { 
-    currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
-    if(btnElement) btnElement.classList.add('active'); calculateTip(); 
+    currentTipPercent = percent; 
+    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
+    if(btnElement) btnElement.classList.add('active'); 
+    calculateTip(); 
 }
 export function calculateTip() { 
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0, s = parseInt(document.getElementById('split-ways')?.value) || 1;
@@ -89,7 +107,8 @@ export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
-    new Set([...state.sheetFamilies, ...customFamilies]).forEach(f => {
+    const sheetFams = state.sheetFamilies || [];
+    new Set([...sheetFams, ...customFamilies]).forEach(f => {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
     });
     const savedFamily = localStorage.getItem('savedFamilyFilter'); if (savedFamily) sel.value = savedFamily;
@@ -97,7 +116,10 @@ export function populateDropdown() {
 
 export function clearCustomFamilies() {
     if(confirm("Remove all old saved names from this device?")) {
-        localStorage.removeItem('customFamilies'); populateDropdown(); updateFamilyFilter();
+        localStorage.removeItem('customFamilies');
+        populateDropdown();
+        updateFamilyFilter();
+        alert("Memory cleared!");
     }
 }
 
@@ -155,8 +177,8 @@ export async function renderItinerary() {
     const filter = document.getElementById('family-selector')?.value || 'All'; const completedTasks = await getVal('completedTasks') || [];
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; let cLA = '', cUtah = '', cVegas = ''; 
     state.itineraryData.forEach(cols => {
-        if(cols.length < 5) return;
-        const d = cols[0].trim(); const loc = cols[1].trim(); const act = cols[2].trim(); const time = cols[3].trim(); const who = cols[4].trim(); const addr = (cols.length >= 6) ? cols[5].trim() : '';
+        if(!cols || cols.length < 5) return;
+        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
         if (filter === 'All' || who.toLowerCase() === filter.toLowerCase() || who.toLowerCase() === 'everyone') {
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(addr || `${act} ${loc}`);
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); const isCompleted = completedTasks.includes(taskId);
@@ -185,7 +207,9 @@ export function renderTravelVault() {
     if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     sortedData.forEach(cols => {
-        if(cols.length < 2) return; const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase(); let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if(!cols || cols.length < 2) return; 
+        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
         if (filter === 'All' || famL === 'everyone') isMatch = true; else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
         if (isMatch) {
             if (type === 'flight') {
@@ -204,12 +228,13 @@ export function renderAccommodations() {
     const filter = document.getElementById('family-selector')?.value || 'All'; let htmlLA = '', htmlUtah = '', htmlVegas = '';
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     state.vaultAndStaysData.forEach(cols => {
-        if(cols.length < 2) return; const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase(); let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
         if (filter === 'All' || famL === 'everyone') isMatch = true; else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
-            if(cols[3]?.toLowerCase().includes('la')) htmlLA += ui; else if(cols[3]?.toLowerCase().includes('utah')) htmlUtah += ui; else if(cols[3]?.toLowerCase().includes('vegas')) htmlVegas += ui;
+            const city = cols[3] || '';
+            if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
     });
     const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
@@ -272,10 +297,10 @@ export function closeTipsModal() { const modal = document.getElementById('tips-m
 export function renderTips(category) {
     const filter = document.getElementById('family-selector')?.value || 'All'; const contentDiv = document.getElementById('tips-content'); let html = '';
     state.vaultAndStaysData.forEach(cols => {
-        if(cols.length < 5) return; const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase();
+        if(!cols || cols.length < 5) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase();
         if (type === 'tip' && cols[2]?.toLowerCase().includes(currentTipsCity) && cols[3]?.toLowerCase() === category) {
             if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
-                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(cols[4]?.trim())}<br>${fam!=='everyone'?`<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${fam}</span>`:''}</div></div>`;
+                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(cols[4]?.trim())}<br>${fam.toLowerCase()!=='everyone'?`<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${fam}</span>`:''}</div></div>`;
             }
         }
     }); contentDiv.innerHTML = html || 'No tips yet!';
