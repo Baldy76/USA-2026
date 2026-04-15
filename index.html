@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.35">
+    <link rel="stylesheet" href="style.css?v=2.1.36">
 </head>
 <body class="light-mode theme-splash">
 
@@ -321,7 +321,7 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.35</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.36</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -371,6 +371,14 @@
             </div>
         </div>
 
+        <div id="travel-modal" class="modal-overlay">
+            <div id="travel-modal-wrapper" class="modal-content admin-card" style="padding: 0; overflow: visible; display: flex; flex-direction: column; max-height: 80vh;">
+                <button id="btn-close-travel" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
+                <div id="travel-modal-content" style="padding: 0;">
+                    </div>
+            </div>
+        </div>
+
     </main>
 
     <nav class="bottom-nav">
@@ -378,9 +386,9 @@
         <button id="nav-btn-utah" class="nav-btn"><span class="nav-icon">⛰️</span><span>Utah</span></button>
         <button id="nav-btn-home" class="nav-btn"><span class="nav-icon">🏠</span><span>Home</span></button>
         <button id="nav-btn-vegas" class="nav-btn"><span class="nav-icon">🎲</span><span>Vegas</span></button>
-        <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
+        <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Travel</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.35"></script>
+    <script type="module" src="js/main.js?v=2.1.36"></script>
 </body>
 </html>
