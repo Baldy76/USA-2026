@@ -2,7 +2,7 @@ import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
 import { 
-    applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, saveTripSettings, updateGreeting,
+    applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
@@ -56,7 +56,6 @@ function bindEvents() {
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
-    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     
@@ -89,6 +88,12 @@ function bindEvents() {
         
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
+        
+        const splitBtn = e.target.closest('.split-btn');
+        if (splitBtn) {
+            document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
+            splitBtn.classList.add('active'); calculateTip(); return;
+        }
         
         if (e.target.closest('#clear-usd')) { 
             const usdInput = document.getElementById('usd-input');
