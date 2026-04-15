@@ -31,15 +31,10 @@ export function updateTimeAndCountdown() {
         const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
         const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
         const elLA = document.getElementById('time-la'); const elVegas = document.getElementById('time-vegas'); const elUtah = document.getElementById('time-utah');
-        if(elLA) elLA.innerText = `🕒 Local Time: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local Time: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local Time: ${timeMT}`;
+        if(elLA) elLA.innerText = `🕒 Local: ${timePT}`; if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`; if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
 
         const cContainer = document.getElementById('countdown-display'); const clockContainer = document.getElementById('dual-clocks');
         if(!cContainer || !clockContainer) return;
-
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        const dateString = now.toLocaleDateString(undefined, options);
-        if (document.getElementById('cd-date')) document.getElementById('cd-date').textContent = dateString;
-        if (document.getElementById('clock-date')) document.getElementById('clock-date').textContent = dateString;
 
         const savedStart = localStorage.getItem('tripStartDate');
         if (savedStart) {
@@ -49,20 +44,12 @@ export function updateTimeAndCountdown() {
                 tripDate.setHours(0,0,0,0); const diff = tripDate - now;
                 if (diff > 0) {
                     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days to Go!`;
+                    document.getElementById('cd-text').innerHTML = `🚀 ${days} Days!`;
                     cContainer.style.display = 'block'; clockContainer.style.display = 'none'; return; 
                 }
             }
         } 
         cContainer.style.display = 'none'; clockContainer.style.display = 'block';
-        const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
-        let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
-        if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
-        const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
-        const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
-        if(document.getElementById('clock-uk')) document.getElementById('clock-uk').innerText = ukTime;
-        if(document.getElementById('clock-local')) document.getElementById('clock-local').innerText = localTime;
-        if(document.getElementById('local-tz-label')) document.getElementById('local-tz-label').innerText = localTzLabel;
     } catch(e) {}
 }
 
@@ -87,183 +74,135 @@ export function calculateTip() {
 
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
-    sel.innerHTML = '<option value="All">Show All Activities</option>';
-    
-    const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
+    sel.innerHTML = '<option value="All">Show All</option>';
     const sheetFams = state.sheetFamilies || [];
-    const allFams = new Set([...sheetFams, ...customFamilies]);
-    
-    allFams.forEach(f => {
+    new Set([...sheetFams]).forEach(f => {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
     });
-
-    const appUser = localStorage.getItem('appUser');
-    if (appUser) {
-        if (!allFams.has(appUser) && appUser !== 'All') {
-            const opt = document.createElement('option'); opt.value = appUser; opt.textContent = appUser; sel.appendChild(opt);
-        }
-        sel.value = appUser;
-    }
-}
-
-export function clearCustomFamilies() {
-    if(confirm("Remove all old saved names from this device?")) {
-        localStorage.removeItem('customFamilies'); 
-        localStorage.removeItem('appUser'); 
-        localStorage.removeItem('savedFamilyFilter');
-        window.location.reload();
-    }
+    sel.value = localStorage.getItem('appUser') || 'All';
 }
 
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
     if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
-    renderItinerary(); renderTravelVault(); renderAccommodations(); 
+    renderItinerary(); renderTravelVault(); renderAccommodations();
 }
 
-const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
+export function clearCustomFamilies() {
+    if(confirm("Remove all old saved names from this device?")) {
+        localStorage.removeItem('customFamilies'); localStorage.removeItem('appUser'); localStorage.removeItem('savedFamilyFilter');
+        window.location.reload(); 
+    }
+}
+
+const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
 
 export async function initWeatherPill() {
     const loadSummary = async (lat, lon, id) => {
         try {
-            const data = await fetchWeather(lat, lon); const el = document.getElementById(id);
-            if(el) el.innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
-        } catch(e) { const el = document.getElementById(id); if(el) el.innerHTML = '🚫'; }
+            const data = await fetchWeather(lat, lon);
+            document.getElementById(id).innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
+        } catch(e) { document.getElementById(id).innerHTML = '🚫'; }
     };
     loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
-    if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'), err => { const el = document.getElementById('wp-local'); if(el) el.innerHTML = '🚫'; }); }
 }
 
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
-    const wDash = document.getElementById('WTH-dashboard'); if (wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
     try {
-        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
-        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
-        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
-        else if (target === 'local') {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => { renderWeatherDOM(await fetchWeather(pos.coords.latitude, pos.coords.longitude), "Local GPS"); }, async (err) => { renderWeatherDOM(await fetchWeather(lat, lon), locName); }, { timeout: 5000 }); return;
-            }
-        }
-        renderWeatherDOM(await fetchWeather(lat, lon), locName);
+        let lat = 34.0522, lon = -118.2437;
+        if (target === 'utah') { lat = 37.0965; lon = -113.5684; }
+        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; }
+        const data = await fetchWeather(lat, lon);
+        renderWeatherDOM(data, target);
     } catch(e) {}
 }
 
 export function openWeatherModal() {
-    document.body.classList.add('no-scroll'); // THE SCROLL LOCK
-    const modal = document.getElementById('weather-modal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-    const now = new Date(); const savedStart = localStorage.getItem('tripStartDate'); let target = 'la'; 
-    if (savedStart) { const tripDate = new Date(savedStart); if (now >= tripDate) target = 'local'; }
-    setWeatherCity(target);
+    document.body.classList.add('no-scroll');
+    document.getElementById('weather-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
+    setWeatherCity('la');
 }
 export function closeWeatherModal() { 
-    const modal = document.getElementById('weather-modal'); modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); // UNLOCK
+    document.getElementById('weather-modal').classList.remove('active'); 
+    setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
 }
 
 function renderWeatherDOM(data, fallbackName) {
-    const d = data.current; const locName = fallbackName || d.name;
+    const d = data.current;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
+        return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--ios-grey);"><span>${new Date(day.dt*1000).toLocaleDateString('en-GB',{weekday:'short'})}</span><span>${getWeatherIcon(day.weather[0].icon)}</span><span>${Math.round(day.main.temp)}°C</span></div>`;
     }).join('');
-    const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
+    document.getElementById('WTH-dashboard').innerHTML = `<div style="text-align:center; padding:20px; background:rgba(0,122,255,0.1); border-radius:15px; margin-bottom:20px;"><div style="font-size:50px;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size:40px; font-weight:900;">${Math.round(d.main.temp)}°C</div><div style="text-transform:capitalize;">${d.weather[0].description}</div></div>${forecastHtml}`;
 }
 
 export async function renderItinerary() {
     if (!state.itineraryData) return;
-    
     const filter = localStorage.getItem('appUser') || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
-    
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
     let cLA = '', cUtah = '', cVegas = ''; 
-    
-    const leech = ['graeme', 'dawn', 'grace', 'leech']; 
-    const murray = ['david', 'sarah', 'bexs', 'murray'];
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
 
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
-        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
-        
-        let isMatch = false; 
-        const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
-        
+        const d = cols[0].trim(), loc = cols[1].trim(), act = cols[2].trim(), time = cols[3].trim(), who = cols[4].trim(), addr = cols[5] || '';
+        let isMatch = false; const whoL = who.toLowerCase(), filterL = filter.toLowerCase();
         if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true; 
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true; 
         else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true; 
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(addr || `${act} ${loc}`);
-            const addrHtml = addr ? `<br><span style="font-size: 13px; font-weight: 600; opacity: 0.8; display: inline-block; margin-top: 6px;">🗺️ ${escapeHTML(addr)}</span>` : '';
+            const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
-            
-            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
-            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
-            
-            const cardHtml = `
-                <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="text-align: left; transition: all 0.3s ease; cursor: pointer; padding: 20px; margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
-                        <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
-                    </div>
-                    <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3; margin-bottom: 8px;">${escapeHTML(act)}</div>
-                    <div style="font-size: 14px; font-weight: 700; opacity: 0.7; line-height: 1.5;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a>${addrHtml}</div>
-                </div>`;
-
-            const pg = (city, date) => { if (!grouped[city][date]) grouped[city][date] = []; grouped[city][date].push(cardHtml); };
-            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pg('la', d); }
-            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pg('utah', d); }
-            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pg('vegas', d); }
+            const cardHtml = `<div class="admin-card itin-card ${isCompleted?'completed':''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding:20px; margin-bottom:16px; cursor:pointer;"><div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--ios-grey); padding-bottom:10px; margin-bottom:10px;"><strong style="font-size:15px;">${escapeHTML(time)}</strong></div><div style="font-size:17px; font-weight:900;">${escapeHTML(act)}</div><div style="font-size:12px; opacity:0.6;">${escapeHTML(who)}</div></div>`;
+            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (grouped['la'][d] = grouped['la'][d] || [], grouped['la'][d].push(cardHtml)); }
+            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (grouped['utah'][d] = grouped['utah'][d] || [], grouped['utah'][d].push(cardHtml)); }
+            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (grouped['vegas'][d] = grouped['vegas'][d] || [], grouped['vegas'][d].push(cardHtml)); }
         }
     });
 
-    const buildAccordion = (cityObj) => {
+    const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
-            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}<span class="item-count">${cards.length} Items</span></span></summary><div class="day-content">${cards.join('')}</div></details>`;
+            html += `<details class="day-group"><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content">${cards.join('')}</div></details>`;
         } return html;
     };
-
-    const updateSec = (id, h, c) => {
-        const m = document.getElementById(`${id}-itinerary`); const l = document.getElementById(`${id}-completed-list`); const w = document.getElementById(`${id}-completed-section`);
-        if(m) m.innerHTML = h || '<div class="empty-state">No active plans</div>'; if(l && w) { if(c) { l.innerHTML = c; w.style.display = 'block'; } else w.style.display = 'none'; }
-    };
-    
-    updateSec('la', buildAccordion(grouped['la']), cLA); updateSec('utah', buildAccordion(grouped['utah']), cUtah); updateSec('vegas', buildAccordion(grouped['vegas']), cVegas); 
+    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
+    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah;
+    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas;
+    document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('div:last-child').innerHTML ? 'block' : 'none'; });
 }
 
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
-    const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
-    if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
-    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    const display = document.getElementById('flights-vault-display');
+    let html = ''; const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
-    sortedData.forEach(cols => {
+    state.vaultAndStaysData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
-        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
-        
-        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-        if (filter === 'All' || famL === 'everyone') isMatch = true; 
-        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
-        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
-        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        const fam = cols[0].trim(), type = cols[1].trim().toLowerCase(); 
+        let isMatch = false; const filterL = filter.toLowerCase();
+        if (filter === 'All' || fam.toLowerCase() === 'everyone') isMatch = true; 
+        else if (fam.toLowerCase().includes(filterL)) isMatch = true; 
+        else if (leech.includes(filterL) && fam.toLowerCase().includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && fam.toLowerCase().includes('murray')) isMatch = true;
         
         if (isMatch) {
             if (type === 'flight') {
-                hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
-                const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
-                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${activeTerm}" data-ref="${escapeHTML(cols[9]?.trim() || '')}" data-link="https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent); cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">✈️ Flight • ${date}</div><strong style="font-size: 18px;">${dep} → ${arr}</strong></div><div style="text-align: right;"><div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.6;">${ftime}</div></div></div>`;
+                const date = cols[2], dep = cols[3], arr = cols[4], air = cols[5], fn = cols[6], ft = cols[7], term = cols[8], ref = cols[9];
+                const flightId = btoa(encodeURIComponent(`${date}-${air}-${fn}`)).replace(/=/g, '');
+                const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : term;
+                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${air}" data-fnum="${fn}" data-ftime="${ft}" data-term="${activeTerm}" data-ref="${ref}" style="border-left:5px solid var(--accent); cursor:pointer;"><div style="display:flex; justify-content:space-between;"><span>✈️ ${date}</span><strong>${air} ${fn}</strong></div><div style="font-size:18px; font-weight:900; margin-top:10px;">${dep} → ${arr}</div></div>`;
             } else if (type === 'car') {
-                hasData = true; const pdate = escapeHTML(cols[2]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim());
-                html += `<div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${escapeHTML(cols[6]?.trim())}" data-ploc="${ploc}" data-ddate="${escapeHTML(cols[3]?.trim())}" data-dtime="${escapeHTML(cols[7]?.trim())}" data-dloc="${escapeHTML(cols[8]?.trim())||ploc}" data-ref="${escapeHTML(cols[9]?.trim())}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid #34c759; cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">🚗 Car Rental • ${pdate}</div><strong style="font-size: 18px;">${company}</strong></div><div style="text-align: right;"><div style="color: #34c759; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.6;">${ploc}</div></div></div>`;
+                html += `<div class="admin-card travel-card" data-type="car" data-company="${cols[4]}" data-ploc="${cols[5]}" data-pdate="${cols[2]}" data-dloc="${cols[8]}" data-ddate="${cols[3]}" data-ref="${cols[9]}" style="border-left:5px solid #34c759; cursor:pointer;">🚗 ${cols[4]} Rental</div>`;
             }
         }
-    }); display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
+    }); display.innerHTML = html;
 }
 
 export function renderAccommodations() { 
@@ -273,22 +212,21 @@ export function renderAccommodations() {
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
     state.vaultAndStaysData.forEach(cols => {
-        if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
-        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-        if (filter === 'All' || famL === 'everyone') isMatch = true; 
-        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
-        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
-        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        if(!cols || cols.length < 2) return; 
+        const fam = cols[0].trim(), type = cols[1].trim().toLowerCase(); 
+        let isMatch = false; const filterL = filter.toLowerCase();
+        if (filter === 'All' || fam.toLowerCase() === 'everyone') isMatch = true; 
+        else if (fam.toLowerCase().includes(filterL)) isMatch = true; 
+        else if (leech.includes(filterL) && fam.toLowerCase().includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && fam.toLowerCase().includes('murray')) isMatch = true;
         
         if (type === 'stay' && isMatch) {
-            const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://maps.google.com/?q="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
-            const city = cols[3] || '';
+            const addr = cols[4], img = cols[7], city = cols[3];
+            const ui = `<div class="admin-card stay-card" data-fam="${fam}" data-addr="${addr}" data-img="${img}" data-link="${cols[6]||''}" style="padding:0; overflow:hidden; cursor:pointer;"><div style="height:100px; background:${img?`url('${img}') center/cover`:`var(--accent)`}; display:flex; align-items:flex-end; padding:20px;"><h3 style="margin:0; color:white; font-size:20px;">🏡 ${fam} Stay</h3></div></div>`;
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
     });
-    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
-    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
+    document.getElementById('la-home-card').innerHTML = htmlLA; document.getElementById('utah-home-card').innerHTML = htmlUtah; document.getElementById('vegas-home-card').innerHTML = htmlVegas;
 }
 
 export async function handleFileUpload(event) {
@@ -298,6 +236,7 @@ export async function handleFileUpload(event) {
         await setVal('offline_docs', docs); renderWallet();
     }; reader.readAsDataURL(file);
 }
+
 export async function renderWallet() {
     const docs = await getVal('offline_docs') || []; const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
     if(docs.length === 0) { gallery.innerHTML = '<div style="grid-column: span 2; opacity:0.5; text-align:center;">No docs yet.</div>'; return; }
@@ -354,12 +293,11 @@ export function triggerEmojiRain(city) {
     }
 }
 
-const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
-
 export function triggerHype() {
     if(navigator.vibrate) navigator.vibrate(40);
     const toast = document.getElementById('hype-toast');
     if(!toast) return;
+    const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
     toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
     toast.style.display = 'block';
     toast.classList.remove('toast-exit');
@@ -371,6 +309,7 @@ export function triggerHype() {
     }, 3000);
 }
 
+// THE FIX: INITIALIZE THE 3D WHEEL
 export function initWheel() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     const wheel = document.getElementById('roulette-wheel');
@@ -379,25 +318,33 @@ export function initWheel() {
     let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it"];
     wheel.dataset.names = JSON.stringify(names);
     
-    let gradient = []; let html = ''; const sliceDeg = 360 / names.length;
+    let gradient = [];
+    let html = '';
+    const sliceDeg = 360 / names.length;
     
     names.forEach((name, i) => {
         let color = i % 2 === 0 ? '#d0021b' : '#1c1c1e'; 
         if (name === "Split it") color = '#34c759'; 
-        const startDeg = i * sliceDeg; const endDeg = (i + 1) * sliceDeg;
+        
+        const startDeg = i * sliceDeg;
+        const endDeg = (i + 1) * sliceDeg;
         gradient.push(`${color} ${startDeg}deg ${endDeg}deg`);
+        
         const textRotate = startDeg + (sliceDeg / 2);
         html += `<div class="roulette-label" style="transform: translateX(-50%) rotate(${textRotate}deg);"><span>${name}</span></div>`;
     });
     
     wheel.style.background = `conic-gradient(${gradient.join(', ')})`;
     wheel.innerHTML = html;
-    wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`; wheel.dataset.currentRotation = 0;
+    wheel.style.transition = 'none';
+    wheel.style.transform = `rotate(0deg)`;
+    wheel.dataset.currentRotation = 0;
     
     const resText = document.getElementById('roulette-result-text');
     if(resText) { resText.innerText = "Tap to Spin!"; resText.style.color = "white"; }
 }
 
+// THE FIX: THE PHYSICS SPIN ENGINE
 export function spinRoulette() {
     const wheel = document.getElementById('roulette-wheel');
     const btn = document.getElementById('btn-spin-roulette');
@@ -410,13 +357,15 @@ export function spinRoulette() {
     let names = JSON.parse(wheel.dataset.names || '[]');
     let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
     
-    const extraSpins = 360 * 6; const randomStop = Math.floor(Math.random() * 360);
+    const extraSpins = 360 * 6; // 6 full spins!
+    const randomStop = Math.floor(Math.random() * 360);
     const totalRotation = currentRot + extraSpins + randomStop;
     
     wheel.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1)';
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
+    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
@@ -425,7 +374,8 @@ export function spinRoulette() {
     let ticks = 0;
     const tickInterval = setInterval(() => {
         if(navigator.vibrate) navigator.vibrate(10);
-        ticks++; if(ticks > 25) clearInterval(tickInterval);
+        ticks++;
+        if(ticks > 25) clearInterval(tickInterval);
     }, 150);
 
     setTimeout(() => {
@@ -433,8 +383,10 @@ export function spinRoulette() {
         if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
         btn.disabled = false; btn.style.opacity = '1';
         if(resText) {
-            resText.innerText = `${winner} Wins!`; resText.style.color = "#ffd60a"; 
-            resText.style.transform = 'scale(1.2)'; setTimeout(() => resText.style.transform = 'scale(1)', 200);
+            resText.innerText = `${winner} Wins!`;
+            resText.style.color = "#ffd60a"; 
+            resText.style.transform = 'scale(1.2)';
+            setTimeout(() => resText.style.transform = 'scale(1)', 200);
         }
         triggerConfetti();
     }, 4500);
@@ -484,7 +436,7 @@ export function renderTips(category) {
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
-export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
+export function openStayModal(fam, addr, imgUrl, listLink) {
     document.body.classList.add('no-scroll');
     if(navigator.vibrate) navigator.vibrate(40);
     const modal = document.getElementById('stay-modal');
@@ -498,7 +450,7 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     
     title.innerText = `🏡 ${fam} Stay`; address.innerText = `📍 ${addr}`;
     
-    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    let btnHtml = `<button class="action-btn link-btn" data-url="${"https://maps.google.com/?q="+encodeURIComponent(addr)}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     btns.innerHTML = btnHtml;
 
