@@ -18,6 +18,12 @@ body.dark-mode {
     --ios-grey: #2c2c2e;
 }
 
+/* THE FIX: Dynamic Location Themes Restored! */
+body.theme-la { --accent: #ff9500; --accent-gradient: linear-gradient(135deg, #ff9500, #ff5e3a); }
+body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, #ff3b30, #ff9500); }
+body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg, #af52de, #5e5ce6); }
+body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135deg, #0284c7, #0ea5e9); }
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease; overscroll-behavior-y: none; }
 
@@ -56,7 +62,7 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .itin-card:active { transform: scale(0.98); }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); text-decoration: line-through; border: 2px dashed var(--ios-grey); box-shadow: none; background: transparent; }
 
-/* THE NEW TIMELINE UI */
+/* TIMELINE STYLES */
 .timeline { position: relative; padding-left: 24px; margin-top: 15px; }
 .timeline::before { content: ''; position: absolute; left: 6px; top: 15px; bottom: 30px; width: 2px; background: var(--ios-grey); z-index: 0; }
 .timeline-card-wrapper { position: relative; z-index: 1; }
