@@ -1,13 +1,15 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
+
+// THE FIX: Explicitly mapped EVERY required function from ui.js
 import { 
-    renderItinerary, renderTravelVault, renderAccommodations, 
-    applyTheme, setThemeMode, updateMetaThemeColor,
+    applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
-    updateTimeAndCountdown, saveTripSettings,
-    handleFileUpload, renderWallet, triggerConfetti, triggerHype, spinRoulette,
-    openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
-    initWeatherPill, openWeatherModal, closeWeatherModal, openCompletionModal, closeCompletionModal 
+    initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
+    renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
+    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
+    spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    openTravelModal, closeTravelModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -15,7 +17,7 @@ const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 export function openTab(pageId) {
     if (navigator.vibrate) navigator.vibrate(40); 
     document.querySelectorAll('.tab-content').forEach(tab => { tab.className = 'page tab-content'; });
-    const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active', 'fade-pop');
+    const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('nav-btn-' + (pageId==='flights'?'flights':pageId)).classList.add('active');
     const isDark = document.body.classList.contains('dark-mode');
@@ -55,13 +57,20 @@ function bindEvents() {
     document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
     document.querySelectorAll('.tip-btn').forEach(btn => btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }));
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
+    
+    // Weather bindings
     document.getElementById('home-weather-pill')?.addEventListener('click', openWeatherModal);
     document.getElementById('btn-close-weather')?.addEventListener('click', closeWeatherModal);
+    document.querySelectorAll('.weather-btn').forEach(btn => btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); }));
+    
+    // Modals
     document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
     document.getElementById('btn-close-travel')?.addEventListener('click', closeTravelModal);
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
+    
+    // Settings
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
@@ -70,11 +79,18 @@ function bindEvents() {
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
     document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
+    
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() { this.innerText = "⏳ Syncing..."; await loadAllData(); populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Sync Data"; }, 2000); });
     document.getElementById('btn-update-version')?.addEventListener('click', () => { if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); } window.location.reload(true); });
+    
+    // Tips & Animations
     document.querySelectorAll('.tips-btn').forEach(btn => btn.addEventListener('click', function() { openTipsModal(this.dataset.city); }));
     document.querySelectorAll('.tips-tab-btn').forEach(btn => btn.addEventListener('click', function() { document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderTips(this.dataset.cat); }));
+    document.getElementById('hero-la')?.addEventListener('click', () => triggerEmojiRain('la'));
+    document.getElementById('hero-utah')?.addEventListener('click', () => triggerEmojiRain('utah'));
+    document.getElementById('hero-vegas')?.addEventListener('click', () => triggerEmojiRain('vegas'));
     
+    // Checkbox mapping
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
@@ -85,7 +101,7 @@ function bindEvents() {
         await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); 
     });
 
-    // THE FIX: RESTORED THE MASTER CLICK LISTENER FOR ALL CARDS
+    // Master list listener
     document.body.addEventListener('click', async (e) => {
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
@@ -106,7 +122,7 @@ function bindEvents() {
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') { openTravelModal(travelCard.dataset); return; }
 
         const stayCard = e.target.closest('.stay-card');
-        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.img, stayCard.dataset.link, stayCard.dataset.img); return; }
+        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
 
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
@@ -138,7 +154,7 @@ async function bootApp() {
     bindEvents();
     initSwipes();
     initPullToRefresh();
-    state.gateOverrides = await getVal('gateOverrides') || {};
+    try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     await loadAllData(); 
     populateDropdown(); 
     renderItinerary(); 
