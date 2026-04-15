@@ -1,14 +1,17 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
+
+// THE CRITICAL FIX: The orphaned "autoSetWeatherCity" has been deleted from this import list!
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
-    setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
+    setWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal 
 } from './ui.js';
+
 import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -101,26 +104,32 @@ function bindEvents() {
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
+            localStorage.setItem('savedFamilyFilter', userName);
 
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
-            
-            // THE FIX: Instantly sync selection to the hidden Settings page
-            const famSel = document.getElementById('family-selector');
-            if (famSel) {
-                famSel.value = userName;
-                updateFamilyFilter();
-            }
         });
 
         splashGoBtn.addEventListener('click', () => {
+            // Forcibly clear the splash screen immediately
             const splash = document.getElementById('splash');
             if (splash) {
                 splash.classList.remove('active');
                 splash.style.display = 'none';
             }
             openTab('home');
+            
+            // Re-apply filter to the rest of the app quietly
+            try {
+                const famSel = document.getElementById('family-selector');
+                if (famSel) {
+                    famSel.value = localStorage.getItem('appUser') || 'All';
+                    updateFamilyFilter();
+                }
+            } catch(e) {
+                console.log("Data is still downloading... the filter will apply when ready.");
+            }
         });
     }
 
@@ -145,9 +154,10 @@ function bindEvents() {
     document.getElementById('btn-close-tips')?.addEventListener('click', closeTipsModal);
     document.getElementById('btn-close-stay')?.addEventListener('click', closeStayModal);
     document.getElementById('btn-close-travel')?.addEventListener('click', closeTravelModal);
+
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
-    
+
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
@@ -159,7 +169,11 @@ function bindEvents() {
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages();
         this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
     });
-    document.getElementById('btn-update-version')?.addEventListener('click', () => { window.location.reload(true); });
+    
+    document.getElementById('btn-update-version')?.addEventListener('click', () => {
+        if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
+        alert("Flushing app cache. The page will reload."); window.location.reload(true);
+    });
     
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
@@ -170,22 +184,53 @@ function bindEvents() {
         let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
         await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); 
     });
-    
+
     document.body.addEventListener('click', async (e) => {
-        const stayCard = e.target.closest('.stay-card'); if (stayCard) return openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
-        const travelCard = e.target.closest('.travel-card'); if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') return openTravelModal(travelCard.dataset);
-        
-        const editGate = e.target.closest('.edit-gate-btn'); if (editGate) {
-            const newGate = prompt("New Gate Info:"); if (newGate) { if (!state.gateOverrides) state.gateOverrides = {}; state.gateOverrides[editGate.dataset.flightid] = newGate; await setVal('gateOverrides', state.gateOverrides); document.getElementById('modal-gate-text').innerText = newGate; renderTravelVault(); } return;
+        const editGateBtn = e.target.closest('.edit-gate-btn');
+        if (editGateBtn) {
+            const flightId = editGateBtn.dataset.flightid;
+            const newGate = prompt("Enter new Terminal / Gate info:");
+            if (newGate !== null && newGate.trim() !== "") {
+                if (!state.gateOverrides) state.gateOverrides = {};
+                state.gateOverrides[flightId] = newGate.trim();
+                await setVal('gateOverrides', state.gateOverrides);
+                syncToCloud('gateUpdate', state.gateOverrides);
+                
+                const gateText = document.getElementById('modal-gate-text');
+                if(gateText) gateText.innerText = newGate.trim();
+                
+                renderTravelVault(); 
+            }
+            return;
         }
-        
-        const activeCard = e.target.closest('.itin-card:not(.completed)'); if (activeCard && e.target.tagName !== 'A') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
-        
-        const completedCard = e.target.closest('.itin-card.completed'); if (completedCard && e.target.tagName !== 'A') {
-            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
-            await setVal('completedTasks', tasks); renderItinerary();
+
+        const travelCard = e.target.closest('.travel-card');
+        if (travelCard && e.target.tagName.toLowerCase() !== 'a' && e.target.tagName.toLowerCase() !== 'button') {
+            openTravelModal(travelCard.dataset);
+            return;
         }
+
+        const stayCard = e.target.closest('.stay-card');
+        if (stayCard) {
+            openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
+            return;
+        }
+
+        const activeCard = e.target.closest('.itin-card:not(.completed)');
+        if (activeCard && e.target.tagName.toLowerCase() !== 'a') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
         
+        const completedCard = e.target.closest('.itin-card.completed');
+        if (completedCard && e.target.tagName.toLowerCase() !== 'a') {
+            let completedTasks = await getVal('completedTasks') || [];
+            completedTasks = completedTasks.filter(id => id !== completedCard.dataset.taskId);
+            await setVal('completedTasks', completedTasks); 
+            syncToCloud('completion', completedTasks);
+            renderItinerary();
+        }
+
+        const linkBtn = e.target.closest('.link-btn');
+        if (linkBtn && linkBtn.dataset.url) window.open(linkBtn.dataset.url, '_blank');
+
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -204,13 +249,18 @@ window.addEventListener('load', async () => {
     initSwipes(); 
     initPullToRefresh();
     
+    if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
     applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
     prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
 
+    history.replaceState({ pageId: 'splash' }, '', '#splash');
+    
     state.gateOverrides = await getVal('gateOverrides') || {};
     
+    // Asynchronous background load
     await loadAllData(); 
     populateDropdown(); 
     renderItinerary(); 
