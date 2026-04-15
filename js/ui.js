@@ -85,15 +85,29 @@ export function calculateTip() {
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
 
+// THE FIX: Unifying the Splash Screen Memory and the Settings Dropdown Memory
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
+    
     const customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
     const sheetFams = state.sheetFamilies || [];
-    new Set([...sheetFams, ...customFamilies]).forEach(f => {
+    const allFams = new Set([...sheetFams, ...customFamilies]);
+    
+    allFams.forEach(f => {
         const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
     });
-    const savedFamily = localStorage.getItem('savedFamilyFilter'); if (savedFamily) sel.value = savedFamily;
+
+    const appUser = localStorage.getItem('appUser');
+    if (appUser) {
+        // If the user isn't in the list yet, silently add them so the dropdown doesn't blank out
+        if (!allFams.has(appUser) && appUser !== 'All') {
+            const opt = document.createElement('option'); opt.value = appUser; opt.textContent = appUser; sel.appendChild(opt);
+        }
+        sel.value = appUser;
+    }
+    
+    updateFamilyFilter();
 }
 
 export function clearCustomFamilies() {
@@ -102,7 +116,13 @@ export function clearCustomFamilies() {
     }
 }
 
-export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
+// THE FIX: Any change to the dropdown permanently updates the central appUser memory
+export function updateFamilyFilter() { 
+    const sel = document.getElementById('family-selector'); 
+    if(sel) localStorage.setItem('appUser', sel.value); 
+    
+    renderItinerary(); renderTravelVault(); renderAccommodations(); 
+}
 
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
 
@@ -283,7 +303,7 @@ export function renderTips(category) {
         if(!cols || cols.length < 5) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase();
         if (type === 'tip' && cols[2]?.toLowerCase().includes(currentTipsCity) && cols[3]?.toLowerCase() === category) {
             if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
-                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(cols[4]?.trim())}<br>${fam!=='everyone'?`<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${fam}</span>`:''}</div></div>`;
+                html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(cols[4]?.trim())}<br>${fam.toLowerCase()!=='everyone'?`<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${fam}</span>`:''}</div></div>`;
             }
         }
     }); contentDiv.innerHTML = html || 'No tips yet!';
