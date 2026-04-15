@@ -20,7 +20,10 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
-    else if (pageId === 'splash') metaColor = isDark ? '#0b0e14' : '#f2f5f9';
+    
+    // THE FIX: Set splash screen to match the clean white aesthetic!
+    else if (pageId === 'splash') metaColor = isDark ? '#000000' : '#f2f2f7';
+    
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
@@ -168,8 +171,6 @@ function renderWeatherDOM(data, fallbackName) {
 
 export async function renderItinerary() {
     if (!state.itineraryData) return;
-    
-    // DIRECT SOURCE OF TRUTH
     const filter = localStorage.getItem('appUser') || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
     
@@ -295,50 +296,114 @@ export async function handleFileUpload(event) {
 }
 export async function renderWallet() {
     const docs = await getVal('offline_docs') || []; const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
-    if(docs.length === 0) { gallery.innerHTML = '<div style="grid-column: span 2; opacity:0.5; text-align:center;">No docs yet.</div>'; return; }
-    gallery.innerHTML = docs.map(doc => `<div class="wallet-item" style="background: ${doc.type.startsWith('image/')?`url(${doc.data})`:'var(--ios-grey)'}; background-size: cover;">${doc.type.startsWith('image/')?'':'📄'}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0;"></a></div>`).join('');
+    if(docs.length === 0) { gallery.innerHTML = '<div style="grid-column: span 2; opacity:0.5; text-align:center; font-size:12px;">No documents saved yet.</div>'; return; }
+    
+    let html = '';
+    docs.forEach(doc => {
+        const isImg = doc.type.startsWith('image/');
+        const bg = isImg ? `url(${doc.data})` : 'var(--ios-grey)';
+        const icon = isImg ? '' : '📄';
+        html += `<div class="wallet-item" style="background: ${bg};">${icon}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`;
+    });
+    gallery.innerHTML = html;
 }
 
 export function openCompletionModal(taskId, taskName) {
     document.getElementById('modal-task-name').innerText = taskName; document.getElementById('modal-checkbox').checked = false;
     document.getElementById('btn-confirm-modal').style.opacity = '0.5'; document.getElementById('btn-confirm-modal').style.pointerEvents = 'none';
-    const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId; modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
+    const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId;
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
 }
-export function closeCompletionModal() { const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+export function closeCompletionModal() {
+    const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
 
 export function triggerConfetti() {
-    if(navigator.vibrate) navigator.vibrate([50, 50, 50]); const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759'];
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a'];
     for(let i=0; i<60; i++) {
-        const conf = document.createElement('div'); conf.className = 'particle confetti'; conf.style.background = colors[Math.floor(Math.random() * colors.length)];
-        conf.style.left = Math.random() * 100 + 'vw'; conf.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(conf); setTimeout(() => conf.remove(), 4000);
+        const conf = document.createElement('div');
+        conf.className = 'particle confetti';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        conf.style.animationDelay = (Math.random() * 0.5) + 's';
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
     }
 }
+
 export function triggerEmojiRain(city) {
-    const emojis = { 'la': ['🌴', '☀️', '🎬'], 'utah': ['⛰️', '🤠', '🏜️'], 'vegas': ['🎲', '🎰', '🍸'] }; const set = emojis[city] || ['✨'];
+    if(navigator.vibrate) navigator.vibrate([30, 30]);
+    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
+    const set = emojis[city] || ['✨'];
     for(let i=0; i<30; i++) {
-        const em = document.createElement('div'); em.className = 'particle emoji-drop'; em.innerText = set[Math.floor(Math.random() * set.length)];
-        em.style.left = Math.random() * 100 + 'vw'; em.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(em); setTimeout(() => em.remove(), 4000);
+        const em = document.createElement('div');
+        em.className = 'particle emoji-drop';
+        em.innerText = set[Math.floor(Math.random() * set.length)];
+        em.style.left = Math.random() * 100 + 'vw';
+        em.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(em);
+        setTimeout(() => em.remove(), 4000);
     }
 }
+
+const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
+
 export function triggerHype() {
-    const toast = document.getElementById('hype-toast'); if(!toast) return;
-    toast.innerText = ["Prepare the Vegas bankroll! 💸", "In-N-Out Burger is calling! 🍔", "Road trip mode activated 🚀"][Math.floor(Math.random()*3)];
-    toast.style.display = 'block'; toast.classList.add('toast-enter'); setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.style.display = 'none', 300); }, 3000);
+    if(navigator.vibrate) navigator.vibrate(40);
+    const toast = document.getElementById('hype-toast');
+    if(!toast) return;
+    toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
+    toast.style.display = 'block';
+    toast.classList.remove('toast-exit');
+    toast.classList.add('toast-enter');
+    setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.style.display = 'none', 300);
+    }, 3000);
 }
+
 export function spinRoulette() {
-    const res = document.getElementById('roulette-result'); const btn = document.getElementById('btn-spin-roulette'); const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    if(!res || !btn || btn.disabled) return; btn.disabled = true; btn.style.opacity = '0.5';
+    const res = document.getElementById('roulette-result');
+    const btn = document.getElementById('btn-spin-roulette');
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
+    if(!res || !btn || btn.disabled) return;
+    btn.disabled = true; btn.style.opacity = '0.5';
     let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it down the middle"];
-    let ticks = 0; const interval = setInterval(() => { res.innerText = names[Math.floor(Math.random() * names.length)]; ticks++; if (ticks >= 20) { clearInterval(interval); res.style.transform = 'scale(1.2)'; setTimeout(() => res.style.transform = 'scale(1)', 200); btn.disabled = false; btn.style.opacity = '1'; } }, 100);
+    let ticks = 0; const maxTicks = 20;
+    const interval = setInterval(() => {
+        if(navigator.vibrate) navigator.vibrate(10);
+        res.innerText = names[Math.floor(Math.random() * names.length)];
+        ticks++;
+        if (ticks >= maxTicks) {
+            clearInterval(interval);
+            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            res.style.transform = 'scale(1.2)';
+            setTimeout(() => res.style.transform = 'scale(1)', 200);
+            btn.disabled = false; btn.style.opacity = '1';
+        }
+    }, 100);
 }
 
 let currentTipsCity = 'la';
 export function openTipsModal(city) {
-    currentTipsCity = city.toLowerCase(); document.getElementById('tips-modal-title').innerHTML = `💡 ${city.toUpperCase()} Tips`;
-    document.querySelectorAll('.tips-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === 'eating')); renderTips('eating');
-    const modal = document.getElementById('tips-modal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    if(navigator.vibrate) navigator.vibrate(40);
+    currentTipsCity = city.toLowerCase();
+    const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
+    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[currentTipsCity]} Tips`;
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); });
+    renderTips('eating');
+    const modal = document.getElementById('tips-modal');
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
-export function closeTipsModal() { const modal = document.getElementById('tips-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+
+export function closeTipsModal() {
+    const modal = document.getElementById('tips-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
+
 export function renderTips(category) {
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -357,29 +422,97 @@ export function renderTips(category) {
         else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
 
         if (type === 'tip' && city.includes(currentTipsCity) && cat === category && isMatch) {
-            const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px;">👤 ${escapeHTML(fam)}</span>` : '';
-            html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; border: 2px solid var(--ios-grey);"><div>${escapeHTML(details)}<br>${badge}</div></div>`;
+            const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px; font-weight: 800; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(fam)}</span>` : '';
+            html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div></div>`;
         }
     }); 
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
-    const modal = document.getElementById('stay-modal'); document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl?`url('${imgUrl}')`:`none`;
-    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`;
-    document.getElementById('stay-modal-buttons').innerHTML = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1;">🚗 Drive</button>${listLink?`<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`:''}`;
+    if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('stay-modal');
+    const hero = document.getElementById('stay-modal-hero');
+    const title = document.getElementById('stay-modal-title');
+    const address = document.getElementById('stay-modal-addr');
+    const btns = document.getElementById('stay-modal-buttons');
+
+    hero.style.backgroundImage = imgUrl && imgUrl !== "undefined" && imgUrl !== "" ? `url('${imgUrl}')` : `none`;
+    if(!imgUrl || imgUrl === "undefined" || imgUrl === "") hero.style.backgroundColor = `var(--accent)`;
+    
+    title.innerText = `🏡 ${fam} Stay`; address.innerText = `📍 ${addr}`;
+    
+    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
+    btns.innerHTML = btnHtml;
+
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
-export function closeStayModal() { const modal = document.getElementById('stay-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+
+export function closeStayModal() {
+    const modal = document.getElementById('stay-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
 
 export function openTravelModal(cardData) {
-    const modal = document.getElementById('travel-modal'); const wrapper = document.getElementById('travel-modal-wrapper'); const content = document.getElementById('travel-modal-content');
+    if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('travel-modal');
+    const wrapper = document.getElementById('travel-modal-wrapper');
+    const content = document.getElementById('travel-modal-content');
+
     if (cardData.type === 'flight') {
-        wrapper.style.background = 'transparent'; wrapper.style.border = 'none'; wrapper.style.boxShadow = 'none';
-        content.innerHTML = `<div class="flight-card"><div class="flight-header"><span class="flight-num">${cardData.airline} ${cardData.fnum}</span><span>${cardData.date}</span></div><div class="flight-path"><div class="path-node"><span>From</span><strong>${cardData.dep}</strong></div><div class="plane-icon"></div><div class="path-node"><span>To</span><strong>${cardData.arr}</strong></div></div><div style="display:flex; justify-content: space-between;"><span>Gate: <strong id="modal-gate-text">${cardData.term||'Check Board'}</strong><button class="edit-gate-btn" data-flightid="${cardData.flightid}" style="margin-left:10px; border:none; background:none; color:white; font-size:12px;">✏️ Update</button></span><span>Ref: ${cardData.ref}</span></div></div>`;
-    } else {
-        wrapper.style.background = 'var(--card)'; wrapper.style.border = '1px solid var(--ios-grey)';
-        content.innerHTML = `<div style="padding: 24px;"><h3>🚗 ${cardData.company}</h3><p>Pick-up: ${cardData.ploc} (${cardData.pdate})</p><p>Drop-off: ${cardData.dloc} (${cardData.ddate})</p><p>Ref: ${cardData.ref}</p></div>`;
-    } modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+        wrapper.style.background = 'transparent';
+        wrapper.style.border = 'none';
+        wrapper.style.boxShadow = 'none';
+        
+        const linkHtml = cardData.link !== '#' ? `<a href="${cardData.link}" target="_blank" style="color:white; text-decoration:underline;">${cardData.airline} ${cardData.fnum} ↗</a>` : `${cardData.airline} ${cardData.fnum}`;
+        
+        content.innerHTML = `
+        <div class="flight-card" style="margin-bottom:0; box-shadow:none;">
+            <div class="flight-header">
+                <span class="flight-num">${linkHtml}</span>
+                <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${cardData.date} <br> TIME: ${cardData.ftime}</span>
+            </div>
+            <div class="flight-path" style="margin: 25px 0;">
+                <div class="path-node"><span>From</span><strong style="font-size: 20px;">${cardData.dep}</strong></div>
+                <div class="plane-icon"></div>
+                <div class="path-node"><span>To</span><strong style="font-size: 20px;">${cardData.arr}</strong></div>
+            </div>
+            <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                <span>Term/Gate: <strong id="modal-gate-text" style="color: #ffd60a;">${cardData.term || "Check Screens"}</strong> <button class="edit-gate-btn action-btn" data-flightid="${cardData.flightid}" style="padding: 4px 10px; font-size: 11px; width: auto; margin: 0 0 0 10px; display: inline-block; background: rgba(255,255,255,0.2); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.4);">✏️ Update</button></span>
+                <span>Ref: ${cardData.ref}</span>
+            </div>
+            <div class="barcode"></div>
+        </div>`;
+    } else if (cardData.type === 'car') {
+        wrapper.style.background = 'var(--card)';
+        wrapper.style.border = '1px solid var(--ios-grey)';
+        wrapper.style.boxShadow = '0 8px 24px var(--shadow)';
+
+        content.innerHTML = `
+        <div style="padding: 24px;">
+            <div style="font-size:12px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 15px;">🚗 Car Rental</div>
+            <h3 style="margin: 0 0 20px; font-size: 24px; font-weight: 900;">${cardData.company}</h3>
+            <div style="margin-bottom: 16px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Pick-up:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.ploc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.pdate} @ ${cardData.ptime}</span>
+            </div>
+            <div style="margin-bottom: 20px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Drop-off:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.dloc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.ddate} @ ${cardData.dtime}</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 12px; font-size: 15px;">
+                <strong>Ref:</strong> <span style="color: var(--accent); font-weight: 800;">${cardData.ref}</span>
+            </div>
+        </div>`;
+    }
+
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
-export function closeTravelModal() { const modal = document.getElementById('travel-modal'); modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
+
+export function closeTravelModal() {
+    const modal = document.getElementById('travel-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
