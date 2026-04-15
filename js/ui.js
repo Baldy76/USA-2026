@@ -252,25 +252,39 @@ export async function renderItinerary() {
     updateSec('tomorrow', hTomorrow, cTomorrow);
 }
 
+// THE FIX: FORGIVING FILTER ADDED TO VAULT & STAYS
 export function renderTravelVault() { 
     const filter = document.getElementById('family-selector')?.value || 'All';
     const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
     if(!display) return;
     let html = ''; let hasData = false;
     const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]) - parseDateTime(b[2]));
+    
+    const leech = ['graeme', 'dawn', 'grace', 'leech'];
+    const murray = ['david', 'sarah', 'bexs', 'murray'];
+
     sortedData.forEach(cols => {
         if(cols.length < 2) return;
         const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase();
-        if (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone') {
+        
+        // Smart Forgiving Filter
+        let isMatch = false;
+        const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true;
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true;
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true;
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+
+        if (isMatch) {
             if (type === 'flight') {
-                hasData = true; const date = escapeHTML(cols[2]?.trim()); const dep = escapeHTML(cols[3]?.trim()); const arr = escapeHTML(cols[4]?.trim());
-                const airline = escapeHTML(cols[5]?.trim().toUpperCase()); const fnum = escapeHTML(cols[6]?.trim()); const ftime = escapeHTML(cols[7]?.trim()); const term = escapeHTML(cols[8]?.trim()); const ref = escapeHTML(cols[9]?.trim());
+                hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || '');
+                const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); const term = escapeHTML(cols[8]?.trim() || ''); const ref = escapeHTML(cols[9]?.trim() || '');
                 const searchStr = (airline + fnum).replace(/\s+/g, ''); const trackerLink = searchStr ? "https://flightaware.com/live/flight/" + searchStr : "#";
                 const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${airline} ${fnum} ↗</a>` : `${airline} ${fnum}`;
                 html += `<div class="flight-card"><div class="flight-header"><span class="flight-num">${linkHtml}</span><span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${date} <br> TIME: ${ftime}</span></div><div class="flight-path"><div class="path-node"><span>From</span><strong>${dep}</strong></div><div class="plane-icon"></div><div class="path-node"><span>To</span><strong>${arr}</strong></div></div><div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;"><span>Term/Gate: ${term || "Check Screens"}</span><span>Ref: ${ref}</span></div><div class="barcode"></div></div>`;
             } else if (type === 'car') {
                 hasData = true;
-                html += `<div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);"><div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div><div style="font-size:16px; font-weight:700; margin-top:10px;"><div style="margin-bottom: 12px;"><strong>Company:</strong> ${escapeHTML(cols[4]?.trim())}</div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Pick-up:</strong><br>${escapeHTML(cols[5]?.trim())}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[2]?.trim())} @ ${escapeHTML(cols[6]?.trim())}</span></div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Drop-off:</strong><br>${escapeHTML(cols[8]?.trim()) || escapeHTML(cols[5]?.trim())}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[3]?.trim())} @ ${escapeHTML(cols[7]?.trim())}</span></div><span style="color: var(--accent); font-size:14px;"><strong>Ref:</strong> ${escapeHTML(cols[9]?.trim())}</span></div></div>`;
+                html += `<div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);"><div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div><div style="font-size:16px; font-weight:700; margin-top:10px;"><div style="margin-bottom: 12px;"><strong>Company:</strong> ${escapeHTML(cols[4]?.trim() || '')}</div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Pick-up:</strong><br>${escapeHTML(cols[5]?.trim() || '')}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[2]?.trim() || '')} @ ${escapeHTML(cols[6]?.trim() || '')}</span></div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Drop-off:</strong><br>${escapeHTML(cols[8]?.trim() || '') || escapeHTML(cols[5]?.trim() || '')}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</span></div><span style="color: var(--accent); font-size:14px;"><strong>Ref:</strong> ${escapeHTML(cols[9]?.trim() || '')}</span></div></div>`;
             }
         }
     });
@@ -280,15 +294,34 @@ export function renderTravelVault() {
 export function renderAccommodations() { 
     const filter = document.getElementById('family-selector')?.value || 'All'; const today = new Date(); today.setHours(0,0,0,0);
     let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
+    
+    const leech = ['graeme', 'dawn', 'grace', 'leech'];
+    const murray = ['david', 'sarah', 'bexs', 'murray'];
+
     state.vaultAndStaysData.forEach(cols => {
         if(cols.length < 2) return;
         const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase();
-        if (type === 'stay' && (filter === 'All' || fam.toLowerCase() === filter.toLowerCase() || fam.toLowerCase() === 'everyone')) {
-            const checkIn = cols[2]?.trim(); const city = cols[3]?.trim(); const address = escapeHTML(cols[4]?.trim()); const checkOut = cols[5]?.trim(); const link = escapeHTML(cols[6]?.trim()); const imgUrl = escapeHTML(cols[7]?.trim());
+        
+        let isMatch = false;
+        const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true;
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true;
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true;
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+
+        if (type === 'stay' && isMatch) {
+            // Safety fallbacks to prevent `.toLowerCase()` crashes on empty sheet rows
+            const checkIn = cols[2]?.trim() || ''; 
+            const city = cols[3]?.trim() || ''; 
+            const address = cols[4]?.trim() || ''; 
+            const checkOut = cols[5]?.trim() || ''; 
+            const link = cols[6]?.trim() || ''; 
+            const imgUrl = cols[7]?.trim() || '';
+            
             const headerBg = imgUrl ? `url('${imgUrl}') center/cover` : `var(--accent)`; 
             const mapLink = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
             
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${address}" data-map="${mapLink}" data-link="${link}" data-img="${imgUrl}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer; transition: transform 0.2s ease;">
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(address)}" data-map="${escapeHTML(mapLink)}" data-link="${escapeHTML(link)}" data-img="${escapeHTML(imgUrl)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer; transition: transform 0.2s ease;">
                 <div style="height: 100px; background: ${headerBg}; display: flex; align-items: flex-end; padding: 20px;">
                     <h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3>
                 </div>
