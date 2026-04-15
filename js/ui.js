@@ -84,14 +84,6 @@ export function updateTimeAndCountdown() {
 
 export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
 
-export function switchDayView(day) { 
-    const tV = document.getElementById('today-view'), tmV = document.getElementById('tomorrow-view');
-    const bT = document.getElementById('btn-show-today'), bTm = document.getElementById('btn-show-tomorrow');
-    if(!tV || !tmV) return;
-    if (day === 'today') { tV.style.display = 'block'; tmV.style.display = 'none'; if(bT) { bT.style.backgroundColor = 'var(--accent)'; bT.style.color = 'white'; } if(bTm) { bTm.style.backgroundColor = 'var(--ios-grey)'; bTm.style.color = 'var(--text)'; } } 
-    else { tV.style.display = 'none'; tmV.style.display = 'block'; if(bTm) { bTm.style.backgroundColor = 'var(--accent)'; bTm.style.color = 'white'; } if(bT) { bT.style.backgroundColor = 'var(--ios-grey)'; bT.style.color = 'var(--text)'; } }
-}
-
 export function convertCurrency() { 
     const usd = document.getElementById('usd-input')?.value;
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
@@ -183,8 +175,7 @@ export async function renderItinerary() {
     const completedTasks = await getVal('completedTasks') || [];
     
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} };
-    let cLA = '', cUtah = '', cVegas = '', hToday = '', hTomorrow = '', cToday = '', cTomorrow = ''; 
-    const today = new Date(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
+    let cLA = '', cUtah = '', cVegas = ''; 
     
     state.itineraryData.forEach(cols => {
         if(cols.length < 5) return;
@@ -218,10 +209,6 @@ export async function renderItinerary() {
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : pushToGroup('la', d); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : pushToGroup('utah', d); }
             else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : pushToGroup('vegas', d); }
-            
-            const isDateMatch = (s, target) => { let dt = new Date(parseDateTime(s)); return dt.toDateString() === target.toDateString(); };
-            if (isDateMatch(d, today)) { isCompleted ? cToday += cardHtml : hToday += cardHtml; } 
-            else if (isDateMatch(d, tomorrow)) { isCompleted ? cTomorrow += cardHtml : hTomorrow += cardHtml; }
         }
     });
 
@@ -248,11 +235,8 @@ export async function renderItinerary() {
     updateSec('la', buildAccordion(grouped['la']), cLA); 
     updateSec('utah', buildAccordion(grouped['utah']), cUtah); 
     updateSec('vegas', buildAccordion(grouped['vegas']), cVegas); 
-    updateSec('today', hToday, cToday); 
-    updateSec('tomorrow', hTomorrow, cTomorrow);
 }
 
-// THE FIX: LIVE GATE OVERRIDE LOGIC APPLIED TO VAULT
 export function renderTravelVault() { 
     const filter = document.getElementById('family-selector')?.value || 'All';
     const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
@@ -279,7 +263,6 @@ export function renderTravelVault() {
                 hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || '');
                 const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
                 
-                // NEW: Create Unique Flight ID and Check for Overrides
                 const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, '');
                 const baseTerm = escapeHTML(cols[8]?.trim() || '');
                 const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
@@ -320,8 +303,8 @@ export function renderTravelVault() {
 }
 
 export function renderAccommodations() { 
-    const filter = document.getElementById('family-selector')?.value || 'All'; const today = new Date(); today.setHours(0,0,0,0);
-    let htmlLA = '', htmlUtah = '', htmlVegas = '', htmlToday = '';
+    const filter = document.getElementById('family-selector')?.value || 'All'; 
+    let htmlLA = '', htmlUtah = '', htmlVegas = '';
     
     const leech = ['graeme', 'dawn', 'grace', 'leech'];
     const murray = ['david', 'sarah', 'bexs', 'murray'];
@@ -355,11 +338,10 @@ export function renderAccommodations() {
             </div>`;
             
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
-            if (checkIn && checkOut) { let sDate = new Date(parseDateTime(checkIn)); let eDate = new Date(parseDateTime(checkOut)); sDate.setHours(0,0,0,0); eDate.setHours(23,59,59,999); if (today >= sDate && today <= eDate) htmlToday += ui; }
         }
     });
     const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
-    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas; const todayCard = document.getElementById('today-home-card'); if(todayCard) todayCard.innerHTML = htmlToday;
+    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
 }
 
 export async function handleFileUpload(event) {
@@ -391,14 +373,6 @@ export async function renderWallet() {
         html += `<div class="wallet-item" style="background: ${bg};">${icon}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`;
     });
     gallery.innerHTML = html;
-}
-
-export async function shareDay(dayViewId, titleName) {
-    const container = document.getElementById(dayViewId); if(!container) return;
-    const cards = container.querySelectorAll('.itin-card:not(.completed)');
-    let text = `🇺🇸 USA 2026 - ${titleName} Itinerary\n\n`; if(cards.length === 0) text += "Nothing scheduled yet!";
-    cards.forEach(card => { text += `• ${card.querySelector('strong').innerText}: ${card.querySelector('.itin-title').innerText}\n`; });
-    if (navigator.share) { try { await navigator.share({ title: titleName, text }); } catch (e) {} } else { navigator.clipboard.writeText(text); alert('Copied to clipboard!'); }
 }
 
 export function openCompletionModal(taskId, taskName) {
@@ -540,7 +514,6 @@ export function closeStayModal() {
     modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
 
-// THE FIX: ADDED EDIT GATE BUTTON INSIDE THE MODAL HTML
 export function openTravelModal(cardData) {
     if(navigator.vibrate) navigator.vibrate(40);
     const modal = document.getElementById('travel-modal');
