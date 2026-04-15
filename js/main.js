@@ -13,21 +13,75 @@ import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
-// ROUTER
 export function openTab(pageId, isPopState = false) {
     if (navigator.vibrate) navigator.vibrate(40); 
-    const activeTab = document.querySelector('.tab-content.active');
+    const activeTab = document.querySelector('.tab-content.active'); let animClass = 'fade-pop'; 
+    if (activeTab && tabOrder.includes(activeTab.id) && tabOrder.includes(pageId)) {
+        const curIdx = tabOrder.indexOf(activeTab.id); const newIdx = tabOrder.indexOf(pageId);
+        animClass = newIdx > curIdx ? 'slide-right' : 'slide-left';
+    }
+    
     document.querySelectorAll('.tab-content').forEach(tab => { tab.className = 'page tab-content'; });
-    const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active');
+    const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active', animClass);
+    
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById('nav-btn-' + pageId); if(activeBtn) activeBtn.classList.add('active');
+    
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
-    updateMetaThemeColor(pageId); updateTimeAndCountdown();
+    
+    updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0); 
     if (!isPopState) history.pushState({ pageId: pageId }, '', `#${pageId}`);
 }
 
 window.addEventListener('popstate', (e) => { if (e.state && e.state.pageId) openTab(e.state.pageId, true); else openTab('home', true); });
+
+function initPullToRefresh() {
+    let pStart = 0; const spinner = document.getElementById('ptr-spinner');
+    document.addEventListener('touchstart', e => { if (window.scrollY === 0) pStart = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => {
+        if (window.scrollY === 0 && pStart > 0) {
+            if (e.changedTouches[0].clientY - pStart > 150) {
+                spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
+                loadAllData().then(() => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); setTimeout(() => spinner.classList.remove('refreshing'), 1000); });
+            }
+        }
+        pStart = 0;
+    }, {passive: true});
+}
+
+function initSwipes() {
+    let touchstartX = 0; let touchendX = 0; const mainContent = document.getElementById('content'); if (!mainContent) return;
+    mainContent.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, { passive: true });
+    mainContent.addEventListener('touchend', e => { 
+        touchendX = e.changedTouches[0].screenX; const dist = touchendX - touchstartX; if (Math.abs(dist) < 60) return; 
+        const activeTab = document.querySelector('.tab-content.active'); if (!activeTab || !tabOrder.includes(activeTab.id)) return; 
+        const currentIndex = tabOrder.indexOf(activeTab.id);
+        if (dist < 0 && currentIndex < tabOrder.length - 1) openTab(tabOrder[currentIndex + 1]); 
+        else if (dist > 0 && currentIndex > 0) openTab(tabOrder[currentIndex - 1]); 
+    }, { passive: true });
+}
+
+function startNotificationEngine() {
+    setInterval(async () => {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const notified = await getVal('notifiedTasks') || [];
+        const now = Date.now();
+        
+        state.itineraryData.forEach(cols => {
+            if(cols.length < 5) return;
+            const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
+            if (notified.includes(taskId)) return;
+            
+            const taskTime = parseDateTime(cols[0], cols[3]);
+            if (taskTime > now && (taskTime - now) <= 1800000) { 
+                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
+                notified.push(taskId);
+                setVal('notifiedTasks', notified);
+            }
+        });
+    }, 60000); 
+}
 
 function bindEvents() {
     const loginSelector = document.getElementById('login-selector');
@@ -38,29 +92,37 @@ function bindEvents() {
         if (savedUser) {
             loginSelector.value = savedUser;
             splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
-            splashGoBtn.disabled = false; splashGoBtn.style.opacity = '1';
+            splashGoBtn.disabled = false;
+            splashGoBtn.style.opacity = '1';
         }
 
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
+            
+            // Just save the filter directly to local storage so the engine picks it up when the app boots
+            localStorage.setItem('savedFamilyFilter', userName);
+
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
-            splashGoBtn.disabled = false; splashGoBtn.style.opacity = '1';
-            const famSel = document.getElementById('family-selector');
-            if (famSel) {
-                let customFamilies = JSON.parse(localStorage.getItem('customFamilies')) || [];
-                if (!customFamilies.includes(userName) && userName !== 'All') {
-                    customFamilies.push(userName); localStorage.setItem('customFamilies', JSON.stringify(customFamilies));
-                    populateDropdown();
-                } famSel.value = userName; updateFamilyFilter();
-            }
+            splashGoBtn.disabled = false;
+            splashGoBtn.style.opacity = '1';
         });
 
-        // THE FIX: ENTRY BUTTON LOGIC
+        // THE FIX: Decoupled and resilient entry logic
         splashGoBtn.addEventListener('click', () => {
+            // Re-apply filter just in case
+            const famSel = document.getElementById('family-selector');
+            if (famSel) {
+                famSel.value = localStorage.getItem('appUser') || 'All';
+                updateFamilyFilter();
+            }
+            
+            // Forcibly kill the splash screen
             const splash = document.getElementById('splash');
-            splash.classList.remove('active');
-            setTimeout(() => { splash.style.display = 'none'; }, 400);
+            if (splash) {
+                splash.classList.remove('active');
+                splash.style.display = 'none';
+            }
             openTab('home');
         });
     }
@@ -74,9 +136,11 @@ function bindEvents() {
     document.querySelectorAll('.tip-btn').forEach(btn => btn.addEventListener('click', function() { setTip(parseInt(this.dataset.tip), this); }));
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
+    
     document.getElementById('home-weather-pill')?.addEventListener('click', openWeatherModal);
     document.getElementById('btn-close-weather')?.addEventListener('click', closeWeatherModal);
     document.querySelectorAll('.weather-btn').forEach(btn => btn.addEventListener('click', function() { setWeatherCity(this.id.replace('btn-w-', '')); }));
+    
     document.querySelectorAll('.tips-btn').forEach(btn => btn.addEventListener('click', function() { openTipsModal(this.dataset.city); }));
     document.querySelectorAll('.tips-tab-btn').forEach(btn => btn.addEventListener('click', function() {
         document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderTips(this.dataset.cat);
@@ -86,44 +150,84 @@ function bindEvents() {
     document.getElementById('btn-close-travel')?.addEventListener('click', closeTravelModal);
     document.getElementById('btn-close-completion-x')?.addEventListener('click', closeCompletionModal);
     document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCompletionModal);
+    
     document.getElementById('btn-clear-families')?.addEventListener('click', clearCustomFamilies);
     document.getElementById('btnLight')?.addEventListener('click', () => setThemeMode(false));
     document.getElementById('btnDark')?.addEventListener('click', () => setThemeMode(true));
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
+    
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
         this.innerText = "⏳ Syncing..."; await loadAllData(); 
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages();
         this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
     });
     document.getElementById('btn-update-version')?.addEventListener('click', () => { window.location.reload(true); });
+    
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
+    
     document.getElementById('btn-confirm-modal')?.addEventListener('click', async () => {
         const modal = document.getElementById('completion-modal');
         let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
         await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); 
     });
+    
     document.body.addEventListener('click', async (e) => {
         const stayCard = e.target.closest('.stay-card'); if (stayCard) return openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img);
         const travelCard = e.target.closest('.travel-card'); if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') return openTravelModal(travelCard.dataset);
+        
         const editGate = e.target.closest('.edit-gate-btn'); if (editGate) {
             const newGate = prompt("New Gate Info:"); if (newGate) { if (!state.gateOverrides) state.gateOverrides = {}; state.gateOverrides[editGate.dataset.flightid] = newGate; await setVal('gateOverrides', state.gateOverrides); document.getElementById('modal-gate-text').innerText = newGate; renderTravelVault(); } return;
         }
+        
         const activeCard = e.target.closest('.itin-card:not(.completed)'); if (activeCard && e.target.tagName !== 'A') return openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName);
+        
         const completedCard = e.target.closest('.itin-card.completed'); if (completedCard && e.target.tagName !== 'A') {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
             await setVal('completedTasks', tasks); renderItinerary();
+        }
+        
+        const deleteDocBtn = e.target.closest('.delete-doc-btn');
+        if (deleteDocBtn) {
+            e.preventDefault(); e.stopPropagation();
+            if(confirm("Delete this document?")) {
+                let docs = await getVal('offline_docs') || [];
+                docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
+                await setVal('offline_docs', docs);
+                renderWallet();
+            }
         }
     });
 }
 
 window.addEventListener('load', async () => {
     bindEvents();
+    initSwipes(); 
+    initPullToRefresh();
+    
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
+    applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
+    prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
+
     state.gateOverrides = await getVal('gateOverrides') || {};
-    await loadAllData(); populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet();
-    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
+    
+    await loadAllData(); 
+    populateDropdown(); 
+    renderItinerary(); 
+    renderTravelVault(); 
+    renderAccommodations(); 
+    preCacheImages(); 
+    renderWallet();
+    
+    initLiveCurrency(); 
+    updateTimeAndCountdown(); 
+    initWeatherPill();
+    
     setInterval(updateTimeAndCountdown, 60000);
     startNotificationEngine(); 
 });
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
