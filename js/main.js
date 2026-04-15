@@ -1,17 +1,14 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
-
-// THE FIX: "autoSetWeatherCity" and "switchDayView" have been permanently removed from this list!
 import { 
     renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
-    setWeatherCity, updateTimeAndCountdown, saveTripSettings,
+    setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
     handleFileUpload, renderWallet, triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal 
 } from './ui.js';
-
 import { syncToCloud } from './api.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -104,37 +101,26 @@ function bindEvents() {
         loginSelector.addEventListener('change', function() {
             const userName = this.value;
             localStorage.setItem('appUser', userName);
-            localStorage.setItem('savedFamilyFilter', userName);
 
             splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
             splashGoBtn.disabled = false;
             splashGoBtn.style.opacity = '1';
+            
+            // THE FIX: Instantly sync selection to the hidden Settings page
+            const famSel = document.getElementById('family-selector');
+            if (famSel) {
+                famSel.value = userName;
+                updateFamilyFilter();
+            }
         });
 
-        // THE FIX: Bulletproof Splash Go Button
         splashGoBtn.addEventListener('click', () => {
-            
-            // 1. Forcibly strip the splash screen out of the way immediately.
             const splash = document.getElementById('splash');
             if (splash) {
                 splash.classList.remove('active');
                 splash.style.display = 'none';
             }
-            
-            // 2. Open the home tab
             openTab('home');
-            
-            // 3. Gracefully try to filter the data. If the data is still downloading, it will 
-            // naturally render itself when it finishes in the background. No crashing allowed!
-            try {
-                const famSel = document.getElementById('family-selector');
-                if (famSel) {
-                    famSel.value = localStorage.getItem('appUser') || 'All';
-                    updateFamilyFilter();
-                }
-            } catch(e) {
-                console.log("Data is still downloading... the filter will apply when ready.");
-            }
         });
     }
 
