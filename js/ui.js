@@ -252,7 +252,7 @@ export async function renderItinerary() {
     updateSec('tomorrow', hTomorrow, cTomorrow);
 }
 
-// THE FIX: FORGIVING FILTER ADDED TO VAULT & STAYS
+// ---- REDESIGNED TRAVEL VAULT (NOW GENERATES CLICKABLE PILLS) ----
 export function renderTravelVault() { 
     const filter = document.getElementById('family-selector')?.value || 'All';
     const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
@@ -267,7 +267,6 @@ export function renderTravelVault() {
         if(cols.length < 2) return;
         const fam = cols[0].trim(); const type = cols[1].trim().toLowerCase();
         
-        // Smart Forgiving Filter
         let isMatch = false;
         const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
         if (filter === 'All' || famL === 'everyone') isMatch = true;
@@ -280,11 +279,35 @@ export function renderTravelVault() {
                 hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || '');
                 const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); const term = escapeHTML(cols[8]?.trim() || ''); const ref = escapeHTML(cols[9]?.trim() || '');
                 const searchStr = (airline + fnum).replace(/\s+/g, ''); const trackerLink = searchStr ? "https://flightaware.com/live/flight/" + searchStr : "#";
-                const linkHtml = searchStr ? `<a href="${escapeHTML(trackerLink)}" target="_blank" class="flight-tracker-link">${airline} ${fnum} ↗</a>` : `${airline} ${fnum}`;
-                html += `<div class="flight-card"><div class="flight-header"><span class="flight-num">${linkHtml}</span><span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${date} <br> TIME: ${ftime}</span></div><div class="flight-path"><div class="path-node"><span>From</span><strong>${dep}</strong></div><div class="plane-icon"></div><div class="path-node"><span>To</span><strong>${arr}</strong></div></div><div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;"><span>Term/Gate: ${term || "Check Screens"}</span><span>Ref: ${ref}</span></div><div class="barcode"></div></div>`;
+                
+                // NEW: COMPACT FLIGHT PILL
+                html += `
+                <div class="admin-card travel-card" data-type="flight" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${term}" data-ref="${ref}" data-link="${trackerLink}" style="padding: 20px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--accent);">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">✈️ Flight • ${date}</div>
+                        <strong style="font-size: 18px;">${dep} → ${arr}</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 800; color: var(--accent);">${airline} ${fnum}</div>
+                        <div style="font-size: 12px; font-weight: 700; opacity: 0.6;">${ftime}</div>
+                    </div>
+                </div>`;
             } else if (type === 'car') {
                 hasData = true;
-                html += `<div class="admin-card" style="margin-bottom:24px; border-left: 5px solid var(--accent);"><div style="font-size:11px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 0.5px;">🚗 Car Rental</div><div style="font-size:16px; font-weight:700; margin-top:10px;"><div style="margin-bottom: 12px;"><strong>Company:</strong> ${escapeHTML(cols[4]?.trim() || '')}</div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Pick-up:</strong><br>${escapeHTML(cols[5]?.trim() || '')}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[2]?.trim() || '')} @ ${escapeHTML(cols[6]?.trim() || '')}</span></div><div style="margin-bottom: 12px; padding-left: 10px; border-left: 2px solid var(--ios-grey);"><strong>Drop-off:</strong><br>${escapeHTML(cols[8]?.trim() || '') || escapeHTML(cols[5]?.trim() || '')}<br><span style="font-size:13px; font-weight:600; opacity:0.8;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</span></div><span style="color: var(--accent); font-size:14px;"><strong>Ref:</strong> ${escapeHTML(cols[9]?.trim() || '')}</span></div></div>`;
+                const pdate = escapeHTML(cols[2]?.trim()); const ddate = escapeHTML(cols[3]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim()); const ptime = escapeHTML(cols[6]?.trim()); const dtime = escapeHTML(cols[7]?.trim()); const dloc = escapeHTML(cols[8]?.trim()) || ploc; const ref = escapeHTML(cols[9]?.trim());
+
+                // NEW: COMPACT CAR RENTAL PILL
+                html += `
+                <div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${ptime}" data-ploc="${ploc}" data-ddate="${ddate}" data-dtime="${dtime}" data-dloc="${dloc}" data-ref="${ref}" style="padding: 20px; margin-bottom: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #34c759;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">🚗 Car Rental • ${pdate}</div>
+                        <strong style="font-size: 18px;">${company}</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 800; color: #34c759;">Pick-up</div>
+                        <div style="font-size: 12px; font-weight: 700; opacity: 0.6;">${ploc}</div>
+                    </div>
+                </div>`;
             }
         }
     });
@@ -310,7 +333,6 @@ export function renderAccommodations() {
         else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
 
         if (type === 'stay' && isMatch) {
-            // Safety fallbacks to prevent `.toLowerCase()` crashes on empty sheet rows
             const checkIn = cols[2]?.trim() || ''; 
             const city = cols[3]?.trim() || ''; 
             const address = cols[4]?.trim() || ''; 
@@ -510,5 +532,72 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
 
 export function closeStayModal() {
     const modal = document.getElementById('stay-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// NEW: OPEN TRAVEL MODAL ENGINE
+export function openTravelModal(cardData) {
+    if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('travel-modal');
+    const wrapper = document.getElementById('travel-modal-wrapper');
+    const content = document.getElementById('travel-modal-content');
+
+    if (cardData.type === 'flight') {
+        // Flight Modal - Transparent wrapper to let the gradient card shine
+        wrapper.style.background = 'transparent';
+        wrapper.style.border = 'none';
+        wrapper.style.boxShadow = 'none';
+        
+        const linkHtml = cardData.link !== '#' ? `<a href="${cardData.link}" target="_blank" style="color:white; text-decoration:underline;">${cardData.airline} ${cardData.fnum} ↗</a>` : `${cardData.airline} ${cardData.fnum}`;
+        
+        // Font size for dep/arr reduced here to fit better!
+        content.innerHTML = `
+        <div class="flight-card" style="margin-bottom:0; box-shadow:none;">
+            <div class="flight-header">
+                <span class="flight-num">${linkHtml}</span>
+                <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${cardData.date} <br> TIME: ${cardData.ftime}</span>
+            </div>
+            <div class="flight-path" style="margin: 25px 0;">
+                <div class="path-node"><span>From</span><strong style="font-size: 20px;">${cardData.dep}</strong></div>
+                <div class="plane-icon"></div>
+                <div class="path-node"><span>To</span><strong style="font-size: 20px;">${cardData.arr}</strong></div>
+            </div>
+            <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
+                <span>Term/Gate: ${cardData.term || "Check Screens"}</span>
+                <span>Ref: ${cardData.ref}</span>
+            </div>
+            <div class="barcode"></div>
+        </div>`;
+    } else if (cardData.type === 'car') {
+        // Car Modal - Standard white/dark card wrapper
+        wrapper.style.background = 'var(--card)';
+        wrapper.style.border = '1px solid var(--ios-grey)';
+        wrapper.style.boxShadow = '0 8px 24px var(--shadow)';
+
+        content.innerHTML = `
+        <div style="padding: 24px;">
+            <div style="font-size:12px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 15px;">🚗 Car Rental</div>
+            <h3 style="margin: 0 0 20px; font-size: 24px; font-weight: 900;">${cardData.company}</h3>
+            <div style="margin-bottom: 16px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Pick-up:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.ploc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.pdate} @ ${cardData.ptime}</span>
+            </div>
+            <div style="margin-bottom: 20px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
+                <strong style="font-size: 14px;">Drop-off:</strong><br>
+                <span style="font-size: 16px; font-weight: 800;">${cardData.dloc}</span><br>
+                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.ddate} @ ${cardData.dtime}</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 12px; font-size: 15px;">
+                <strong>Ref:</strong> <span style="color: var(--accent); font-weight: 800;">${cardData.ref}</span>
+            </div>
+        </div>`;
+    }
+
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeTravelModal() {
+    const modal = document.getElementById('travel-modal');
     modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
 }
