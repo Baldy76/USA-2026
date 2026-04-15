@@ -12,7 +12,6 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
-
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
@@ -25,7 +24,6 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// THE FIX: DYNAMIC PERSONAL GREETINGS
 export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = "";
@@ -49,7 +47,7 @@ export function updateGreeting() {
 
 export function updateTimeAndCountdown() { 
     try {
-        updateGreeting(); // Update the greeting seamlessly
+        updateGreeting();
         
         const now = new Date();
         const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
@@ -115,7 +113,6 @@ export function convertCurrency() {
     const clearBtn = document.getElementById('clear-usd');
     const usd = usdInput?.value;
     
-    // Toggle the (x) button visibility based on input
     if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
     
     if(document.getElementById('gbp-output')) {
@@ -129,7 +126,6 @@ export function setTip(percent, btnElement) {
     if(btnElement) btnElement.classList.add('active'); calculateTip(); 
 }
 
-// THE FIX: Smart 1-Tap Tip Splitting
 export function calculateTip() { 
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
     const splitBtn = document.querySelector('.split-btn.active');
@@ -251,7 +247,6 @@ function renderWeatherDOM(data, fallbackName) {
     if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
-// THE FIX: TIMELINES & HAPPENING NOW GLOW
 export async function renderItinerary() {
     if (!state.itineraryData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -262,9 +257,23 @@ export async function renderItinerary() {
 
     const now = new Date();
     const nowTime = now.getTime();
-    const todayStr = now.toDateString(); // Standardized to compare dates
+    const todayStr = now.toDateString(); 
 
-    state.itineraryData.forEach(cols => {
+    // THE FIX: CHRONOLOGICAL SORTING ENGINE
+    const sortedData = [...state.itineraryData].sort((a, b) => {
+        if(!a || a.length < 4) return 1;
+        if(!b || b.length < 4) return -1;
+        const dA = (a[0] || '').trim(), tA = (a[3] || '').trim();
+        const dB = (b[0] || '').trim(), tB = (b[3] || '').trim();
+        
+        // If time is missing, parseDateTime treats '23:59' as the time so it drops to the bottom
+        const dtA = parseDateTime(dA, tA || '23:59') || Number.MAX_SAFE_INTEGER; 
+        const dtB = parseDateTime(dB, tB || '23:59') || Number.MAX_SAFE_INTEGER;
+        
+        return dtA - dtB;
+    });
+
+    sortedData.forEach(cols => {
         if(!cols || cols.length < 5) return;
         const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols.length >= 6) ? (cols[5] || '').trim() : '';
         
@@ -279,7 +288,6 @@ export async function renderItinerary() {
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
-            // Checking if happening right now (within 90 minutes)
             let isHappening = false;
             const taskDateObj = parseDateTime(d, time);
             if (taskDateObj && !isCompleted) {
@@ -295,7 +303,6 @@ export async function renderItinerary() {
             
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
 
-            // Wraps the card in the visual timeline node
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -316,7 +323,6 @@ export async function renderItinerary() {
         }
     });
 
-    // THE FIX: Auto-Opening the Accords!
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
             let dObj = new Date(date);
