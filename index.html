@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.32">
+    <link rel="stylesheet" href="style.css?v=2.1.33">
 </head>
 <body class="light-mode theme-splash">
 
@@ -321,11 +321,12 @@
                 <button id="btn-update-version" class="action-btn sync-btn">🔄 Update App Version</button>
             </div>
 
-            <div class="version-control">ULTIMATE PLANNER // v2.1.32</div>
+            <div class="version-control">ULTIMATE PLANNER // v2.1.33</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
-            <div class="modal-content admin-card">
+            <div class="modal-content admin-card" style="position: relative;">
+                <button id="btn-close-completion-x" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
                 <h3 style="margin-top:0; font-size: 22px;">Complete Activity?</h3>
                 <p id="modal-task-name" style="font-weight:700; opacity:0.8; margin-bottom:24px; font-size: 16px;"></p>
                 <label style="display:flex; align-items:center; gap:12px; font-weight:800; cursor:pointer; margin-bottom:24px; background: var(--bg); padding: 15px; border-radius: 12px;">
@@ -340,10 +341,10 @@
         </div>
 
         <div id="tips-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 80vh; height: 500px;">
+            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; max-height: 80vh; height: 500px; position: relative;">
+                <button id="btn-close-tips" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
                 <h3 style="margin-top:0; font-size: 22px; display: flex; justify-content: space-between; align-items: center;">
                     <span id="tips-modal-title">💡 City Tips</span>
-                    <span id="btn-close-tips" style="opacity: 0.5; cursor: pointer; font-size: 24px;">✕</span>
                 </h3>
                 
                 <div class="theme-segmented-control" style="margin-bottom: 15px;">
@@ -357,6 +358,21 @@
             </div>
         </div>
 
+        <div id="stay-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 0; overflow: visible; display: flex; flex-direction: column; max-height: 80vh;">
+                <button id="btn-close-stay" class="mac-close-btn" style="position: absolute; top: -10px; right: -10px; z-index: 10;">✕</button>
+                <div id="stay-modal-hero" style="height: 200px; background-size: cover; background-position: center; position: relative; border-radius: 24px 24px 0 0;">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); border-radius: 24px 24px 0 0;"></div>
+                    <h3 id="stay-modal-title" style="position: absolute; bottom: 15px; left: 20px; margin: 0; color: white; font-size: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;"></h3>
+                </div>
+                <div style="padding: 24px;">
+                    <div id="stay-modal-addr" style="font-size: 15px; font-weight: 700; margin-bottom: 24px; opacity: 0.8; line-height: 1.4;"></div>
+                    <div id="stay-modal-buttons" style="display: flex; gap: 10px;">
+                        </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <nav class="bottom-nav">
@@ -367,6 +383,6 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">🗄️</span><span>Vault</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.32"></script>
+    <script type="module" src="js/main.js?v=2.1.33"></script>
 </body>
 </html>
