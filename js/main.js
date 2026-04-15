@@ -1,9 +1,9 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
 import { 
-    renderItinerary, renderTravelVault, renderAccommodations, shareDay, 
+    renderItinerary, renderTravelVault, renderAccommodations, 
     openCompletionModal, closeCompletionModal, applyTheme, setThemeMode, updateMetaThemeColor,
-    switchDayView, convertCurrency, 
+    convertCurrency, 
     setTip, calculateTip, 
     populateDropdown, clearCustomFamilies, updateFamilyFilter,
     setWeatherCity, autoSetWeatherCity, updateTimeAndCountdown, saveTripSettings,
@@ -168,10 +168,6 @@ function bindEvents() {
         });
     }
 
-    document.getElementById('btn-share-today')?.addEventListener('click', () => shareDay('today-itinerary', "Today's"));
-    document.getElementById('btn-share-tomorrow')?.addEventListener('click', () => shareDay('tomorrow-itinerary', "Tomorrow's"));
-    document.getElementById('btn-show-today')?.addEventListener('click', () => switchDayView('today'));
-    document.getElementById('btn-show-tomorrow')?.addEventListener('click', () => switchDayView('tomorrow'));
     document.getElementById('btn-open-admin')?.addEventListener('click', () => openTab('admin'));
     document.getElementById('home-weather-pill')?.addEventListener('click', () => openTab('weather-root'));
     
@@ -244,7 +240,6 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        // THE FIX: LIVE GATE OVERRIDE LISTENER
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
             const flightId = editGateBtn.dataset.flightid;
@@ -255,7 +250,6 @@ function bindEvents() {
                 await setVal('gateOverrides', state.gateOverrides);
                 syncToCloud('gateUpdate', state.gateOverrides);
                 
-                // Update UI instantly
                 const gateText = document.getElementById('modal-gate-text');
                 if(gateText) gateText.innerText = newGate.trim();
                 
@@ -321,7 +315,6 @@ window.addEventListener('load', async () => {
 
     history.replaceState({ pageId: 'splash' }, '', '#splash');
     
-    // LOAD SAVED OVERRIDES ON BOOT
     state.gateOverrides = await getVal('gateOverrides') || {};
 
     await loadAllData();
