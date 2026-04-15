@@ -6,7 +6,8 @@ import {
     applyTheme, setThemeMode, updateMetaThemeColor,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     updateTimeAndCountdown, saveTripSettings,
-    handleFileUpload, renderWallet, triggerConfetti, triggerEmojiRain, triggerHype, spinRoulette,
+    handleFileUpload, renderWallet, triggerConfetti, triggerEmojiRain, triggerHype,
+    initWheel, spinRoulette,
     openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal, openTravelModal, closeTravelModal,
     initWeatherPill, openWeatherModal, closeWeatherModal, openCompletionModal, closeCompletionModal 
 } from './ui.js';
@@ -88,7 +89,11 @@ function startNotificationEngine() {
 function bindEvents() {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', function() { openTab(this.id.replace('nav-btn-', '')); }));
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
+    
+    // THE FIX: Binding the Roulette wheel dynamically
     document.getElementById('btn-spin-roulette')?.addEventListener('click', spinRoulette);
+    document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
+    
     document.getElementById('btn-hype')?.addEventListener('click', triggerHype);
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
     document.getElementById('split-ways')?.addEventListener('change', calculateTip);
@@ -120,7 +125,7 @@ function bindEvents() {
     document.getElementById('btn-force-sync')?.addEventListener('click', async function() {
         this.innerText = "⏳ Syncing..."; await loadAllData(); 
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages();
-        this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Force Refresh Data"; }, 2000);
+        this.innerText = "✅ Synced!"; setTimeout(() => { this.innerText = "☁️ Sync Data"; }, 2000);
     });
     
     document.getElementById('btn-update-version')?.addEventListener('click', () => {
@@ -219,6 +224,7 @@ async function bootApp() {
         
         try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e){ state.gateOverrides = {}; }
         
+        // Let the data load in the background so it never freezes the UI!
         loadAllData().then(() => {
             populateDropdown(); 
             renderItinerary(); 
@@ -234,6 +240,10 @@ async function bootApp() {
         
         setInterval(updateTimeAndCountdown, 60000);
         startNotificationEngine(); 
+        
+        // THE FIX: Draw the wheel instantly!
+        initWheel();
+        
     } catch(e) {
         console.error("Boot Error:", e);
     }
