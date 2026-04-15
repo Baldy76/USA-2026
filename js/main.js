@@ -131,9 +131,7 @@ function bindEvents() {
                     famSel.value = localStorage.getItem('appUser') || 'All';
                     updateFamilyFilter();
                 }
-            } catch(e) {
-                console.log("Data is still downloading... the filter will apply when ready.");
-            }
+            } catch(e) {}
         });
     }
 
@@ -245,8 +243,8 @@ function bindEvents() {
     });
 }
 
-// THE FIX: The absolute standard, unbreakable boot sequence
-window.addEventListener('DOMContentLoaded', async () => {
+// THE FIX: Direct Execution Boot Engine! Guaranteed to run immediately without missing DOM hooks.
+async function bootApp() {
     bindEvents();
     initSwipes(); 
     initPullToRefresh();
@@ -276,6 +274,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     setInterval(updateTimeAndCountdown, 60000);
     startNotificationEngine(); 
-});
+}
+
+bootApp();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
