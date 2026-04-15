@@ -1,12 +1,12 @@
-const CACHE_NAME = 'holiday-planner-v2.1.47';
+const CACHE_NAME = 'holiday-planner-v2.1.48';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=2.1.46',
-    './js/main.js?v=2.1.46',
+    './style.css?v=2.1.48',
+    './js/main.js?v=2.1.48',
     './js/store.js?v=2.1.31',
-    './js/api.js?v=2.1.47',
-    './js/ui.js?v=2.1.46',
+    './js/api.js?v=2.1.39',
+    './js/ui.js?v=2.1.48',
     './manifest.json',
     './img/la.jpg',
     './img/utah.jpg',
@@ -36,7 +36,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     if (event.request.url.includes('docs.google.com') || 
         event.request.url.includes('openweathermap.org') ||
-        event.request.url.includes('frankfurter.dev') ||
+        event.request.url.includes('frankfurter.app') ||
         event.request.url.includes('script.google.com')) { return; }
     
     event.respondWith(
