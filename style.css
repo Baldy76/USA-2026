@@ -26,10 +26,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 #ptr-spinner { text-align: center; padding: 10px; font-size: 14px; font-weight: 800; color: var(--accent); opacity: 0; transition: opacity 0.2s; height: 0; overflow: hidden; }
 #ptr-spinner.refreshing { opacity: 1; height: auto; padding: 20px; }
 
-main { padding: 20px 20px 100px; max-width: 600px; margin: 0 auto; min-height: 100vh; position: relative; }
+/* THE FIX: Safe Area Inset pushes content below the iPhone Notch */
+main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; margin: 0 auto; min-height: 100vh; position: relative; }
 
-.page { display: none; opacity: 0; }
-.page.active { display: block; animation: fadePop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+/* THE FIX: Pointer-events ensure invisible pages do not block clicks */
+.page { display: none; opacity: 0; pointer-events: none; }
+.page.active { display: block; pointer-events: auto; animation: fadePop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
 .slide-left { animation: slideLeft 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 .slide-right { animation: slideRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
@@ -80,16 +82,7 @@ main { padding: 20px 20px 100px; max-width: 600px; margin: 0 auto; min-height: 1
 .modal-content { width: 90%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
 .modal-overlay.active .modal-content { transform: scale(1); }
 
-/* ---- NEW macOS STYLE CLOSE BUTTON ---- */
-.mac-close-btn {
-    width: 30px; height: 30px; border-radius: 50%;
-    background-color: #ff3b30; color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: bold; cursor: pointer;
-    box-shadow: 0 4px 10px rgba(255, 59, 48, 0.4);
-    border: 2px solid white; padding: 0; line-height: 1;
-    transition: transform 0.2s ease, filter 0.2s ease;
-}
+.mac-close-btn { width: 30px; height: 30px; border-radius: 50%; background-color: #ff3b30; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.4); border: 2px solid white; padding: 0; line-height: 1; transition: transform 0.2s ease, filter 0.2s ease; }
 .mac-close-btn:active { transform: scale(0.9); filter: brightness(0.8); }
 
 .skeleton { background: linear-gradient(90deg, var(--ios-grey) 25%, rgba(255,255,255,0.5) 50%, var(--ios-grey) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; margin-bottom: 10px; }
@@ -103,7 +96,10 @@ main { padding: 20px 20px 100px; max-width: 600px; margin: 0 auto; min-height: 1
 .empty-icon { font-size: 48px; margin-bottom: 15px; display: block; filter: grayscale(100%); }
 .empty-text { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-#splash { position: fixed; inset: 0; background-image: var(--bg-image, url('img/splash.jpg')); background-size: cover; background-position: center; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+/* THE FIX: Splash screen is ONLY flex when active */
+#splash { position: fixed; inset: 0; background-image: var(--bg-image, url('img/splash.jpg')); background-size: cover; background-position: center; z-index: 10000; align-items: center; justify-content: center; }
+#splash.active { display: flex !important; }
+
 .splash-container { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8)); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .splash-glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 40px; padding: 40px 30px; text-align: center; color: white; width: 100%; max-width: 400px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
 .splash-title { font-size: 42px; font-weight: 900; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 2px; }
@@ -132,10 +128,7 @@ body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg,
 body.theme-flights { --accent: #0284c7; --accent-gradient: linear-gradient(135deg, #0284c7, #0ea5e9); }
 
 .particle { position: fixed; top: -10vh; pointer-events: none; z-index: 99999; animation: fall linear forwards; }
-@keyframes fall {
-    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-}
+@keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
 .confetti { width: 10px; height: 20px; border-radius: 2px; }
 .emoji-drop { font-size: 30px; }
 
