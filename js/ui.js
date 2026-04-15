@@ -86,7 +86,6 @@ export function saveTripSettings() { localStorage.setItem('tripStartDate', docum
 
 export function convertCurrency() { 
     const usd = document.getElementById('usd-input')?.value;
-    // PERFECT MATH: $100 / 1.26 = £79.36
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / state.liveExchangeRate).toFixed(2)}` : `£0.00`;
 }
 
@@ -126,6 +125,36 @@ export function clearCustomFamilies() {
 export function updateFamilyFilter() { const sel = document.getElementById('family-selector'); if(sel) localStorage.setItem('savedFamilyFilter', sel.value); renderItinerary(); renderTravelVault(); renderAccommodations(); }
 
 const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨', '50n':'💨' }; return m[c] || '🌤️'; };
+
+// THE FIX: ASYNC MULTI-CITY SUMMARY FETCH
+export async function initWeatherPill() {
+    const loadSummary = async (lat, lon, id) => {
+        try {
+            const data = await fetchWeather(lat, lon);
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
+        } catch(e) {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = '🚫';
+        }
+    };
+    
+    // Fire all three fixed cities immediately
+    loadSummary(34.0522, -118.2437, 'wp-la');
+    loadSummary(37.0965, -113.5684, 'wp-utah');
+    loadSummary(36.1699, -115.1398, 'wp-vegas');
+
+    // Attempt local GPS
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'),
+            err => { const el = document.getElementById('wp-local'); if(el) el.innerHTML = '🚫'; }
+        );
+    } else {
+        const el = document.getElementById('wp-local'); if(el) el.innerHTML = '🚫';
+    }
+}
+
 export async function setWeatherCity(target) {
     document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
@@ -143,32 +172,46 @@ export async function setWeatherCity(target) {
             }
         }
         renderWeatherDOM(await fetchWeather(lat, lon), locName);
-    } catch(e) { if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = "📍 Offline"; }
+    } catch(e) {}
 }
-export function autoSetWeatherCity() {
+
+export function openWeatherModal() {
+    if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('weather-modal');
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    
+    // Smart default: Show LA initially unless the trip has already started!
     const now = new Date(); const savedStart = localStorage.getItem('tripStartDate'); let target = 'la'; 
     if (savedStart) { const tripDate = new Date(savedStart); if (now >= tripDate) target = 'local'; }
     setWeatherCity(target);
 }
+
+export function closeWeatherModal() {
+    const modal = document.getElementById('weather-modal');
+    modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300);
+}
+
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
-    if(document.getElementById('hw-icon')) document.getElementById('hw-icon').innerText = getWeatherIcon(d.weather[0].icon); 
-    if(document.getElementById('hw-temp')) document.getElementById('hw-temp').innerText = `${Math.round(d.main.temp)}°C`; 
-    if(document.getElementById('hw-desc')) document.getElementById('hw-desc').innerText = d.weather[0].description; 
-    if(document.getElementById('hw-loc')) document.getElementById('hw-loc').innerText = `📍 ${locName}`;
     
-    const mainWeather = d.weather[0].main.toLowerCase(); let bgImage = 'img/bg.jpg'; 
-    if (mainWeather.includes('clear')) bgImage = 'img/clear.jpg'; else if (mainWeather.includes('cloud')) bgImage = 'img/clouds.jpg';
-    else if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) bgImage = 'img/rain.jpg'; else if (mainWeather.includes('snow')) bgImage = 'img/snow.jpg';
-    document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
-
+    // We no longer update the single pill info because we use the multi-pill now!
+    // Just inject the detailed hero and 5-day forecast into the Modal.
+    
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
         const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-        return `<div class="WTH-card"><span class="WTH-day">${dayName}</span><span class="WTH-icon">${getWeatherIcon(day.weather[0].icon)}</span><span class="WTH-temps">${Math.round(day.main.temp)}°C</span></div>`; 
+        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
     }).join('');
     
     const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `<div class="WTH-hero" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid var(--accent);"><div class="WTH-icon" style="font-size: 60px;">${getWeatherIcon(d.weather[0].icon)}</div><div class="WTH-hero-temp" style="color: var(--accent);">${Math.round(d.main.temp)}°C</div><div class="WTH-hero-desc">${d.weather[0].description}</div><div style="font-size: 15px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 20px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 class="ADM-hdr" style="margin: 30px 0 15px;">5-Day Forecast</h3>${forecastHtml}`; 
+    if (wDash) wDash.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);">
+            <div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div>
+            <div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div>
+            <div style="font-size: 16px; font-weight: 700; opacity: 0.8; text-transform: capitalize;">${d.weather[0].description}</div>
+            <div style="font-size: 12px; font-weight: 900; color: var(--text); opacity: 0.5; margin-top: 15px; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div>
+        </div>
+        <h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3>
+        <div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
