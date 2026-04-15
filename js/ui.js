@@ -85,7 +85,6 @@ export function calculateTip() {
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
 
-// THE FIX: Unifying the Splash Screen Memory and the Settings Dropdown Memory
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All Activities</option>';
@@ -100,13 +99,11 @@ export function populateDropdown() {
 
     const appUser = localStorage.getItem('appUser');
     if (appUser) {
-        // If the user isn't in the list yet, silently add them so the dropdown doesn't blank out
         if (!allFams.has(appUser) && appUser !== 'All') {
             const opt = document.createElement('option'); opt.value = appUser; opt.textContent = appUser; sel.appendChild(opt);
         }
         sel.value = appUser;
     }
-    
     updateFamilyFilter();
 }
 
@@ -116,11 +113,9 @@ export function clearCustomFamilies() {
     }
 }
 
-// THE FIX: Any change to the dropdown permanently updates the central appUser memory
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
     if(sel) localStorage.setItem('appUser', sel.value); 
-    
     renderItinerary(); renderTravelVault(); renderAccommodations(); 
 }
 
