@@ -65,17 +65,14 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
         
-        // Weather
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
         if (e.target.closest('#btn-close-weather')) { closeWeatherModal(); return; }
         
-        // Navigation
         const navBtn = e.target.closest('.nav-btn');
         if (navBtn) { openTab(navBtn.id.replace('nav-btn-', '')); return; }
         
-        // Tips
         const tipsBtn = e.target.closest('.tips-btn');
         if (tipsBtn) { openTipsModal(tipsBtn.dataset.city); return; }
         const tipsTabBtn = e.target.closest('.tips-tab-btn');
@@ -85,21 +82,10 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
         
-        // Setup & Hype
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
-        
-        // The Vegas Decider
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         
-        // The Converter (x) Button
-        if (e.target.closest('#clear-usd')) { 
-            const usdInput = document.getElementById('usd-input');
-            if (usdInput) usdInput.value = '';
-            convertCurrency(); return; 
-        }
-        
-        // The Segmented Toggles
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
         
@@ -109,7 +95,12 @@ function bindEvents() {
             splitBtn.classList.add('active'); calculateTip(); return;
         }
         
-        // Settings Buttons
+        if (e.target.closest('#clear-usd')) { 
+            const usdInput = document.getElementById('usd-input');
+            if (usdInput) usdInput.value = '';
+            convertCurrency(); return; 
+        }
+        
         if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
         if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
         if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
@@ -126,12 +117,10 @@ function bindEvents() {
             window.location.reload(true); return;
         }
         
-        // Easter Eggs
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
         
-        // Modals
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-travel')) { closeTravelModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
@@ -142,7 +131,6 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
         }
 
-        // Interaction Cards
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
             const flightId = editGateBtn.dataset.flightid;
