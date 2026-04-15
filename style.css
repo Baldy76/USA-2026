@@ -56,6 +56,14 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .itin-card:active { transform: scale(0.98); }
 .itin-card.completed { opacity: 0.6; filter: grayscale(100%); text-decoration: line-through; border: 2px dashed var(--ios-grey); box-shadow: none; background: transparent; }
 
+/* THE NEW TIMELINE UI */
+.timeline { position: relative; padding-left: 24px; margin-top: 15px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 15px; bottom: 30px; width: 2px; background: var(--ios-grey); z-index: 0; }
+.timeline-card-wrapper { position: relative; z-index: 1; }
+.timeline-dot { position: absolute; left: -24px; top: 30px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 3px solid var(--accent); z-index: 2; transition: all 0.3s ease; }
+.timeline-card-wrapper.completed .timeline-dot { border-color: #34c759; background: #34c759; }
+.itin-card.happening-now { border: 2px solid var(--accent); box-shadow: 0 0 20px rgba(0, 122, 255, 0.4); animation: gentlePulse 2s infinite; }
+
 .color-card { border: none; color: white; }
 .color-card .segment { background: transparent; color: rgba(255,255,255,0.7); }
 .color-card .segment.active { background: #ffffff; color: #000000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
