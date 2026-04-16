@@ -66,6 +66,31 @@ function initParallax() {
     }, { passive: true });
 }
 
+function startNotificationEngine() {
+    setInterval(async () => {
+        updateTimeAndCountdown(); 
+        
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const notified = await getVal('notifiedTasks') || [];
+        const now = Date.now();
+        
+        if(!state.itineraryData) return;
+
+        state.itineraryData.forEach(cols => {
+            if(!cols || cols.length < 5) return;
+            const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
+            if (notified.includes(taskId)) return;
+            
+            const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
+            if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { 
+                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
+                notified.push(taskId);
+                setVal('notifiedTasks', notified);
+            }
+        });
+    }, 60000); 
+}
+
 function bindEvents() {
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
@@ -99,7 +124,7 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); return;
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); return;
         }
         if (e.target.closest('#btn-clear-anchor')) { e.stopPropagation(); if(confirm("Pull up anchor?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return; }
         
@@ -153,7 +178,8 @@ function bindEvents() {
         if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
         if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
         if (e.target.closest('#btn-force-sync')) {
-            const btn = e.target.closest('#btn-force-sync'); btn.innerText = "⏳ Syncing..."; await loadAllData(); 
+            const btn = e.target.closest('#btn-force-sync');
+            btn.innerText = "⏳ Syncing..."; await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
         }
@@ -168,6 +194,7 @@ function bindEvents() {
         
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
+        
         if (e.target.closest('#btn-confirm-modal')) {
             const modal = document.getElementById('completion-modal');
             let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
@@ -189,10 +216,13 @@ function bindEvents() {
 
         const travelCard = e.target.closest('.flip-container');
         if (travelCard && !e.target.closest('.edit-gate-btn')) { travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; }
+        
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
+        
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard) { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard) {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
@@ -201,6 +231,7 @@ function bindEvents() {
 
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
+
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -227,7 +258,7 @@ async function bootApp() {
     initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     
-    setInterval(updateTimeAndCountdown, 60000); // Drives the clocks, sky, and Up Next.
+    startNotificationEngine(); // THE FIX: Notification engine is back to drive the background loop!
 }
 
 document.addEventListener('DOMContentLoaded', bootApp);
