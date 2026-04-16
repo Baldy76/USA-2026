@@ -131,3 +131,25 @@ export function preCacheImages() {
         }
     });
 }
+export async function deleteQuoteFromSheet(location, quote, author) {
+    // 1. Remove it locally so the app updates instantly
+    if (state.quotesData) {
+        const index = state.quotesData.findIndex(q => q[0] === location && q[1] === quote && q[2] === author);
+        if (index > -1) state.quotesData.splice(index, 1);
+        await setVal('offlineQuotes', state.quotesData);
+    }
+
+    // 2. Tell Google Sheets to delete the row
+    if (!navigator.onLine) { 
+        alert("Offline: Quote deleted locally, but will reappear later if not deleted from the live sheet."); 
+        return; 
+    }
+    try {
+        fetch("https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec", {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deleteQuote', payload: { location, quote, author } })
+        });
+    } catch (e) { console.error("Quote delete failed", e); }
+}
