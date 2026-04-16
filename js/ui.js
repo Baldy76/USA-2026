@@ -960,3 +960,30 @@ export function renderAnchor() {
         </div>`;
     }
 }
+
+export function openManageQuotesModal() {
+    document.body.classList.add('no-scroll');
+    const modal = document.getElementById('manage-quotes-modal');
+    renderAdminQuotes();
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function renderAdminQuotes() {
+    const list = document.getElementById('admin-quotes-list');
+    if (!state.quotesData || state.quotesData.length === 0) {
+        list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`;
+        return;
+    }
+    
+    // Renders every quote with a red trash can button
+    list.innerHTML = state.quotesData.map((q, index) => `
+        <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);">
+            <div style="flex: 1; padding-right: 10px;">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div>
+                <div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div>
+            </div>
+            <button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button>
+        </div>
+    `).reverse().join('');
+}
