@@ -24,7 +24,6 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// THE FIX: Restored the dynamic greeting function!
 export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = "";
@@ -531,6 +530,7 @@ export function spinRoulette() {
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
+    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
