@@ -8,8 +8,7 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, renderScoreboard, spinRoulette, openTipsModal, renderTips, openStayModal, 
-    openGateModal, openQuoteModal, renderQuotes, submitNewQuote, renderAnchor,
-    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal
+    openGateModal, renderAnchor, closeTipsModal, closeStayModal, closeGateModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -102,10 +101,6 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        const quoteBtn = e.target.closest('.open-quote-btn');
-        if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
-        if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
-        if (e.target.closest('#btn-save-quote')) { submitNewQuote(); return; }
 
         if (e.target.closest('#btn-drop-anchor')) {
             const btn = e.target.closest('#btn-drop-anchor');
@@ -123,8 +118,6 @@ function bindEvents() {
             const btn = e.target.closest('#btn-find-car');
             const destLat = btn.dataset.lat;
             const destLon = btn.dataset.lon;
-            
-            // THE FIX: Official Native Google Maps Walking Directions API
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLon}&travelmode=walking`, '_blank'); 
             return;
         }
