@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=2.1.98';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=2.1.98';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -9,7 +9,7 @@ import {
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor
-} from './ui.js';
+} from './ui.js?v=2.1.98';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -89,7 +89,6 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
-    
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -127,7 +126,6 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // THE FIX: Professional walking mode directions from current location
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -156,7 +154,10 @@ function bindEvents() {
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         if (e.target.closest('#btn-reset-tally')) {
-            if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
+            if(confirm("Clear the scoreboard?")) {
+                localStorage.removeItem('rouletteTallies');
+                renderScoreboard();
+            }
             return;
         }
         if (e.target.closest('#btn-enable-notifs')) {
@@ -165,9 +166,13 @@ function bindEvents() {
                 Notification.requestPermission().then(permission => {
                     if (permission === 'granted') {
                         btn.innerHTML = '✅ Notifications Enabled';
-                        btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
+                        btn.style.backgroundColor = '#34c759';
+                        btn.style.color = 'white';
+                        btn.style.boxShadow = '0 4px 15px rgba(52, 199, 89, 0.4)';
                     } else alert('Notifications denied.');
                 });
+            } else {
+                alert('Push notifications not supported on this browser.');
             }
             return;
         }
@@ -201,16 +206,21 @@ function bindEvents() {
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
+        
         if (e.target.closest('#btn-confirm-modal')) {
             const modal = document.getElementById('completion-modal');
             let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
+
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
+
         if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
+
         if (e.target.closest('#btn-save-gate')) {
             const modal = document.getElementById('gate-modal');
+            const flightId = modal.dataset.flightid;
             const term = document.getElementById('gate-input-term').value.trim();
             const gate = document.getElementById('gate-input-gate').value.trim();
             let finalString = "Check Board";
@@ -218,25 +228,32 @@ function bindEvents() {
             else if (term) finalString = `Terminal ${term}`;
             else if (gate) finalString = `Gate ${gate}`;
             if (!state.gateOverrides) state.gateOverrides = {};
-            state.gateOverrides[modal.dataset.flightid] = finalString;
-            await setVal('gateOverrides', state.gateOverrides); syncToCloud('gateUpdate', state.gateOverrides);
+            state.gateOverrides[flightId] = finalString;
+            await setVal('gateOverrides', state.gateOverrides);
+            syncToCloud('gateUpdate', state.gateOverrides);
             renderTravelVault(); closeGateModal(); return;
         }
+
         const travelCard = e.target.closest('.flip-container');
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') { 
             travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; 
         }
+
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
+
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard && e.target.tagName !== 'A') {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
             await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
         }
+
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
+
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -252,18 +269,30 @@ window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTra
 
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
+    
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
+    const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
+    applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
+    prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
+
     history.replaceState({ pageId: 'home' }, '', '#home');
+    
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
+    
     loadAllData().then(() => {
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
-    });
-    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
+    }).catch(e => console.error("Data load failed:", e));
+    
+    initLiveCurrency(); 
+    updateTimeAndCountdown(); 
+    initWeatherPill();
+    
     if (document.getElementById('roulette-wheel')) initWheel();
+    
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=2.1.98').catch(e => console.error(e));
