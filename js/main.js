@@ -1,5 +1,5 @@
-import { state, setVal, getVal } from './store.js?v=2.1.94';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=2.1.94';
+import { state, setVal, getVal } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateGreeting, updateTimeAndCountdown, saveTripSettings, renderUpNext,
@@ -10,7 +10,7 @@ import {
     initWheel, renderScoreboard, spinRoulette, openTipsModal, renderTips, openStayModal, 
     openGateModal, openQuoteModal, renderQuotes, submitNewQuote, renderAnchor,
     closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal, parseDateTime
-} from './ui.js?v=2.1.94';
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -121,7 +121,7 @@ function bindEvents() {
         
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            // THE FIX: Official Native Google Maps Route link
+            // THE FIX: Official Native Google Maps Walking Directions from current location to saved coords
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); 
             return;
         }
@@ -218,7 +218,6 @@ function bindEvents() {
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
         
-        // THE FIX: Ignore clicks on "Get Directions" link tags.
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
         
@@ -252,7 +251,7 @@ async function bootApp() {
     
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
-    // THE FIX: Even if loadAllData fails, the core UI will still build!
+    // Even if Google Sheets completely fails, this won't crash the UI!
     await loadAllData();
     
     populateDropdown(); 
@@ -273,4 +272,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=2.1.94');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
