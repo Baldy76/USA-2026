@@ -24,6 +24,19 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
+// THE FIX: The Flap Engine!
+function updateFlap(id, newVal) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.innerText !== newVal) {
+        el.classList.remove('flipping');
+        void el.offsetWidth; // trigger rapid reflow
+        el.classList.add('flipping');
+        setTimeout(() => { el.innerText = newVal; }, 200); // Change text halfway through the flip!
+    }
+}
+
+// THE FIX: Dynamic Skies Engine!
 export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = "";
@@ -31,30 +44,45 @@ export function updateGreeting() {
     
     const hour = new Date().getHours();
     let greetings = [];
+    let skyClass = '';
     
-    if (hour >= 4 && hour < 12) {
+    if (hour >= 5 && hour < 12) {
         greetings = ["Good Morning", "Rise and shine", "Ready for today", "Let's go"];
-    } else if (hour >= 12 && hour < 18) {
+        skyClass = 'sky-morning';
+    } else if (hour >= 12 && hour < 17) {
         greetings = ["Good Afternoon", "Halfway there", "Adventure awaits", "Keep exploring"];
+        skyClass = 'sky-day';
+    } else if (hour >= 17 && hour < 20) {
+        greetings = ["Good Evening", "Golden hour", "What a day", "Sun is setting"];
+        skyClass = 'sky-evening';
     } else {
-        greetings = ["Good Evening", "Vegas time", "What a day", "Time to relax"];
+        greetings = ["Good Night", "Vegas time", "City lights", "Time to relax"];
+        skyClass = 'sky-night';
     }
     
     const randomGreet = greetings[Math.floor(Math.random() * greetings.length)];
     const titleEl = document.getElementById('greeting-title');
     if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
+
+    const topCard = document.getElementById('dashboard-hero');
+    if (topCard) {
+        topCard.classList.remove('sky-morning', 'sky-day', 'sky-evening', 'sky-night');
+        topCard.classList.add(skyClass);
+    }
 }
 
+// THE FIX: Clocks wired to the Flap Engine!
 export function updateTimeAndCountdown() { 
     try {
         updateGreeting();
         
         const now = new Date();
-        const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
+        const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
         
         try {
-            const timePT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Los_Angeles' }).format(now);
-            const timeMT = new Intl.DateTimeFormat('en-US', { ...timeOpts, timeZone: 'America/Denver' }).format(now);
+            // Update the basic text city clocks
+            const timePT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' }).format(now);
+            const timeMT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Denver' }).format(now);
             const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 Local: ${timePT}`;
             const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 Local: ${timePT}`;
             const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
@@ -72,6 +100,7 @@ export function updateTimeAndCountdown() {
         const progLabel = document.getElementById('trip-prog-label');
         const progVal = document.getElementById('trip-prog-val');
         const progBar = document.getElementById('trip-prog-bar');
+        const cdDisplay = document.getElementById('countdown-display');
         
         if (savedStart) {
             const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
@@ -85,7 +114,12 @@ export function updateTimeAndCountdown() {
                 const diff = tripStart - now;
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 if(progLabel) progLabel.innerText = "Countdown";
-                if(progVal) progVal.innerText = `${days} Days!`;
+                if(progVal) progVal.innerText = "";
+                
+                // Flip the countdown flap!
+                updateFlap('cd-num', days.toString());
+                if(cdDisplay) cdDisplay.style.display = 'flex';
+                
                 if(progBar) { progBar.style.width = '100%'; progBar.style.background = '#fff'; }
             } else if (now >= tripStart && now <= tripEnd) {
                 const totalDuration = tripEnd - tripStart;
@@ -98,15 +132,19 @@ export function updateTimeAndCountdown() {
                 
                 if(progLabel) progLabel.innerText = "Trip Progress";
                 if(progVal) progVal.innerText = `Day ${dayNum} of ${totalDays}`;
+                if(cdDisplay) cdDisplay.style.display = 'none';
+                
                 if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
             } else {
                 if(progLabel) progLabel.innerText = "Trip Complete";
                 if(progVal) progVal.innerText = `Hope you had fun!`;
+                if(cdDisplay) cdDisplay.style.display = 'none';
                 if(progBar) { progBar.style.width = `100%`; progBar.style.background = '#34c759'; }
             }
         } else {
             if(progLabel) progLabel.innerText = "No Trip Date Set";
             if(progVal) progVal.innerText = "Go to Settings";
+            if(cdDisplay) cdDisplay.style.display = 'none';
             if(progBar) progBar.style.width = '0%';
         }
         
@@ -114,10 +152,17 @@ export function updateTimeAndCountdown() {
             const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
             let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 LOCAL (PT)';
             if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 LOCAL (MT)'; }
-            const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
-            const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
-            const ukEl = document.getElementById('clock-uk'); if(ukEl) ukEl.innerText = ukTime;
-            const locEl = document.getElementById('clock-local'); if(locEl) locEl.innerText = localTime;
+            
+            const ukTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: 'Europe/London' }).format(now);
+            const localTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: localTz }).format(now);
+            
+            // Extract the pure digits and trigger the mechanical flaps!
+            const ukMatch = ukTimeStr.match(/(\d{1,2})[^\d](\d{2})/);
+            if(ukMatch) { updateFlap('uk-hr', ukMatch[1].padStart(2, '0')); updateFlap('uk-min', ukMatch[2]); }
+            
+            const locMatch = localTimeStr.match(/(\d{1,2})[^\d](\d{2})/);
+            if(locMatch) { updateFlap('loc-hr', locMatch[1].padStart(2, '0')); updateFlap('loc-min', locMatch[2]); }
+
             const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
         } catch(e) {}
         
@@ -664,7 +709,6 @@ export function initWheel() {
     renderScoreboard();
 }
 
-// THE FIX: Restored renderScoreboard perfectly!
 export function renderScoreboard() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     const board = document.getElementById('roulette-scoreboard');
