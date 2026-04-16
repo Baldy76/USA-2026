@@ -12,6 +12,7 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
+
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
@@ -341,7 +342,6 @@ export async function renderItinerary() {
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
 }
 
-// THE FIX: Apple Wallet 3D Flip Builder!
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -388,7 +388,7 @@ export function renderTravelVault() {
                                 <span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-                                <div id="gate-text-${flightId}" style="font-size: 24px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div>
+                                <div id="gate-text-${flightId}" style="font-size: 18px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div>
                                 <button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">✏️ Edit</button>
                             </div>
                             <div style="font-size: 12px; font-weight: 700; margin-bottom: 15px;">
@@ -599,7 +599,6 @@ export function spinRoulette() {
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
-    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
@@ -693,6 +692,29 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
 
 export function closeStayModal() {
     const modal = document.getElementById('stay-modal');
+    modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
+
+// THE FIX: New Logic for the custom Gate Input
+export function openGateModal(flightId) {
+    document.body.classList.add('no-scroll');
+    if(navigator.vibrate) navigator.vibrate(20);
+    
+    const modal = document.getElementById('gate-modal');
+    modal.dataset.flightid = flightId;
+    
+    document.getElementById('gate-input-term').value = '';
+    document.getElementById('gate-input-gate').value = '';
+    
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
+    
+    setTimeout(() => document.getElementById('gate-input-term').focus(), 300);
+}
+
+export function closeGateModal() {
+    const modal = document.getElementById('gate-modal');
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
