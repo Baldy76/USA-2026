@@ -45,7 +45,7 @@ export function updateGreeting() {
     if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
 }
 
-// THE FIX: The Progress Bar Engine
+// THE FIX: Progress Bar + Calling Up Next!
 export function updateTimeAndCountdown() { 
     try {
         updateGreeting();
@@ -122,7 +122,8 @@ export function updateTimeAndCountdown() {
             const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
         } catch(e) {}
         
-        renderStepTracker(now);
+        // Triggers the Smart Assistant Search
+        renderUpNext();
 
     } catch(e) { console.error(e); }
 }
@@ -133,44 +134,65 @@ export function saveTripSettings() {
     updateTimeAndCountdown(); 
 }
 
-// THE FIX: Rendering the Steps
-export function renderStepTracker(nowDate = new Date()) {
-    const todayStr = nowDate.toDateString();
-    const stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
-    const todaySteps = stepData[todayStr] || 0;
-    const goal = 10000;
-    
-    let percent = (todaySteps / goal) * 100;
-    if(percent > 100) percent = 100;
-    
-    const valEl = document.getElementById('step-prog-val');
-    const barEl = document.getElementById('step-prog-bar');
-    
-    if(valEl) valEl.innerText = `${todaySteps.toLocaleString()} / 10k`;
-    if(barEl) barEl.style.width = `${percent}%`;
-}
+// THE FIX: The intelligent "Up Next" Engine
+export function renderUpNext() {
+    const titleEl = document.getElementById('up-next-title');
+    const timeEl = document.getElementById('up-next-time');
+    if (!titleEl || !timeEl) return;
 
-export function openStepModal() {
-    document.body.classList.add('no-scroll');
-    if(navigator.vibrate) navigator.vibrate(20);
-    
-    const todayStr = new Date().toDateString();
-    const stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
-    const todaySteps = stepData[todayStr] || '';
-    
-    const input = document.getElementById('step-input-val');
-    if(input) input.value = todaySteps;
-    
-    const modal = document.getElementById('step-modal');
-    modal.style.display = 'flex'; 
-    setTimeout(() => modal.classList.add('active'), 10);
-    setTimeout(() => { if(input) input.focus(); }, 300);
-}
+    if (!state.itineraryData || state.itineraryData.length === 0) {
+        titleEl.innerText = "No upcoming plans";
+        timeEl.innerText = "Add something to the sheet!";
+        return;
+    }
 
-export function closeStepModal() {
-    const modal = document.getElementById('step-modal');
-    modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+    const now = new Date().getTime();
+    const filter = localStorage.getItem('appUser') || 'All';
+    const leech = ['graeme', 'dawn', 'grace', 'leech'];
+    const murray = ['david', 'sarah', 'bexs', 'murray'];
+
+    let upcoming = [];
+
+    state.itineraryData.forEach(cols => {
+        if(!cols || cols.length < 5) return;
+        const d = (cols[0] || '').trim();
+        const loc = (cols[1] || '').trim();
+        const act = (cols[2] || '').trim();
+        const time = (cols[3] || '').trim();
+        const who = (cols[4] || '').trim();
+
+        let isMatch = false;
+        const whoL = who.toLowerCase();
+        const filterL = filter.toLowerCase();
+        if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true;
+        else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true;
+        else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true;
+        else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
+
+        if (isMatch) {
+            const taskTime = parseDateTime(d, time || '23:59');
+            if (taskTime && taskTime > now) {
+                upcoming.push({ act, time: time || 'TBD', loc, timestamp: taskTime, date: d });
+            }
+        }
+    });
+
+    if (upcoming.length > 0) {
+        upcoming.sort((a, b) => a.timestamp - b.timestamp);
+        const next = upcoming[0];
+
+        titleEl.innerText = next.act;
+
+        const isToday = new Date(next.timestamp).toDateString() === new Date().toDateString();
+        const datePrefix = isToday ? "Today" : next.date;
+        
+        let locFormat = "📍 " + (next.loc.toLowerCase().includes('la') ? 'LA' : next.loc.toLowerCase().includes('utah') ? 'Utah' : next.loc.toLowerCase().includes('vegas') ? 'Vegas' : next.loc);
+        
+        timeEl.innerText = `${datePrefix} @ ${next.time} • ${locFormat}`;
+    } else {
+        titleEl.innerText = "Trip Complete!";
+        timeEl.innerText = "Time to go home ✈️";
+    }
 }
 
 export function convertCurrency() { 
@@ -216,7 +238,7 @@ export function populateDropdown() {
 export function updateFamilyFilter() { 
     const sel = document.getElementById('family-selector'); 
     if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
-    renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting();
+    renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderUpNext();
 }
 
 export function clearCustomFamilies() {
@@ -404,6 +426,8 @@ export async function renderItinerary() {
     document.getElementById('vegas-completed-list').innerHTML = cVegas ? `<div class="timeline">${cVegas}</div>` : '';
     
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
+    
+    renderUpNext();
 }
 
 export function renderTravelVault() { 
