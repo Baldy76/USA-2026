@@ -64,8 +64,8 @@ export function updateTimeAndCountdown() {
             const total = tripEnd - tripStart; const elapsed = now - tripStart;
             let percent = Math.min(100, (elapsed / total) * 100);
             if(progBar) progBar.style.width = `${percent}%`;
-            const valEl = document.getElementById('trip-prog-val');
-            if(valEl) valEl.innerText = `Day ${Math.floor(elapsed/(864e5))+1}`;
+            const progVal = document.getElementById('trip-prog-val');
+            if (progVal) progVal.innerText = `Day ${Math.floor(elapsed/(864e5))+1}`;
         }
     }
 
@@ -77,8 +77,178 @@ export function updateTimeAndCountdown() {
     const locTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:locTz }).format(now).split(':');
     updateFlap('loc-hr', locTime[0]); updateFlap('loc-min', locTime[1]);
     const dateEl = document.getElementById('clock-date');
-    if(dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+    if (dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
     renderUpNext();
+}
+
+export function saveTripSettings() { 
+    localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); 
+    localStorage.setItem('tripEndDate', document.getElementById('trip-end-date').value); 
+    updateTimeAndCountdown(); 
+}
+
+export function renderUpNext() {
+    const titleEl = document.getElementById('up-next-title');
+    const timeEl = document.getElementById('up-next-time');
+    if (!titleEl || !timeEl) return;
+
+    if (!state.itineraryData || state.itineraryData.length === 0) {
+        titleEl.innerText = "No upcoming plans"; timeEl.innerText = "Add something to the sheet!"; return;
+    }
+
+    const now = new Date().getTime();
+    const filter = localStorage.getItem('appUser') || 'All';
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    let upcoming = [];
+
+    state.itineraryData.forEach(cols => {
+        if(!cols || cols.length < 5) return;
+        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); 
+        const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim();
+        let isMatch = false; const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true;
+        else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true;
+        else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true;
+        else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
+
+        if (isMatch) {
+            const taskTime = parseDateTime(d, time || '23:59');
+            if (taskTime && taskTime > now) { upcoming.push({ act, time: time || 'TBD', loc, timestamp: taskTime, date: d }); }
+        }
+    });
+
+    if (upcoming.length > 0) {
+        upcoming.sort((a, b) => a.timestamp - b.timestamp);
+        const next = upcoming[0]; titleEl.innerText = next.act;
+        const isToday = new Date(next.timestamp).toDateString() === new Date().toDateString();
+        const datePrefix = isToday ? "Today" : next.date;
+        let locFormat = "📍 " + (next.loc.toLowerCase().includes('la') ? 'LA' : next.loc.toLowerCase().includes('utah') ? 'Utah' : next.loc.toLowerCase().includes('vegas') ? 'Vegas' : next.loc);
+        timeEl.innerText = `${datePrefix} @ ${next.time} • ${locFormat}`;
+    } else {
+        titleEl.innerText = "Trip Complete!"; timeEl.innerText = "Time to go home ✈️";
+    }
+}
+
+export function convertCurrency() { 
+    const usdInput = document.getElementById('usd-input');
+    const clearBtn = document.getElementById('clear-usd');
+    const usd = usdInput?.value;
+    const rate = state.liveExchangeRate || 1.25; 
+    if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
+    if(document.getElementById('gbp-output')) {
+        document.getElementById('gbp-output').innerText = usd ? `£${(usd / rate).toFixed(2)}` : `£0.00`;
+    }
+}
+
+export let currentTipPercent = 18;
+export function setTip(percent, btnElement) { 
+    currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
+    if(btnElement) btnElement.classList.add('active'); calculateTip(); 
+}
+
+export function calculateTip() { 
+    const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
+    const splitBtn = document.querySelector('.split-btn.active');
+    const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
+    const rate = state.liveExchangeRate || 1.25; 
+    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
+    if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
+    if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
+}
+
+export function populateDropdown() {
+    const sel = document.getElementById('family-selector'); if(!sel) return;
+    sel.innerHTML = '<option value="All">Show All</option>';
+    const sheetFams = state.sheetFamilies || [];
+    new Set([...sheetFams]).forEach(f => {
+        const opt = document.createElement('option'); opt.value = f; opt.textContent = f; sel.appendChild(opt);
+    });
+    sel.value = localStorage.getItem('appUser') || 'All';
+}
+
+export function updateFamilyFilter() { 
+    const sel = document.getElementById('family-selector'); 
+    if(sel && sel.value) localStorage.setItem('appUser', sel.value); 
+    renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderUpNext();
+}
+
+export function clearCustomFamilies() {
+    if(confirm("Remove all old saved names from this device?")) {
+        localStorage.removeItem('customFamilies'); localStorage.removeItem('appUser'); localStorage.removeItem('savedFamilyFilter');
+        window.location.reload(); 
+    }
+}
+
+const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
+
+export async function initWeatherPill() {
+    const loadSummary = async (lat, lon, id) => {
+        try {
+            const data = await fetchWeather(lat, lon);
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
+        } catch(e) { 
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = '🚫'; 
+        }
+    };
+    loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
+    
+    const locEl = document.getElementById('wp-local');
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'),
+            err => { if(locEl) locEl.innerHTML = '🚫'; },
+            { timeout: 5000, maximumAge: 60000 }
+        );
+    } else { if(locEl) locEl.innerHTML = '🚫'; }
+}
+
+export async function setWeatherCity(target) {
+    document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
+    const wDash = document.getElementById('WTH-dashboard');
+    if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
+    
+    try {
+        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
+        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
+        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
+        else if (target === 'local') {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => { 
+                        try {
+                            const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude); renderWeatherDOM(data, "Local GPS"); 
+                        } catch(e) { const fallbackData = await fetchWeather(lat, lon); renderWeatherDOM(fallbackData, "Los Angeles"); }
+                    }, 
+                    async () => { const fallbackData = await fetchWeather(lat, lon); renderWeatherDOM(fallbackData, "Los Angeles"); }, 
+                    { timeout: 5000 }
+                ); return;
+            }
+            locName = "Local (Default LA)";
+        }
+        const data = await fetchWeather(lat, lon); renderWeatherDOM(data, locName);
+    } catch(e) { if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">🚫</span><div class="empty-text">Weather Offline</div></div>`; }
+}
+
+export function openWeatherModal() {
+    document.body.classList.add('no-scroll'); document.getElementById('weather-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10); setWeatherCity('la');
+}
+export function closeWeatherModal() { 
+    document.getElementById('weather-modal').classList.remove('active'); 
+    setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
+}
+
+function renderWeatherDOM(data, fallbackName) {
+    const d = data.current; const locName = fallbackName || d.name;
+    let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
+        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
+        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
+    }).join('');
+    const wDash = document.getElementById('WTH-dashboard');
+    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export function openQuoteModal(location) {
@@ -86,7 +256,7 @@ export function openQuoteModal(location) {
     const modal = document.getElementById('quote-modal');
     modal.dataset.location = location;
     document.getElementById('quote-modal-title').innerText = `💬 ${location.toUpperCase()} Quotes`;
-    document.getElementById('new-quote-text').value = ''; // THE FIX: Clear old input!
+    document.getElementById('new-quote-text').value = '';
     renderQuotes(location);
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
@@ -164,24 +334,32 @@ export async function renderItinerary() {
         if(!cols || cols.length < 5) return;
         const [d, loc, act, time, who] = [cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim()];
         const addr = cols[5] ? cols[5].trim() : '';
-        let isMatch = (filter === 'All' || who.toLowerCase().includes(filter.toLowerCase()));
-        if (!isMatch && leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true;
-        if (!isMatch && murray.includes(filter.toLowerCase()) && who.toLowerCase().includes('murray')) isMatch = true;
+        let isMatch = false;
+        if (filter === 'All' || who.toLowerCase().includes('everyone') || who.trim() === '') isMatch = true; 
+        else if (who.toLowerCase().includes(filter.toLowerCase()) || filter.toLowerCase().includes(who.toLowerCase())) isMatch = true; 
+        else if (leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true; 
+        else if (murray.includes(filter.toLowerCase()) && who.toLowerCase().includes('murray')) isMatch = true;
 
         if (isMatch) {
+            const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
+            
+            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
+            let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
+            
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
-                    <div class="admin-card itin-card ${isCompleted ? 'completed' : ''}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding: 20px; margin-bottom: 16px; cursor: pointer;">
+                    <div class="${cardClass}" data-task-id="${taskId}" data-task-name="${escapeHTML(act)}" style="padding: 20px; margin-bottom: 16px; cursor: pointer;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-grey); padding-bottom: 10px; margin-bottom: 10px;">
-                            <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>
-                            <span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>
+                            <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
-                        <div class="itin-title" style="font-size: 17px; font-weight: 900;">${escapeHTML(act)}</div>
+                        <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
+                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;">📍 <a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
+
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (!grouped['la'][d] && (grouped['la'][d]=[]), grouped['la'][d].push(cardHtml)); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (!grouped['utah'][d] && (grouped['utah'][d]=[]), grouped['utah'][d].push(cardHtml)); }
             else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (!grouped['vegas'][d] && (grouped['vegas'][d]=[]), grouped['vegas'][d].push(cardHtml)); }
@@ -189,9 +367,9 @@ export async function renderItinerary() {
     });
 
     const buildSec = (obj) => Object.entries(obj).map(([date, cards]) => `<details class="day-group" open><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content timeline">${cards.join('')}</div></details>`).join('');
-    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
-    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah;
-    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas;
+    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA ? `<div class="timeline">${cLA}</div>` : '';
+    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah ? `<div class="timeline">${cUtah}</div>` : '';
+    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas ? `<div class="timeline">${cVegas}</div>` : '';
 }
 
 export function renderTravelVault() { 
