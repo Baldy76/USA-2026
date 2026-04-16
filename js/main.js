@@ -7,7 +7,7 @@ import {
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
-    initWheel, spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal
 } from './ui.js';
 
@@ -109,6 +109,15 @@ function bindEvents() {
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
+        
+        // THE FIX: Reset Scoreboard Hook!
+        if (e.target.closest('#btn-reset-tally')) {
+            if(confirm("Clear the Vegas scoreboard?")) {
+                localStorage.removeItem('rouletteTallies');
+                renderScoreboard();
+            }
+            return;
+        }
         
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
