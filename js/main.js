@@ -8,7 +8,7 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, openStepModal, closeStepModal, renderStepTracker
+    openGateModal, closeGateModal, renderUpNext
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -70,6 +70,10 @@ function startNotificationEngine() {
                 setVal('notifiedTasks', notified);
             }
         });
+        
+        // Also refresh Up Next engine every 60 seconds!
+        renderUpNext();
+        
     }, 60000); 
 }
 
@@ -82,8 +86,6 @@ function bindEvents() {
     document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
-    
-    // THE FIX: Listen to the new Trip End Date setting!
     document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
     
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
@@ -92,30 +94,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
         
-        // THE FIX: Step Tracker Click logic!
-        if (e.target.closest('#step-tracker-container')) { openStepModal(); return; }
-        if (e.target.closest('#btn-close-step')) { closeStepModal(); return; }
-        if (e.target.closest('#btn-save-step')) {
-            const input = document.getElementById('step-input-val');
-            if (input && input.value !== '') {
-                const steps = parseInt(input.value);
-                const todayStr = new Date().toDateString();
-                let stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
-                const wasBelow = (stepData[todayStr] || 0) < 10000;
-                
-                stepData[todayStr] = steps;
-                localStorage.setItem('stepTracker', JSON.stringify(stepData));
-                
-                renderStepTracker();
-                closeStepModal();
-                
-                if (steps >= 10000 && wasBelow) {
-                    setTimeout(triggerConfetti, 300);
-                }
-            }
-            return;
-        }
-
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
@@ -184,7 +162,7 @@ function bindEvents() {
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
             btn.innerText = "⏳ Syncing..."; await loadAllData(); 
-            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages();
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
         }
         
@@ -203,7 +181,7 @@ function bindEvents() {
         if (e.target.closest('#btn-confirm-modal')) {
             const modal = document.getElementById('completion-modal');
             let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
-            await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
+            await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
 
         const editGateBtn = e.target.closest('.edit-gate-btn');
@@ -260,7 +238,7 @@ function bindEvents() {
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard && e.target.tagName !== 'A') {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
-            await setVal('completedTasks', tasks); renderItinerary(); return;
+            await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
         }
 
         const linkBtn = e.target.closest('.link-btn');
@@ -311,6 +289,7 @@ async function bootApp() {
         renderAccommodations(); 
         preCacheImages(); 
         renderWallet();
+        renderUpNext();
     }).catch(e => console.error("Data load failed:", e));
     
     initLiveCurrency(); 
