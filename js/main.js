@@ -1,7 +1,6 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
-// THE FIX: ALL 41 IMPORTS EXACTLY MATCH UI.JS
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateGreeting, updateTimeAndCountdown, saveTripSettings, renderUpNext,
     convertCurrency, setTip, calculateTip, populateDropdown, updateFamilyFilter, clearCustomFamilies, 
@@ -103,7 +102,6 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        
         const quoteBtn = e.target.closest('.open-quote-btn');
         if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -123,7 +121,6 @@ function bindEvents() {
         
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            // THE FIX: Restored proper Native Google Maps URL!
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); 
             return;
         }
@@ -154,6 +151,8 @@ function bindEvents() {
             if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
             return;
         }
+        
+        // THE FIX: Robust Notification binding
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
@@ -161,10 +160,11 @@ function bindEvents() {
                     if (permission === 'granted') {
                         btn.innerHTML = '✅ Notifications Enabled';
                         btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
-                    } else alert('Notifications denied.');
+                    } else { alert('Notifications denied.'); }
                 });
             } return;
         }
+        
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
         const splitBtn = e.target.closest('.split-btn');
@@ -172,6 +172,7 @@ function bindEvents() {
             document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
             splitBtn.classList.add('active'); calculateTip(); return;
         }
+        
         if (e.target.closest('#clear-usd')) { 
             const usdInput = document.getElementById('usd-input'); if (usdInput) usdInput.value = ''; convertCurrency(); return; 
         }
@@ -187,6 +188,7 @@ function bindEvents() {
             if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
             window.location.reload(true); return;
         }
+        
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
@@ -216,7 +218,6 @@ function bindEvents() {
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
         
-        // THE FIX: Only open Completion Modal if they didn't click the "Get Directions" link ('A' tag)!
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
         
@@ -243,14 +244,24 @@ window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTra
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+    
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
     history.replaceState({ pageId: 'home' }, '', '#home');
+    
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
-    loadAllData().then(() => {
-        populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
-    });
+    // THE FIX: Even if loadAllData fails, the core UI will still build!
+    await loadAllData();
+    
+    populateDropdown(); 
+    renderItinerary(); 
+    renderTravelVault(); 
+    renderAccommodations(); 
+    preCacheImages(); 
+    renderWallet(); 
+    renderUpNext(); 
+    renderAnchor();
     
     initLiveCurrency(); 
     updateTimeAndCountdown(); 
