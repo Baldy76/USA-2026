@@ -9,7 +9,7 @@ export async function loadAllData() {
         state.itineraryData = data.itinerary;
         state.vaultAndStaysData = data.vault;
         state.sheetFamilies = data.families;
-        state.quotesData = data.quotes || []; // New field for quotes
+        state.quotesData = data.quotes || []; 
         state.liveExchangeRate = data.rate || 1.25;
         return data;
     } catch (e) {
@@ -29,7 +29,6 @@ export async function syncToCloud(type, payload) {
     } catch (e) { console.error("Cloud sync failed", e); }
 }
 
-// THE NEW TOOL: Save quotes back to the sheet!
 export async function saveQuoteToSheet(location, quote, author) {
     if (!navigator.onLine) { alert("Offline: Quote saved locally only."); return; }
     try {
@@ -41,7 +40,6 @@ export async function saveQuoteToSheet(location, quote, author) {
                 payload: { location, quote, author } 
             })
         });
-        // Optimistically add to state so it shows up immediately
         if (!state.quotesData) state.quotesData = [];
         state.quotesData.push([location, quote, author]);
     } catch (e) { console.error("Quote save failed", e); }
