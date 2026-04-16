@@ -31,7 +31,7 @@ export function escapeHTML(str) {
         .replace(/</g, '<')
         .replace(/>/g, '>')
         .replace(/"/g, '"')
-        .replace(/'/g, ''');
+        .replace(/'/g, '&#39;');
 }
 
 export function parseDateTime(dateStr, timeStr) {
