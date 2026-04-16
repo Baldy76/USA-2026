@@ -50,13 +50,40 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
+// THE FIX: Notification Engine Restored!
+function startNotificationEngine() {
+    setInterval(async () => {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const notified = await getVal('notifiedTasks') || [];
+        const now = Date.now();
+        
+        if(!state.itineraryData) return;
+
+        state.itineraryData.forEach(cols => {
+            if(!cols || cols.length < 5) return;
+            const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
+            if (notified.includes(taskId)) return;
+            
+            const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
+            if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { // 30 mins
+                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
+                notified.push(taskId);
+                setVal('notifiedTasks', notified);
+            }
+        });
+    }, 60000); 
+}
+
 function bindEvents() {
     
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
+    
+    // THE FIX: Trip Date Listener Restored!
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
@@ -85,6 +112,19 @@ function bindEvents() {
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
+        
+        // THE FIX: Notification Enabler Restored!
+        if (e.target.closest('#btn-enable-notifs')) {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') alert('Notifications enabled!');
+                    else alert('Notifications denied.');
+                });
+            } else {
+                alert('Push notifications not supported on this browser.');
+            }
+            return;
+        }
         
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
@@ -208,6 +248,9 @@ async function bootApp() {
     initWeatherPill();
     
     if (document.getElementById('roulette-wheel')) initWheel();
+    
+    // THE FIX: Booting the Notification Engine
+    startNotificationEngine();
 }
 
 function runBoot() {
