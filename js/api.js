@@ -1,11 +1,8 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal } from './store.js?v=2.1.94';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
-
-// OPTIONAL: If you publish your new Quotes tab to CSV, paste the URL here. 
-// If left blank, it will just save quotes to local storage for now!
-const QUOTES_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1357435334&single=true&output=csv"; 
+const QUOTES_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1357435334&single=true&output=csv"; // Optional: Paste published Quotes CSV URL here
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
 const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
@@ -100,7 +97,7 @@ export async function syncToCloud(action, payload) {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, payload }) // Exact match for your script structure
+            body: JSON.stringify({ action, payload }) 
         });
     } catch (e) { console.error("Cloud sync failed", e); }
 }
