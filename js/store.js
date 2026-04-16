@@ -1,5 +1,3 @@
-import { get, set } from 'https://cdn.jsdelivr.net/npm/idb-keyval@6/+esm';
-
 export const state = {
     itineraryData: null,
     vaultAndStaysData: null,
@@ -10,14 +8,22 @@ export const state = {
 };
 
 export async function getVal(key) { 
-    return await get(key); 
+    try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : null;
+    } catch(e) {
+        return null;
+    }
 }
 
 export async function setVal(key, val) { 
-    return await set(key, val); 
+    try {
+        localStorage.setItem(key, JSON.stringify(val));
+    } catch(e) {
+        console.error("Local storage error:", e);
+    }
 }
 
-// THE FIX: Proper HTML escaping to prevent crashes
 export function escapeHTML(str) {
     if (!str) return '';
     return String(str)
@@ -25,10 +31,9 @@ export function escapeHTML(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#39;');
 }
 
-// THE FIX: Safe date parsing
 export function parseDateTime(dateStr, timeStr) {
     if (!dateStr) return null;
     const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
