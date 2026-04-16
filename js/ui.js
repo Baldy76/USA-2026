@@ -1,29 +1,22 @@
-import { state, setVal, getVal } from './store.js?v=2.1.94';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=2.1.94';
-
-// BULLETPROOF HELPERS
-export function escapeHTML(str) {
-    if (!str) return '';
-    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-export function parseDateTime(dateStr, timeStr) {
-    if (!dateStr) return null;
-    const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
-    return isNaN(d.getTime()) ? null : d.getTime();
-}
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
-    const btnLight = document.getElementById('btnLight'); const btnDark = document.getElementById('btnDark');
+    const btnLight = document.getElementById('btnLight'); 
+    const btnDark = document.getElementById('btnDark');
     if (btnLight && btnDark) {
         if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
         else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
     }
     updateMetaThemeColor(document.querySelector('.tab-content.active')?.id || 'home');
 }
-export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
+
+export function setThemeMode(isDark) { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+}
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
@@ -31,13 +24,16 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
-    const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) meta.content = metaColor;
 }
 
 function updateFlap(id, newVal) {
     const el = document.getElementById(id);
     if (!el || el.innerText === newVal) return;
-    el.classList.remove('flipping'); void el.offsetWidth; el.classList.add('flipping');
+    el.classList.remove('flipping'); 
+    void el.offsetWidth; 
+    el.classList.add('flipping');
     setTimeout(() => { el.innerText = newVal; }, 200);
 }
 
@@ -45,10 +41,14 @@ export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = (user && user !== 'All') ? ", " + user.split(' ')[0] : "";
     const hour = new Date().getHours();
-    let greetings = ["Good Night", "Vegas time", "City lights", "Time to relax"]; let sky = 'sky-night';
+    
+    let greetings = ["Good Night", "Vegas time", "City lights", "Time to relax"]; 
+    let sky = 'sky-night';
+    
     if (hour >= 5 && hour < 12) { greetings = ["Good Morning", "Rise and shine", "Let's go"]; sky = 'sky-morning'; }
     else if (hour >= 12 && hour < 17) { greetings = ["Good Afternoon", "Adventure awaits"]; sky = 'sky-day'; }
     else if (hour >= 17 && hour < 20) { greetings = ["Good Evening", "Golden hour"]; sky = 'sky-evening'; }
+    
     const titleEl = document.getElementById('greeting-title');
     if (titleEl) titleEl.innerHTML = `${greetings[Math.floor(Math.random() * greetings.length)]}${nameStr}!`;
     const topCard = document.getElementById('dashboard-hero');
@@ -58,6 +58,7 @@ export function updateGreeting() {
 export function updateTimeAndCountdown() {
     const now = new Date();
     updateGreeting();
+    
     const savedStart = localStorage.getItem('tripStartDate');
     const savedEnd = localStorage.getItem('tripEndDate');
     const progBar = document.getElementById('trip-prog-bar');
@@ -68,6 +69,7 @@ export function updateTimeAndCountdown() {
     if (savedStart) {
         const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
         let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
+        
         if (now < tripStart) {
             const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
             updateFlap('cd-num', days.toString());
@@ -86,12 +88,15 @@ export function updateTimeAndCountdown() {
     }
 
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' }).format(now).split(':');
-    updateFlap('uk-hr', ukTime[0]); updateFlap('uk-min', ukTime[1]);
+    updateFlap('uk-hr', ukTime[0]); 
+    updateFlap('uk-min', ukTime[1]);
 
     const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
     const locTz = activeTab === 'utah' ? 'America/Denver' : 'America/Los_Angeles';
     const locTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:locTz }).format(now).split(':');
-    updateFlap('loc-hr', locTime[0]); updateFlap('loc-min', locTime[1]);
+    updateFlap('loc-hr', locTime[0]); 
+    updateFlap('loc-min', locTime[1]);
+    
     const dateEl = document.getElementById('clock-date');
     if(dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
     renderUpNext();
@@ -109,7 +114,9 @@ export function renderUpNext() {
     if (!titleEl || !timeEl) return;
 
     if (!state.itineraryData || state.itineraryData.length === 0) {
-        titleEl.innerText = "No upcoming plans"; timeEl.innerText = "Add something to the sheet!"; return;
+        titleEl.innerText = "No upcoming plans"; 
+        timeEl.innerText = "Add something to the sheet!"; 
+        return;
     }
 
     const now = new Date().getTime();
@@ -120,8 +127,16 @@ export function renderUpNext() {
     let upcoming = [];
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
-        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim();
-        let isMatch = false; const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
+        const d = (cols[0] || '').trim(); 
+        const loc = (cols[1] || '').trim(); 
+        const act = (cols[2] || '').trim(); 
+        const time = (cols[3] || '').trim(); 
+        const who = (cols[4] || '').trim();
+        
+        let isMatch = false; 
+        const whoL = who.toLowerCase(); 
+        const filterL = filter.toLowerCase();
+        
         if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true;
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true;
         else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true;
@@ -142,7 +157,8 @@ export function renderUpNext() {
         let locFormat = "📍 " + (next.loc.toLowerCase().includes('la') ? 'LA' : next.loc.toLowerCase().includes('utah') ? 'Utah' : next.loc.toLowerCase().includes('vegas') ? 'Vegas' : next.loc);
         timeEl.innerText = `${datePrefix} @ ${next.time} • ${locFormat}`;
     } else {
-        titleEl.innerText = "Trip Complete!"; timeEl.innerText = "Time to go home ✈️";
+        titleEl.innerText = "Trip Complete!"; 
+        timeEl.innerText = "Time to go home ✈️";
     }
 }
 
@@ -157,8 +173,10 @@ export function convertCurrency() {
 
 export let currentTipPercent = 18;
 export function setTip(percent, btnElement) { 
-    currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
-    if(btnElement) btnElement.classList.add('active'); calculateTip(); 
+    currentTipPercent = percent; 
+    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
+    if(btnElement) btnElement.classList.add('active'); 
+    calculateTip(); 
 }
 
 export function calculateTip() { 
@@ -194,7 +212,10 @@ export function clearCustomFamilies() {
     }
 }
 
-const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
+const getWeatherIcon = (c) => { 
+    const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; 
+    return m[c] || '🌤️'; 
+};
 
 export async function initWeatherPill() {
     const loadSummary = async (lat, lon, id) => {
@@ -207,7 +228,9 @@ export async function initWeatherPill() {
             if(el) el.innerHTML = '🚫'; 
         }
     };
-    loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
+    loadSummary(34.0522, -118.2437, 'wp-la'); 
+    loadSummary(37.0965, -113.5684, 'wp-utah'); 
+    loadSummary(36.1699, -115.1398, 'wp-vegas');
     
     const locEl = document.getElementById('wp-local');
     if (navigator.geolocation) {
@@ -261,18 +284,6 @@ export async function setWeatherCity(target) {
     }
 }
 
-export function openWeatherModal() {
-    document.body.classList.add('no-scroll');
-    document.getElementById('weather-modal').style.display = 'flex';
-    setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
-    setWeatherCity('la');
-}
-
-export function closeWeatherModal() { 
-    document.getElementById('weather-modal').classList.remove('active'); 
-    setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
-}
-
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
@@ -301,16 +312,20 @@ export async function renderItinerary() {
         if(!cols || cols.length < 5) return;
         const [d, loc, act, time, who] = [cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim()];
         const addr = cols[5] ? cols[5].trim() : '';
+        
         let isMatch = (filter === 'All' || who.toLowerCase().includes(filter.toLowerCase()));
         if (!isMatch && leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true;
         if (!isMatch && murray.includes(filter.toLowerCase()) && who.toLowerCase().includes('murray')) isMatch = true;
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            // THE FIX: Official Google Maps Search URL
+            
+            // THE FIX: Professional native Google Maps URL built here
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
+            
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -323,6 +338,7 @@ export async function renderItinerary() {
                         ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
+                
             if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (!grouped['la'][d] && (grouped['la'][d]=[]), grouped['la'][d].push(cardHtml)); }
             else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (!grouped['utah'][d] && (grouped['utah'][d]=[]), grouped['utah'][d].push(cardHtml)); }
             else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (!grouped['vegas'][d] && (grouped['vegas'][d]=[]), grouped['vegas'][d].push(cardHtml)); }
@@ -372,6 +388,7 @@ export function renderAccommodations() {
         if (cols[1].toLowerCase() === 'stay') {
             // THE FIX: Official Google Maps Search URL
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cols[4])}`;
+            
             const html = `<div class="admin-card stay-card" data-fam="${escapeHTML(cols[0])}" data-addr="${escapeHTML(cols[4])}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]||'')}" data-img="${escapeHTML(cols[7]||'')}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${cols[7]?`url('${cols[7]}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${cols[0]} Stay</h3></div></div>`;
             const city = cols[3].toLowerCase();
             if(city.includes('la')) grouped['la'] += html; else if(city.includes('utah')) grouped['utah'] += html; else if(city.includes('vegas')) grouped['vegas'] += html;
@@ -524,3 +541,15 @@ export function closeTipsModal() { document.getElementById('tips-modal').classLi
 export function closeStayModal() { document.getElementById('stay-modal').classList.remove('active'); setTimeout(() => { document.getElementById('stay-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeGateModal() { document.getElementById('gate-modal').classList.remove('active'); setTimeout(() => { document.getElementById('gate-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeQuoteModal() { document.getElementById('quote-modal').classList.remove('active'); setTimeout(() => { document.getElementById('quote-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+
+// THE FIX: Move helpers down here to safely export them without duplicates
+export function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&', '<': '<', '>': '>', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+export function parseDateTime(dateStr, timeStr) {
+    if (!dateStr) return null;
+    const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
+    return isNaN(d.getTime()) ? null : d.getTime();
+}
