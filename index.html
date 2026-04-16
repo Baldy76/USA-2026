@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.82">
+    <link rel="stylesheet" href="style.css?v=2.1.83">
 </head>
 <body class="light-mode theme-home">
 
@@ -83,13 +83,12 @@
                         </div>
                     </div>
                     
-                    <div id="step-tracker-container" style="cursor: pointer;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
-                            <span>👟 Today's Steps</span>
-                            <span id="step-prog-val">0 / 10k</span>
-                        </div>
-                        <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
-                            <div id="step-prog-bar" style="height: 100%; width: 0%; background: #34c759; border-radius: 5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-top: 5px;">
+                        <div style="font-size: 24px; animation: gentlePulse 2s infinite;">🎯</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 10px; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Up Next</div>
+                            <div id="up-next-title" style="font-size: 15px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Finding next adventure...</div>
+                            <div id="up-next-time" style="font-size: 12px; opacity: 0.9; font-weight: 700;">--</div>
                         </div>
                     </div>
                 </div>
@@ -218,7 +217,6 @@
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
                 <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Enable Push Notifications</button>
             </div>
-            
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
                 <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip Start Date:</label>
@@ -227,7 +225,6 @@
                 <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip End Date:</label>
                 <input type="date" id="trip-end-date" class="settings-input" />
             </div>
-            
             <div class="admin-card">
                 <h3>App Settings</h3>
                 <label style="font-size: 14px; font-weight: 700;">Name:</label><select id="family-selector" class="settings-input"></select>
@@ -238,18 +235,8 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.82</div>
+            <div class="version-control">v2.1.83</div>
         </section>
-
-        <div id="step-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; text-align: center;">
-                <button id="btn-close-step" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
-                <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 900;">Log Steps</h3>
-                <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">What's the Apple Watch saying?</p>
-                <input type="number" id="step-input-val" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--ios-grey); font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 20px; outline: none; background: var(--bg); color: var(--text);" placeholder="0">
-                <button id="btn-save-step" class="action-btn" style="margin: 0; background: #34c759;">Save Steps</button>
-            </div>
-        </div>
 
         <div id="gate-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px;">
@@ -362,6 +349,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.82"></script>
+    <script type="module" src="js/main.js?v=2.1.83"></script>
 </body>
 </html>
