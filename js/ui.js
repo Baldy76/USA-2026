@@ -15,9 +15,10 @@ export function applyTheme(isDark) {
 
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
+// THE FIX: Phone browser header bar is now Sunny Yellow for LA!
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
-    if (pageId === 'la') metaColor = '#ff9500';
+    if (pageId === 'la') metaColor = '#ffcc00';
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
@@ -696,7 +697,6 @@ export function closeStayModal() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-// THE FIX: New Logic for the custom Gate Input
 export function openGateModal(flightId) {
     document.body.classList.add('no-scroll');
     if(navigator.vibrate) navigator.vibrate(20);
