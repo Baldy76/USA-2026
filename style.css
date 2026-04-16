@@ -18,7 +18,6 @@ body.dark-mode {
     --ios-grey: #2c2c2e;
 }
 
-/* THE FIX: LA is now a sunny, soft yellow! */
 body.theme-la { --accent: #ffcc00; --accent-gradient: linear-gradient(135deg, #fce043, #ffb340); }
 body.theme-utah { --accent: #ff3b30; --accent-gradient: linear-gradient(135deg, #ff3b30, #ff9500); }
 body.theme-vegas { --accent: #af52de; --accent-gradient: linear-gradient(135deg, #af52de, #5e5ce6); }
@@ -88,7 +87,6 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .pulse-btn { animation: gentlePulse 2s infinite; }
 @keyframes gentlePulse { 0% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 122, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); } }
 
-/* Fix text contrast on Yellow buttons specifically */
 body.theme-la .action-btn { color: #1c1c1e; text-shadow: none; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4); }
 
 .theme-segmented-control { display: flex; background: var(--ios-grey); border-radius: 12px; padding: 4px; gap: 4px; }
