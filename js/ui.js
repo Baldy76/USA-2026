@@ -24,19 +24,17 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-// THE FIX: The Flap Engine!
 function updateFlap(id, newVal) {
     const el = document.getElementById(id);
     if (!el) return;
     if (el.innerText !== newVal) {
         el.classList.remove('flipping');
-        void el.offsetWidth; // trigger rapid reflow
+        void el.offsetWidth;
         el.classList.add('flipping');
-        setTimeout(() => { el.innerText = newVal; }, 200); // Change text halfway through the flip!
+        setTimeout(() => { el.innerText = newVal; }, 200); 
     }
 }
 
-// THE FIX: Dynamic Skies Engine!
 export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = "";
@@ -71,7 +69,6 @@ export function updateGreeting() {
     }
 }
 
-// THE FIX: Clocks wired to the Flap Engine!
 export function updateTimeAndCountdown() { 
     try {
         updateGreeting();
@@ -80,7 +77,6 @@ export function updateTimeAndCountdown() {
         const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
         
         try {
-            // Update the basic text city clocks
             const timePT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' }).format(now);
             const timeMT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Denver' }).format(now);
             const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 Local: ${timePT}`;
@@ -116,7 +112,6 @@ export function updateTimeAndCountdown() {
                 if(progLabel) progLabel.innerText = "Countdown";
                 if(progVal) progVal.innerText = "";
                 
-                // Flip the countdown flap!
                 updateFlap('cd-num', days.toString());
                 if(cdDisplay) cdDisplay.style.display = 'flex';
                 
@@ -156,7 +151,6 @@ export function updateTimeAndCountdown() {
             const ukTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: 'Europe/London' }).format(now);
             const localTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: localTz }).format(now);
             
-            // Extract the pure digits and trigger the mechanical flaps!
             const ukMatch = ukTimeStr.match(/(\d{1,2})[^\d](\d{2})/);
             if(ukMatch) { updateFlap('uk-hr', ukMatch[1].padStart(2, '0')); updateFlap('uk-min', ukMatch[2]); }
             
