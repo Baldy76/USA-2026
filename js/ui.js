@@ -45,6 +45,7 @@ export function updateGreeting() {
     if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
 }
 
+// THE FIX: The Progress Bar Engine
 export function updateTimeAndCountdown() { 
     try {
         updateGreeting();
@@ -60,53 +61,117 @@ export function updateTimeAndCountdown() {
             const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 Local: ${timeMT}`;
         } catch(e) { console.error(e); }
 
-        const cContainer = document.getElementById('countdown-display'); 
-        const clockContainer = document.getElementById('dual-clocks');
-        if(!cContainer || !clockContainer) return;
-
         try {
             const options = { weekday: 'long', month: 'long', day: 'numeric' };
             const dateString = now.toLocaleDateString(undefined, options);
-            const cdDateEl = document.getElementById('cd-date'); if(cdDateEl) cdDateEl.textContent = dateString;
             const clockDateEl = document.getElementById('clock-date'); if(clockDateEl) clockDateEl.textContent = dateString;
         } catch(e) {}
 
-        let showCountdown = false;
-        try {
-            const savedStart = localStorage.getItem('tripStartDate');
-            if (savedStart) {
-                const input = document.getElementById('trip-start-date'); if(input) input.value = savedStart;
-                const tripDate = new Date(savedStart);
-                if (!isNaN(tripDate.getTime())) {
-                    tripDate.setHours(0,0,0,0); const diff = tripDate - now;
-                    if (diff > 0) {
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                        const cdText = document.getElementById('cd-text'); if(cdText) cdText.innerHTML = `🚀 ${days} Days!`;
-                        showCountdown = true;
-                    }
-                }
-            } 
-        } catch(e) {}
+        const savedStart = localStorage.getItem('tripStartDate');
+        const savedEnd = localStorage.getItem('tripEndDate');
+        
+        const progLabel = document.getElementById('trip-prog-label');
+        const progVal = document.getElementById('trip-prog-val');
+        const progBar = document.getElementById('trip-prog-bar');
+        
+        if (savedStart) {
+            const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
+            let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
+            tripEnd.setHours(23,59,59,999);
+            
+            const inputStart = document.getElementById('trip-start-date'); if(inputStart) inputStart.value = savedStart;
+            const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
-        if (showCountdown) {
-            cContainer.style.display = 'block'; clockContainer.style.display = 'none';
+            if (now < tripStart) {
+                const diff = tripStart - now;
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                if(progLabel) progLabel.innerText = "Countdown";
+                if(progVal) progVal.innerText = `${days} Days!`;
+                if(progBar) { progBar.style.width = '100%'; progBar.style.background = '#fff'; }
+            } else if (now >= tripStart && now <= tripEnd) {
+                const totalDuration = tripEnd - tripStart;
+                const elapsed = now - tripStart;
+                let percent = (elapsed / totalDuration) * 100;
+                if(percent > 100) percent = 100;
+                
+                const dayNum = Math.floor(elapsed / (1000 * 60 * 60 * 24)) + 1;
+                const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
+                
+                if(progLabel) progLabel.innerText = "Trip Progress";
+                if(progVal) progVal.innerText = `Day ${dayNum} of ${totalDays}`;
+                if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
+            } else {
+                if(progLabel) progLabel.innerText = "Trip Complete";
+                if(progVal) progVal.innerText = `Hope you had fun!`;
+                if(progBar) { progBar.style.width = `100%`; progBar.style.background = '#34c759'; }
+            }
         } else {
-            cContainer.style.display = 'none'; clockContainer.style.display = 'block';
-            try {
-                const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
-                let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 Local (PT)';
-                if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 Local (MT)'; }
-                const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
-                const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
-                const ukEl = document.getElementById('clock-uk'); if(ukEl) ukEl.innerText = ukTime;
-                const locEl = document.getElementById('clock-local'); if(locEl) locEl.innerText = localTime;
-                const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
-            } catch(e) { console.error(e); }
+            if(progLabel) progLabel.innerText = "No Trip Date Set";
+            if(progVal) progVal.innerText = "Go to Settings";
+            if(progBar) progBar.style.width = '0%';
         }
+        
+        try {
+            const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
+            let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 LOCAL (PT)';
+            if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 LOCAL (MT)'; }
+            const ukTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }).format(now);
+            const localTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: localTz }).format(now);
+            const ukEl = document.getElementById('clock-uk'); if(ukEl) ukEl.innerText = ukTime;
+            const locEl = document.getElementById('clock-local'); if(locEl) locEl.innerText = localTime;
+            const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
+        } catch(e) {}
+        
+        renderStepTracker(now);
+
     } catch(e) { console.error(e); }
 }
 
-export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); updateTimeAndCountdown(); }
+export function saveTripSettings() { 
+    localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); 
+    localStorage.setItem('tripEndDate', document.getElementById('trip-end-date').value); 
+    updateTimeAndCountdown(); 
+}
+
+// THE FIX: Rendering the Steps
+export function renderStepTracker(nowDate = new Date()) {
+    const todayStr = nowDate.toDateString();
+    const stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
+    const todaySteps = stepData[todayStr] || 0;
+    const goal = 10000;
+    
+    let percent = (todaySteps / goal) * 100;
+    if(percent > 100) percent = 100;
+    
+    const valEl = document.getElementById('step-prog-val');
+    const barEl = document.getElementById('step-prog-bar');
+    
+    if(valEl) valEl.innerText = `${todaySteps.toLocaleString()} / 10k`;
+    if(barEl) barEl.style.width = `${percent}%`;
+}
+
+export function openStepModal() {
+    document.body.classList.add('no-scroll');
+    if(navigator.vibrate) navigator.vibrate(20);
+    
+    const todayStr = new Date().toDateString();
+    const stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
+    const todaySteps = stepData[todayStr] || '';
+    
+    const input = document.getElementById('step-input-val');
+    if(input) input.value = todaySteps;
+    
+    const modal = document.getElementById('step-modal');
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
+    setTimeout(() => { if(input) input.focus(); }, 300);
+}
+
+export function closeStepModal() {
+    const modal = document.getElementById('step-modal');
+    modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
 
 export function convertCurrency() { 
     const usdInput = document.getElementById('usd-input');
@@ -580,7 +645,6 @@ export function initWheel() {
     renderScoreboard();
 }
 
-// THE FIX: LIVE SCOREBOARD RENDERER
 export function renderScoreboard() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     const board = document.getElementById('roulette-scoreboard');
@@ -646,7 +710,6 @@ export function spinRoulette() {
             setTimeout(() => resText.style.transform = 'scale(1)', 200);
         }
         
-        // THE FIX: Save the winning tally!
         let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
         if (!tallies[mode]) tallies[mode] = {};
         tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
