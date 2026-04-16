@@ -50,7 +50,6 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
-// THE FIX: Notification Engine Restored!
 function startNotificationEngine() {
     setInterval(async () => {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -82,8 +81,6 @@ function bindEvents() {
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
     document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
-    
-    // THE FIX: Trip Date Listener Restored!
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
@@ -113,12 +110,17 @@ function bindEvents() {
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         
-        // THE FIX: Notification Enabler Restored!
+        // THE FIX: Smart Green Notification Button Click!
         if (e.target.closest('#btn-enable-notifs')) {
+            const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
                 Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') alert('Notifications enabled!');
-                    else alert('Notifications denied.');
+                    if (permission === 'granted') {
+                        btn.innerHTML = '✅ Notifications Enabled';
+                        btn.style.backgroundColor = '#34c759';
+                        btn.style.color = 'white';
+                        btn.style.boxShadow = '0 4px 15px rgba(52, 199, 89, 0.4)';
+                    } else alert('Notifications denied.');
                 });
             } else {
                 alert('Push notifications not supported on this browser.');
@@ -223,6 +225,15 @@ async function bootApp() {
     initSwipes();
     initPullToRefresh();
     
+    // THE FIX: Smart Check on Boot!
+    const notifBtn = document.getElementById('btn-enable-notifs');
+    if (notifBtn && 'Notification' in window && Notification.permission === 'granted') {
+        notifBtn.innerHTML = '✅ Notifications Enabled';
+        notifBtn.style.backgroundColor = '#34c759';
+        notifBtn.style.color = 'white';
+        notifBtn.style.boxShadow = '0 4px 15px rgba(52, 199, 89, 0.4)';
+    }
+    
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -249,7 +260,6 @@ async function bootApp() {
     
     if (document.getElementById('roulette-wheel')) initWheel();
     
-    // THE FIX: Booting the Notification Engine
     startNotificationEngine();
 }
 
