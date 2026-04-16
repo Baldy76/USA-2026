@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.96">
+    <link rel="stylesheet" href="style.css?v=2.1.88">
 </head>
 <body class="light-mode theme-home">
 
@@ -19,12 +19,15 @@
         <div class="splash-container">
             <div class="splash-card">
                 <img src="img/logo.png" alt="USA 2026" class="splash-logo">
+                
                 <div class="floating-icons">
                     <span class="icon la-icon">🌴</span>
                     <span class="icon utah-icon">⛰️</span>
                     <span class="icon vegas-icon">🎲</span>
                 </div>
+                
                 <h1 class="splash-title">USA 2026</h1>
+                
                 <select id="login-selector" class="settings-input" style="margin-bottom: 20px; text-align: center; text-align-last: center;">
                     <option value="" disabled selected>Who is logging in?</option>
                     <optgroup label="Leech Family">
@@ -80,8 +83,8 @@
                             <span style="font-size: 24px; font-weight: 900;">Days!</span>
                         </div>
                         
-                        <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden;">
-                            <div id="trip-prog-bar" style="height: 100%; width: 0%; background: #fff; border-radius: 5px; transition: width 1s ease;"></div>
+                        <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
+                            <div id="trip-prog-bar" style="height: 100%; width: 0%; background: #fff; border-radius: 5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         </div>
                         <div id="trip-prog-val" style="text-align: center; font-size: 11px; font-weight: 700; margin-top: 8px; opacity: 0.8;">--</div>
                     </div>
@@ -90,7 +93,7 @@
                         <div style="font-size: 24px; animation: gentlePulse 2s infinite;">🎯</div>
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-size: 10px; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Up Next</div>
-                            <div id="up-next-title" style="font-size: 15px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Finding plans...</div>
+                            <div id="up-next-title" style="font-size: 15px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Finding next adventure...</div>
                             <div id="up-next-time" style="font-size: 12px; opacity: 0.9; font-weight: 700;">--</div>
                         </div>
                     </div>
@@ -102,15 +105,19 @@
                     <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 15px;">
                         <div>
                             <div style="font-size: 12px; font-weight: 800; opacity: 0.5; margin-bottom: 5px;">🇬🇧 UK</div>
-                            <div class="flap-board"><span class="flap" id="uk-hr">--</span><span style="font-size: 24px; font-weight: 900; margin: 0 4px;">:</span><span class="flap" id="uk-min">--</span></div>
+                            <div class="flap-board">
+                                <span class="flap" id="uk-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 4px;">:</span><span class="flap" id="uk-min">--</span>
+                            </div>
                         </div>
                         <div style="width: 2px; background: var(--ios-grey);"></div>
                         <div>
                             <div id="local-tz-label" style="font-size: 12px; font-weight: 800; opacity: 0.5; margin-bottom: 5px;">🇺🇸 LOCAL</div>
-                            <div class="flap-board"><span class="flap" id="loc-hr">--</span><span style="font-size: 24px; font-weight: 900; margin: 0 4px;">:</span><span class="flap" id="loc-min">--</span></div>
+                            <div class="flap-board">
+                                <span class="flap" id="loc-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 4px;">:</span><span class="flap" id="loc-min">--</span>
+                            </div>
                         </div>
                     </div>
-                    <div id="clock-date" style="text-align: center; font-size: 13px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">...</div>
+                    <div id="clock-date" style="text-align: center; font-size: 13px; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">...</div>
                 </div>
             </div>
 
@@ -134,20 +141,25 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="position: relative;">
                         <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 12px; width: 110px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; outline: none;">
-                        <button id="clear-usd" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.4); border: none; border-radius: 50%; width: 20px; height: 20px; color: black; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✕</button>
+                        <button id="clear-usd" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.4); border: none; border-radius: 50%; width: 20px; height: 20px; color: black; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer;">✕</button>
                     </div>
                     <span style="font-weight: 900;">=</span>
-                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px;">£0.00</strong>
+                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
+            <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
                 <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🍽️ Tip & Split</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
-                    <div style="flex: 1;"><label style="font-size: 11px; font-weight: 800; opacity: 0.8; display: block; margin-bottom: 5px;">Bill ($):</label><input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;"></div>
-                    <div style="flex: 1;"><label style="font-size: 11px; font-weight: 800; opacity: 0.8; display: block; margin-bottom: 5px;">Split By:</label>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
+                        <input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
                         <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px; height: 50px; display: flex;">
-                            <button class="segment split-btn" data-split="1">1 Fam</button><button class="segment split-btn active" data-split="2">2 Fams</button>
+                            <button class="segment split-btn" data-split="1" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">1 Fam</button>
+                            <button class="segment split-btn active" data-split="2" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">2 Fams</button>
                         </div>
                     </div>
                 </div>
@@ -160,21 +172,25 @@
                 </div>
             </div>
 
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.3);">
+            <div class="admin-card color-card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.3);">
                 <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
-                <select id="roulette-mode" style="margin-bottom: 20px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; width: 100%; text-align-last: center;">
-                    <option value="bill">Who is picking up the bill?</option>
-                    <option value="driving">Who is driving?</option>
+                
+                <select id="roulette-mode" style="margin-bottom: 20px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center;">
+                    <option value="bill" style="color: black;">Who is picking up the bill?</option>
+                    <option value="driving" style="color: black;">Who is driving?</option>
                 </select>
+
                 <div style="position: relative; margin: 0 auto 20px; width: 220px; height: 220px;">
                     <div class="roulette-pointer-container"><div class="roulette-pointer"></div></div>
                     <div id="roulette-wheel" class="roulette-wheel"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #fff; border-radius: 50%; border: 4px solid #af52de; z-index: 5;"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #fff; border-radius: 50%; border: 4px solid #af52de; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"></div>
                 </div>
-                <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px;">Tap to Spin!</div>
-                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">Spin the Wheel</button>
-                <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px;"></div>
-                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; margin-top: 15px; cursor: pointer;">Reset Scores</div>
+
+                <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px; transition: transform 0.2s ease;">Tap to Spin!</div>
+                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px;">Spin the Wheel</button>
+                
+                <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; min-height: 26px;"></div>
+                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
             </div>
 
             <button id="btn-hype" class="action-btn pulse-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); margin-bottom: 20px;">🔥 Activate Hype 🔥</button>
@@ -223,12 +239,13 @@
                 <h3>✈️ Trip Settings</h3>
                 <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip Start Date:</label>
                 <input type="date" id="trip-start-date" class="settings-input" style="margin-bottom: 15px;" />
+                
                 <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip End Date:</label>
                 <input type="date" id="trip-end-date" class="settings-input" />
             </div>
             <div class="admin-card">
                 <h3>App Settings</h3>
-                <label style="font-size: 14px; font-weight: 700;">Default Name:</label><select id="family-selector" class="settings-input"></select>
+                <label style="font-size: 14px; font-weight: 700;">Name:</label><select id="family-selector" class="settings-input"></select>
                 <button id="btn-clear-families" class="action-btn" style="background: #ff3b30; margin-top: 20px;">🗑️ Clear Memory</button>
             </div>
             <div class="admin-card">
@@ -243,12 +260,15 @@
             <div class="modal-content admin-card" style="padding: 24px;">
                 <button id="btn-close-gate" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
                 <h3 style="margin: 0 0 20px; font-size: 20px; font-weight: 900; text-align: center;">Update Gate</h3>
+                
                 <div style="display: flex; align-items: center; background: var(--bg); border: 2px solid var(--ios-grey); border-radius: 16px; padding: 10px; margin-bottom: 20px;">
                     <span style="font-size: 14px; font-weight: 800; opacity: 0.5; margin-right: 8px;">Terminal</span>
-                    <input type="text" id="gate-input-term" style="flex: 1; width: 40px; border: none; background: transparent; font-size: 18px; font-weight: 900; text-align: center;" placeholder="-">
+                    <input type="text" id="gate-input-term" style="flex: 1; width: 40px; border: none; background: transparent; font-size: 18px; font-weight: 900; color: var(--text); outline: none; text-align: center;" placeholder="-" autocomplete="off">
+                    
                     <span style="font-size: 14px; font-weight: 800; opacity: 0.5; margin: 0 8px;">- Gate</span>
-                    <input type="text" id="gate-input-gate" style="flex: 1; width: 50px; border: none; background: transparent; font-size: 18px; font-weight: 900; text-align: center;" placeholder="-">
+                    <input type="text" id="gate-input-gate" style="flex: 1; width: 50px; border: none; background: transparent; font-size: 18px; font-weight: 900; color: var(--text); outline: none; text-align: center;" placeholder="-" autocomplete="off">
                 </div>
+                
                 <button id="btn-save-gate" class="action-btn" style="margin: 0;">Save Update</button>
             </div>
         </div>
@@ -267,9 +287,9 @@
                 <button id="btn-close-tips" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
                 <h3 id="tips-modal-title" style="margin-top: 0;">💡 Tips</h3>
                 <div class="theme-segmented-control" style="margin-bottom: 15px;">
-                    <button class="segment tips-tab-btn active" data-cat="eating">🍔 Eating</button>
-                    <button class="segment tips-tab-btn" data-cat="travel">🚗 Travel</button>
-                    <button class="segment tips-tab-btn" data-cat="shopping">🛍️ Shopping</button>
+                    <button class="segment tips-tab-btn active" data-cat="eating"><span style="display: block; font-size: 24px; margin-bottom: 5px;">🍔</span>Eating</button>
+                    <button class="segment tips-tab-btn" data-cat="travel"><span style="display: block; font-size: 24px; margin-bottom: 5px;">🚗</span>Travel</button>
+                    <button class="segment tips-tab-btn" data-cat="shopping"><span style="display: block; font-size: 24px; margin-bottom: 5px;">🛍️</span>Shopping</button>
                 </div>
                 <div id="tips-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
             </div>
@@ -296,6 +316,7 @@
                 <div id="WTH-dashboard" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
             </div>
         </div>
+
     </main>
 
     <nav class="bottom-nav">
@@ -346,6 +367,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.96"></script>
+    <script type="module" src="js/main.js?v=2.1.88"></script>
 </body>
 </html>
