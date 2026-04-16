@@ -1,5 +1,6 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
+// THE FIX: Only importing escapeHTML and parseDateTime from store. No duplicate declarations below!
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=2.1.96';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=2.1.96';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -284,6 +285,18 @@ export async function setWeatherCity(target) {
     }
 }
 
+export function openWeatherModal() {
+    document.body.classList.add('no-scroll');
+    document.getElementById('weather-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
+    setWeatherCity('la');
+}
+
+export function closeWeatherModal() { 
+    document.getElementById('weather-modal').classList.remove('active'); 
+    setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
+}
+
 function renderWeatherDOM(data, fallbackName) {
     const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
@@ -312,15 +325,13 @@ export async function renderItinerary() {
         if(!cols || cols.length < 5) return;
         const [d, loc, act, time, who] = [cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim()];
         const addr = cols[5] ? cols[5].trim() : '';
-        
         let isMatch = (filter === 'All' || who.toLowerCase().includes(filter.toLowerCase()));
         if (!isMatch && leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true;
         if (!isMatch && murray.includes(filter.toLowerCase()) && who.toLowerCase().includes('murray')) isMatch = true;
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            
-            // THE FIX: Professional native Google Maps URL built here
+            // THE FIX: Professional native Google Maps URL built securely
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
@@ -386,9 +397,7 @@ export function renderAccommodations() {
     state.vaultAndStaysData.forEach(cols => {
         if (!cols || cols.length < 4) return;
         if (cols[1].toLowerCase() === 'stay') {
-            // THE FIX: Official Google Maps Search URL
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cols[4])}`;
-            
             const html = `<div class="admin-card stay-card" data-fam="${escapeHTML(cols[0])}" data-addr="${escapeHTML(cols[4])}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]||'')}" data-img="${escapeHTML(cols[7]||'')}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${cols[7]?`url('${cols[7]}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${cols[0]} Stay</h3></div></div>`;
             const city = cols[3].toLowerCase();
             if(city.includes('la')) grouped['la'] += html; else if(city.includes('utah')) grouped['utah'] += html; else if(city.includes('vegas')) grouped['vegas'] += html;
@@ -541,15 +550,3 @@ export function closeTipsModal() { document.getElementById('tips-modal').classLi
 export function closeStayModal() { document.getElementById('stay-modal').classList.remove('active'); setTimeout(() => { document.getElementById('stay-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeGateModal() { document.getElementById('gate-modal').classList.remove('active'); setTimeout(() => { document.getElementById('gate-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeQuoteModal() { document.getElementById('quote-modal').classList.remove('active'); setTimeout(() => { document.getElementById('quote-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
-
-// THE FIX: Move helpers down here to safely export them without duplicates
-export function escapeHTML(str) {
-    if (!str) return '';
-    return str.replace(/[&<>'"]/g, tag => ({ '&': '&', '<': '<', '>': '>', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-export function parseDateTime(dateStr, timeStr) {
-    if (!dateStr) return null;
-    const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
-    return isNaN(d.getTime()) ? null : d.getTime();
-}
