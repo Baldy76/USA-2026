@@ -45,7 +45,6 @@ export function updateGreeting() {
     if (titleEl) titleEl.innerHTML = `${randomGreet}${nameStr}!`;
 }
 
-// THE FIX: Progress Bar + Calling Up Next!
 export function updateTimeAndCountdown() { 
     try {
         updateGreeting();
@@ -122,7 +121,6 @@ export function updateTimeAndCountdown() {
             const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
         } catch(e) {}
         
-        // Triggers the Smart Assistant Search
         renderUpNext();
 
     } catch(e) { console.error(e); }
@@ -134,7 +132,6 @@ export function saveTripSettings() {
     updateTimeAndCountdown(); 
 }
 
-// THE FIX: The intelligent "Up Next" Engine
 export function renderUpNext() {
     const titleEl = document.getElementById('up-next-title');
     const timeEl = document.getElementById('up-next-time');
@@ -426,8 +423,6 @@ export async function renderItinerary() {
     document.getElementById('vegas-completed-list').innerHTML = cVegas ? `<div class="timeline">${cVegas}</div>` : '';
     
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
-    
-    renderUpNext();
 }
 
 export function renderTravelVault() { 
@@ -669,6 +664,7 @@ export function initWheel() {
     renderScoreboard();
 }
 
+// THE FIX: Restored renderScoreboard perfectly!
 export function renderScoreboard() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     const board = document.getElementById('roulette-scoreboard');
