@@ -22,6 +22,7 @@ export function openTab(pageId) {
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
+    document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
 function initSwipes() {
@@ -69,18 +70,14 @@ function initParallax() {
 function startNotificationEngine() {
     setInterval(async () => {
         updateTimeAndCountdown(); 
-        
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
-        
         if(!state.itineraryData) return;
-
         state.itineraryData.forEach(cols => {
             if(!cols || cols.length < 5) return;
             const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
             if (notified.includes(taskId)) return;
-            
             const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
             if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { 
                 new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
@@ -88,7 +85,6 @@ function startNotificationEngine() {
                 setVal('notifiedTasks', notified);
             }
         });
-        
     }, 60000); 
 }
 
@@ -109,11 +105,9 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // THE FIX: Anchor Listeners
         if (e.target.closest('#btn-drop-anchor')) {
             const btn = e.target.closest('#btn-drop-anchor');
-            btn.innerHTML = `<div style="font-size: 48px; margin-bottom: 10px;">📡</div><h3 style="margin: 0 0 5px; font-size: 20px; font-weight: 900;">Locking GPS...</h3>`;
-            
+            btn.innerHTML = `<span style="font-size: 14px; font-weight: 900; color: white;">Locking GPS...</span>`;
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
@@ -123,28 +117,24 @@ function bindEvents() {
                         triggerConfetti();
                         renderAnchor();
                     },
-                    (err) => { alert("Couldn't get GPS signal. Check permissions!"); renderAnchor(); },
+                    (err) => { alert("Check GPS permissions!"); renderAnchor(); },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
-            } else {
-                alert("GPS not supported."); renderAnchor();
-            }
+            } else { alert("GPS not supported."); renderAnchor(); }
             return;
         }
 
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
+            // THE FIX: Professional walking mode directions from current location
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
         if (e.target.closest('#btn-clear-anchor')) {
             e.stopPropagation();
-            if(confirm("Pull up the anchor? (Clear saved location)")) {
-                localStorage.removeItem('carAnchor');
-                renderAnchor();
-            }
+            if(confirm("Pull up the anchor?")) { localStorage.removeItem('carAnchor'); renderAnchor(); }
             return;
         }
         
@@ -152,10 +142,8 @@ function bindEvents() {
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
         if (e.target.closest('#btn-close-weather')) { closeWeatherModal(); return; }
-        
         const navBtn = e.target.closest('.nav-btn');
         if (navBtn) { openTab(navBtn.id.replace('nav-btn-', '')); return; }
-        
         const tipsBtn = e.target.closest('.tips-btn');
         if (tipsBtn) { openTipsModal(tipsBtn.dataset.city); return; }
         const tipsTabBtn = e.target.closest('.tips-tab-btn');
@@ -164,146 +152,96 @@ function bindEvents() {
             tipsTabBtn.classList.add('active'); renderTips(tipsTabBtn.dataset.cat); return; 
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
-        
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
-        
         if (e.target.closest('#btn-reset-tally')) {
-            if(confirm("Clear the Vegas scoreboard?")) {
-                localStorage.removeItem('rouletteTallies');
-                renderScoreboard();
-            }
+            if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
             return;
         }
-        
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
                 Notification.requestPermission().then(permission => {
                     if (permission === 'granted') {
                         btn.innerHTML = '✅ Notifications Enabled';
-                        btn.style.backgroundColor = '#34c759';
-                        btn.style.color = 'white';
-                        btn.style.boxShadow = '0 4px 15px rgba(52, 199, 89, 0.4)';
+                        btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
                     } else alert('Notifications denied.');
                 });
-            } else {
-                alert('Push notifications not supported on this browser.');
             }
             return;
         }
-        
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
-        
         const splitBtn = e.target.closest('.split-btn');
         if (splitBtn) {
             document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
             splitBtn.classList.add('active'); calculateTip(); return;
         }
-        
         if (e.target.closest('#clear-usd')) { 
             const usdInput = document.getElementById('usd-input');
             if (usdInput) usdInput.value = '';
             convertCurrency(); return; 
         }
-        
         if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
         if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
         if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
-        
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
             btn.innerText = "⏳ Syncing..."; await loadAllData(); 
-            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext();
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
         }
-        
         if (e.target.closest('#btn-update-version')) {
             if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
             window.location.reload(true); return;
         }
-        
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
-        
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
-        
         if (e.target.closest('#btn-confirm-modal')) {
             const modal = document.getElementById('completion-modal');
             let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
-
         const editGateBtn = e.target.closest('.edit-gate-btn');
-        if (editGateBtn) {
-            e.stopPropagation(); 
-            const flightId = editGateBtn.dataset.flightid;
-            openGateModal(flightId);
-            return;
-        }
-
-        if (e.target.closest('#btn-close-gate')) {
-            closeGateModal();
-            return;
-        }
-
+        if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
+        if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
         if (e.target.closest('#btn-save-gate')) {
             const modal = document.getElementById('gate-modal');
-            const flightId = modal.dataset.flightid;
             const term = document.getElementById('gate-input-term').value.trim();
             const gate = document.getElementById('gate-input-gate').value.trim();
-            
             let finalString = "Check Board";
             if (term && gate) finalString = `Terminal ${term} - Gate ${gate}`;
             else if (term) finalString = `Terminal ${term}`;
             else if (gate) finalString = `Gate ${gate}`;
-            
             if (!state.gateOverrides) state.gateOverrides = {};
-            state.gateOverrides[flightId] = finalString;
-            
-            await setVal('gateOverrides', state.gateOverrides);
-            syncToCloud('gateUpdate', state.gateOverrides);
-            
-            const gateText = document.getElementById(`gate-text-${flightId}`);
-            if(gateText) gateText.innerText = finalString;
-            
-            renderTravelVault();
-            closeGateModal();
-            return;
+            state.gateOverrides[modal.dataset.flightid] = finalString;
+            await setVal('gateOverrides', state.gateOverrides); syncToCloud('gateUpdate', state.gateOverrides);
+            renderTravelVault(); closeGateModal(); return;
         }
-
         const travelCard = e.target.closest('.flip-container');
         if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') { 
-            travelCard.classList.toggle('is-flipped'); 
-            if(navigator.vibrate) navigator.vibrate(20);
-            return; 
+            travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; 
         }
-
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
-
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
-        
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard && e.target.tagName !== 'A') {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
             await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
         }
-
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
-
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
-            if(confirm("Delete this document?")) {
-                let docs = await getVal('offline_docs') || [];
-                docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
+            if(confirm("Delete doc?")) {
+                let docs = await getVal('offline_docs') || []; docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
                 await setVal('offline_docs', docs); renderWallet();
             } return;
         }
@@ -313,55 +251,19 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
-    bindEvents();
-    initSwipes();
-    initPullToRefresh();
-    initParallax();
-    
-    const notifBtn = document.getElementById('btn-enable-notifs');
-    if (notifBtn && 'Notification' in window && Notification.permission === 'granted') {
-        notifBtn.innerHTML = '✅ Notifications Enabled';
-        notifBtn.style.backgroundColor = '#34c759';
-        notifBtn.style.color = 'white';
-        notifBtn.style.boxShadow = '0 4px 15px rgba(52, 199, 89, 0.4)';
-    }
-    
+    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
-
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const savedTheme = localStorage.getItem('HolidayPlanner_Theme');
-    applyTheme(savedTheme !== null ? savedTheme === 'true' : prefersDark.matches);
-    prefersDark.addEventListener('change', (e) => { if (localStorage.getItem('HolidayPlanner_Theme') === null) applyTheme(e.matches); });
-
+    applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
     history.replaceState({ pageId: 'home' }, '', '#home');
-    
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
-    
     loadAllData().then(() => {
-        populateDropdown(); 
-        renderItinerary(); 
-        renderTravelVault(); 
-        renderAccommodations(); 
-        preCacheImages(); 
-        renderWallet();
-        renderUpNext();
-        renderAnchor(); // THE FIX: Render on boot!
-    }).catch(e => console.error("Data load failed:", e));
-    
-    initLiveCurrency(); 
-    updateTimeAndCountdown(); 
-    initWeatherPill();
-    
+        populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
+    });
+    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
-    
     startNotificationEngine();
 }
 
-function runBoot() {
-    if (window.appBooted) return;
-    window.appBooted = true;
-    bootApp();
-}
-
-if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', runBoot); } else { runBoot(); }
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
