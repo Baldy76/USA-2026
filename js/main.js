@@ -7,8 +7,7 @@ import {
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
-    initWheel, spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openTravelModal, closeTravelModal
+    initWheel, spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -64,7 +63,7 @@ function startNotificationEngine() {
             if (notified.includes(taskId)) return;
             
             const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
-            if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { // 30 mins
+            if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { 
                 new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
                 notified.push(taskId);
                 setVal('notifiedTasks', notified);
@@ -110,7 +109,6 @@ function bindEvents() {
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         
-        // THE FIX: Smart Green Notification Button Click!
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
@@ -164,7 +162,6 @@ function bindEvents() {
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
         
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
-        if (e.target.closest('#btn-close-travel')) { closeTravelModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
         
         if (e.target.closest('#btn-confirm-modal')) {
@@ -173,8 +170,10 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
         }
 
+        // THE FIX: Intercept Edit Gate clicks to prevent the card from flipping back!
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
+            e.stopPropagation(); 
             const flightId = editGateBtn.dataset.flightid;
             const newGate = prompt("Enter new Terminal / Gate info:");
             if (newGate !== null && newGate.trim() !== "") {
@@ -182,14 +181,18 @@ function bindEvents() {
                 state.gateOverrides[flightId] = newGate.trim();
                 await setVal('gateOverrides', state.gateOverrides);
                 syncToCloud('gateUpdate', state.gateOverrides);
-                const gateText = document.getElementById('modal-gate-text');
+                const gateText = document.getElementById(`gate-text-${flightId}`);
                 if(gateText) gateText.innerText = newGate.trim();
-                renderTravelVault(); 
             } return;
         }
 
-        const travelCard = e.target.closest('.travel-card');
-        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') { openTravelModal(travelCard.dataset); return; }
+        // THE FIX: Trigger the 3D Flip instead of Modal!
+        const travelCard = e.target.closest('.flip-container');
+        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') { 
+            travelCard.classList.toggle('is-flipped'); 
+            if(navigator.vibrate) navigator.vibrate(20);
+            return; 
+        }
 
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
@@ -225,7 +228,6 @@ async function bootApp() {
     initSwipes();
     initPullToRefresh();
     
-    // THE FIX: Smart Check on Boot!
     const notifBtn = document.getElementById('btn-enable-notifs');
     if (notifBtn && 'Notification' in window && Notification.permission === 'granted') {
         notifBtn.innerHTML = '✅ Notifications Enabled';
