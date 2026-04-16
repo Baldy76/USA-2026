@@ -57,3 +57,15 @@ export function preCacheImages() {
     const imgs = ['./img/la.jpg', './img/utah.jpg', './img/vegas.jpg', './img/flights.jpg'];
     imgs.forEach(src => { const img = new Image(); img.src = src; });
 }
+
+export function initLiveCurrency() {
+    if(navigator.onLine) {
+        fetch('https://api.frankfurter.app/latest?from=GBP&to=USD')
+            .then(r => r.json())
+            .then(data => {
+                state.liveExchangeRate = data.rates.USD;
+                const tag = document.getElementById('live-rate-tag');
+                if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
+            }).catch(e => console.log("Currency failed."));
+    }
+}
