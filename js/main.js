@@ -22,6 +22,9 @@ export function openTab(pageId) {
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
+    
+    // THE FIX: Reset Parallax on tab switch!
+    document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
 function initSwipes() {
@@ -50,9 +53,25 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
+// THE FIX: The Hardware-Accelerated Parallax Engine!
+function initParallax() {
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const activeHero = document.querySelector('.tab-content.active .city-hero');
+                if (activeHero) {
+                    activeHero.style.backgroundPosition = `center ${window.scrollY * 0.4}px`;
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
 function startNotificationEngine() {
     setInterval(async () => {
-        // THE FIX: Trigger a clock flip and sky check every 60 seconds!
         updateTimeAndCountdown(); 
         
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -262,6 +281,7 @@ async function bootApp() {
     bindEvents();
     initSwipes();
     initPullToRefresh();
+    initParallax();
     
     const notifBtn = document.getElementById('btn-enable-notifs');
     if (notifBtn && 'Notification' in window && Notification.permission === 'granted') {
