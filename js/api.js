@@ -45,6 +45,19 @@ export async function saveQuoteToSheet(location, quote, author) {
     } catch (e) { console.error("Quote save failed", e); }
 }
 
+// THE FIX: Restored the missing live currency engine!
+export async function initLiveCurrency() {
+    try {
+        const res = await fetch('https://api.frankfurter.app/latest?from=GBP&to=USD');
+        const data = await res.json();
+        state.liveExchangeRate = data.rates.USD;
+        const tag = document.getElementById('live-rate-tag');
+        if (tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
+    } catch(e) {
+        state.liveExchangeRate = 1.25; 
+    }
+}
+
 export async function fetchWeather(lat, lon) {
     const API_KEY = '5998a44415510660601956792372f69e';
     const currentReq = fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`).then(r => r.json());
@@ -56,16 +69,4 @@ export async function fetchWeather(lat, lon) {
 export function preCacheImages() {
     const imgs = ['./img/la.jpg', './img/utah.jpg', './img/vegas.jpg', './img/flights.jpg'];
     imgs.forEach(src => { const img = new Image(); img.src = src; });
-}
-
-export function initLiveCurrency() {
-    if(navigator.onLine) {
-        fetch('https://api.frankfurter.app/latest?from=GBP&to=USD')
-            .then(r => r.json())
-            .then(data => {
-                state.liveExchangeRate = data.rates.USD;
-                const tag = document.getElementById('live-rate-tag');
-                if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
-            }).catch(e => console.log("Currency failed."));
-    }
 }
