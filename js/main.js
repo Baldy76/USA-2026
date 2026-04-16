@@ -1,5 +1,5 @@
-import { state, setVal, getVal } from './store.js';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=2.1.96';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=2.1.96';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateGreeting, updateTimeAndCountdown, saveTripSettings, renderUpNext,
@@ -9,8 +9,8 @@ import {
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, renderScoreboard, spinRoulette, openTipsModal, renderTips, openStayModal, 
     openGateModal, openQuoteModal, renderQuotes, submitNewQuote, renderAnchor,
-    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal, parseDateTime
-} from './ui.js';
+    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal
+} from './ui.js?v=2.1.96';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -121,8 +121,9 @@ function bindEvents() {
         
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            // THE FIX: Official Native Google Maps Walking Directions from current location to saved coords
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); 
+            const destLat = btn.dataset.lat;
+            const destLon = btn.dataset.lon;
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLon}&travelmode=walking`, '_blank');
             return;
         }
         
@@ -251,7 +252,6 @@ async function bootApp() {
     
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
-    // Even if Google Sheets completely fails, this won't crash the UI!
     await loadAllData();
     
     populateDropdown(); 
@@ -272,4 +272,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=2.1.96');
