@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.75">
+    <link rel="stylesheet" href="style.css?v=2.1.76">
 </head>
 <body class="light-mode theme-home">
 
@@ -191,19 +191,16 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
-            
             <div class="admin-card">
                 <h3>🔔 Smart Notifications</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
-                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none;">Enable Push Notifications</button>
+                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Enable Push Notifications</button>
             </div>
-            
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
                 <label style="font-size: 14px; font-weight: 700; opacity: 0.7;">Trip Start Date:</label>
                 <input type="date" id="trip-start-date" class="settings-input" />
             </div>
-
             <div class="admin-card">
                 <h3>App Settings</h3>
                 <label style="font-size: 14px; font-weight: 700;">Name:</label><select id="family-selector" class="settings-input"></select>
@@ -214,7 +211,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.75</div>
+            <div class="version-control">v2.1.76</div>
         </section>
 
         <div id="completion-modal" class="modal-overlay">
@@ -318,6 +315,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.75"></script>
+    <script type="module" src="js/main.js?v=2.1.76"></script>
 </body>
 </html>
