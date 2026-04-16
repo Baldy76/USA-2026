@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.89">
+    <link rel="stylesheet" href="style.css?v=2.1.90">
 </head>
 <body class="light-mode theme-home">
 
@@ -175,7 +175,7 @@
                 <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px;">Tap to Spin!</div>
                 <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">Spin the Wheel</button>
                 <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px;"></div>
-                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; margin-top: 15px;">Reset Scores</div>
+                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; margin-top: 15px; cursor: pointer;">Reset Scores</div>
             </div>
 
             <button id="btn-hype" class="action-btn pulse-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); margin-bottom: 20px;">🔥 Activate Hype 🔥</button>
@@ -192,7 +192,7 @@
             </div>
             <div id="vegas-home-card"></div>
             <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
-            <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="vegas-completed-list"></div></div>
+            <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
         </section>
 
         <section id="flights" class="page tab-content">
@@ -235,7 +235,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.89</div>
+            <div class="version-control">v2.1.90</div>
         </section>
 
         <div id="quote-modal" class="modal-overlay">
@@ -317,6 +317,46 @@
         <button id="nav-btn-flights" class="nav-btn"><span class="nav-icon">✈️</span><span>Travel</span></button>
     </nav>
 
-    <script type="module" src="js/main.js?v=2.1.89"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginSelector = document.getElementById('login-selector');
+            const splashGoBtn = document.getElementById('splash-go-btn');
+            const splash = document.getElementById('splash');
+
+            const savedUser = localStorage.getItem('appUser');
+            if (savedUser) {
+                loginSelector.style.display = 'none';
+                splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+                splashGoBtn.style.display = 'block';
+                splashGoBtn.disabled = false;
+                splashGoBtn.style.opacity = '1';
+            }
+
+            loginSelector.addEventListener('change', function() {
+                const userName = this.value;
+                localStorage.setItem('appUser', userName);
+                localStorage.setItem('savedFamilyFilter', userName);
+                
+                loginSelector.style.display = 'none';
+                splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
+                splashGoBtn.style.display = 'block';
+                splashGoBtn.disabled = false;
+                splashGoBtn.style.opacity = '1';
+                
+                if (window.forceAppUpdate) window.forceAppUpdate();
+            });
+
+            splashGoBtn.addEventListener('click', () => {
+                splash.style.pointerEvents = 'none';
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.classList.remove('active');
+                    splash.style.display = 'none';
+                }, 300);
+            });
+        });
+    </script>
+
+    <script type="module" src="js/main.js?v=2.1.90"></script>
 </body>
 </html>
