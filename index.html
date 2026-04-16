@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.80">
+    <link rel="stylesheet" href="style.css?v=2.1.81">
 </head>
 <body class="light-mode theme-home">
 
@@ -151,7 +151,10 @@
                 </div>
 
                 <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px; transition: transform 0.2s ease;">Tap to Spin!</div>
-                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Spin the Wheel</button>
+                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px;">Spin the Wheel</button>
+                
+                <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; min-height: 26px;"></div>
+                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
             </div>
 
             <button id="btn-hype" class="action-btn pulse-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); margin-bottom: 20px;">🔥 Activate Hype 🔥</button>
@@ -211,7 +214,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.80</div>
+            <div class="version-control">v2.1.81</div>
         </section>
 
         <div id="gate-modal" class="modal-overlay">
@@ -325,6 +328,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.80"></script>
+    <script type="module" src="js/main.js?v=2.1.81"></script>
 </body>
 </html>
