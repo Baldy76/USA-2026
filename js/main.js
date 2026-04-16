@@ -8,7 +8,7 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext
+    openGateModal, closeGateModal, renderUpNext, renderAnchor
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -22,9 +22,6 @@ export function openTab(pageId) {
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
-    
-    // THE FIX: Reset Parallax on tab switch!
-    document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
 function initSwipes() {
@@ -53,7 +50,6 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
-// THE FIX: The Hardware-Accelerated Parallax Engine!
 function initParallax() {
     let ticking = false;
     window.addEventListener('scroll', () => {
@@ -112,6 +108,45 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+
+        // THE FIX: Anchor Listeners
+        if (e.target.closest('#btn-drop-anchor')) {
+            const btn = e.target.closest('#btn-drop-anchor');
+            btn.innerHTML = `<div style="font-size: 48px; margin-bottom: 10px;">📡</div><h3 style="margin: 0 0 5px; font-size: 20px; font-weight: 900;">Locking GPS...</h3>`;
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const data = { lat: pos.coords.latitude, lon: pos.coords.longitude, timestamp: Date.now() };
+                        localStorage.setItem('carAnchor', JSON.stringify(data));
+                        if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
+                        triggerConfetti();
+                        renderAnchor();
+                    },
+                    (err) => { alert("Couldn't get GPS signal. Check permissions!"); renderAnchor(); },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                alert("GPS not supported."); renderAnchor();
+            }
+            return;
+        }
+
+        if (e.target.closest('#btn-find-car')) {
+            const btn = e.target.closest('#btn-find-car');
+            const lat = btn.dataset.lat; const lon = btn.dataset.lon;
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
+            return;
+        }
+
+        if (e.target.closest('#btn-clear-anchor')) {
+            e.stopPropagation();
+            if(confirm("Pull up the anchor? (Clear saved location)")) {
+                localStorage.removeItem('carAnchor');
+                renderAnchor();
+            }
+            return;
+        }
         
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
@@ -275,7 +310,7 @@ function bindEvents() {
     });
 }
 
-window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); };
+window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
     bindEvents();
@@ -310,6 +345,7 @@ async function bootApp() {
         preCacheImages(); 
         renderWallet();
         renderUpNext();
+        renderAnchor(); // THE FIX: Render on boot!
     }).catch(e => console.error("Data load failed:", e));
     
     initLiveCurrency(); 
