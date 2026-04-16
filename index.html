@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=3.0.0">
+    <link rel="stylesheet" href="style.css?v=2.1.96">
 </head>
 <body class="light-mode theme-home">
 
@@ -48,10 +48,7 @@
             <div id="hero-la" class="city-hero" style="background-image: url('img/la.jpg'); cursor: pointer;">
                 <h2>Los Angeles<span id="time-la" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-                <button class="action-btn tips-btn" data-city="la" style="flex: 1; margin: 0; background: var(--card); color: var(--accent); border: 2px solid var(--accent); font-weight: 900; font-size: 13px;">💡 LA Tips</button>
-                <button class="action-btn open-quote-btn" data-location="la" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 LA Quote Vault</button>
-            </div>
+            <button class="action-btn tips-btn" data-city="la" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 LA Top Tips</button>
             <div id="la-home-card"></div>
             <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div> 
             <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="la-completed-list"></div></div>
@@ -61,32 +58,34 @@
             <div id="hero-utah" class="city-hero" style="background-image: url('img/utah.jpg'); cursor: pointer;">
                 <h2>Utah<span id="time-utah" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-                <button class="action-btn tips-btn" data-city="utah" style="flex: 1; margin: 0; background: var(--card); color: var(--accent); border: 2px solid var(--accent); font-weight: 900; font-size: 13px;">💡 Utah Tips</button>
-                <button class="action-btn open-quote-btn" data-location="utah" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 Utah Quote Vault</button>
-            </div>
+            <button class="action-btn tips-btn" data-city="utah" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Utah Top Tips</button>
             <div id="utah-home-card"></div>
             <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
         </section>
 
         <section id="home" class="page tab-content active">
+            
             <div id="dashboard-hero" class="sky-day" style="border-radius: 24px; padding: 24px 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); transition: background 1s ease;">
                 <h2 id="greeting-title" style="margin: 0 0 20px 0; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-align: center;">Good Morning!</h2>
+                
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
                             <span id="trip-prog-label">Countdown</span>
                         </div>
+                        
                         <div id="countdown-display" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0;">
                             <div class="flap-board"><span class="flap" id="cd-num">--</span></div>
                             <span style="font-size: 24px; font-weight: 900;">Days!</span>
                         </div>
+                        
                         <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden;">
                             <div id="trip-prog-bar" style="height: 100%; width: 0%; background: #fff; border-radius: 5px; transition: width 1s ease;"></div>
                         </div>
                         <div id="trip-prog-val" style="text-align: center; font-size: 11px; font-weight: 700; margin-top: 8px; opacity: 0.8;">--</div>
                     </div>
+                    
                     <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-top: 5px;">
                         <div style="font-size: 24px; animation: gentlePulse 2s infinite;">🎯</div>
                         <div style="flex: 1; min-width: 0;">
@@ -186,10 +185,7 @@
             <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg'); cursor: pointer;">
                 <h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-                <button class="action-btn tips-btn" data-city="vegas" style="flex: 1; margin: 0; background: var(--card); color: var(--accent); border: 2px solid var(--accent); font-weight: 900; font-size: 13px;">💡 Vegas Tips</button>
-                <button class="action-btn open-quote-btn" data-location="vegas" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 Vegas Quote Vault</button>
-            </div>
+            <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
             <div id="vegas-home-card"></div>
             <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
@@ -240,20 +236,8 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v3.0.0</div>
+            <div class="version-control">v2.1.88</div>
         </section>
-
-        <div id="quote-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; background: #000; color: white; height: 80vh; display: flex; flex-direction: column; border: 1px solid #333;">
-                <button id="btn-close-quote" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
-                <h3 id="quote-modal-title" style="margin-top:0; text-align: center; font-size: 20px;">💬 Quotes</h3>
-                <div id="quote-list" style="flex: 1; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;"></div>
-                <div style="background: #1c1c1e; padding: 15px; border-radius: 16px; border: 1px solid #333;">
-                    <textarea id="new-quote-text" placeholder="Who said what?" style="width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; height: 60px;"></textarea>
-                    <button id="btn-save-quote" class="action-btn" style="margin: 10px 0 0; background: var(--accent);">Add to Vault</button>
-                </div>
-            </div>
-        </div>
 
         <div id="gate-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px;">
@@ -362,6 +346,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=3.0.0"></script>
+    <script type="module" src="js/main.js?v=2.1.96"></script>
 </body>
 </html>
