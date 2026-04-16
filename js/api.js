@@ -1,4 +1,4 @@
-import { state, setVal, getVal } from './store.js?v=2.1.96';
+import { state, setVal, getVal } from './store.js';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
@@ -26,7 +26,7 @@ export async function loadAllData() {
         state.vaultAndStaysData = parseCSV(vaultText).slice(1);
         state.quotesData = quotesText ? parseCSV(quotesText).slice(1) : (await getVal('offlineQuotes') || []);
 
-        state.sheetFamilies = [...new Set(state.itineraryData.map(row => row[4]?.trim()).filter(Boolean))];
+        state.sheetFamilies = [...new Set(state.itineraryData.map(row => (row[4] || '').trim()).filter(Boolean))];
 
         await setVal('offlineItin', state.itineraryData);
         await setVal('offlineVault', state.vaultAndStaysData);
@@ -79,16 +79,13 @@ export async function initLiveCurrency() {
         
         const data = await response.json();
         state.liveExchangeRate = data.rates.USD; 
-        
         localStorage.setItem('offline_exchange_rate', state.liveExchangeRate);
         
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
-        
     } catch (error) {
         const savedRate = localStorage.getItem('offline_exchange_rate');
         state.liveExchangeRate = savedRate ? parseFloat(savedRate) : 1.25; 
-        
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)} (OFFLINE)`;
     }
@@ -103,9 +100,7 @@ export async function syncToCloud(action, payload) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, payload })
         });
-    } catch (e) {
-        console.error("Cloud sync failed", e);
-    }
+    } catch (e) { console.error("Cloud sync failed", e); }
 }
 
 export async function saveQuoteToSheet(location, quote, author) {
@@ -114,8 +109,7 @@ export async function saveQuoteToSheet(location, quote, author) {
     await setVal('offlineQuotes', state.quotesData);
 
     if (!navigator.onLine || !APPS_SCRIPT_URL) { 
-        alert("Offline: Quote saved locally only."); 
-        return; 
+        alert("Offline: Quote saved locally only."); return; 
     }
     try {
         fetch(APPS_SCRIPT_URL, {
@@ -130,7 +124,7 @@ export async function saveQuoteToSheet(location, quote, author) {
 export function preCacheImages() {
     if (!state.vaultAndStaysData) return;
     state.vaultAndStaysData.forEach(row => {
-        if (row.length > 7 && row[1]?.trim().toLowerCase() === 'stay' && row[7]) {
+        if (row.length > 7 && (row[1] || '').trim().toLowerCase() === 'stay' && row[7]) {
             const img = new Image(); img.src = row[7].trim();
         }
     });
