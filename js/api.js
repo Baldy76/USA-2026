@@ -34,7 +34,7 @@ export async function loadAllData() {
         await setVal('offlineQuotes', state.quotesData);
 
     } catch (error) {
-        console.log("Offline mode: Loading from IndexedDB");
+        console.log("Offline mode: Loading from Cache");
         state.itineraryData = await getVal('offlineItin') || [];
         state.vaultAndStaysData = await getVal('offlineVault') || [];
         state.sheetFamilies = await getVal('offlineFamilies') || [];
