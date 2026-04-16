@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.77">
+    <link rel="stylesheet" href="style.css?v=2.1.78">
 </head>
 <body class="light-mode theme-home">
 
@@ -211,8 +211,25 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.77</div>
+            <div class="version-control">v2.1.78</div>
         </section>
+
+        <div id="gate-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 24px;">
+                <button id="btn-close-gate" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
+                <h3 style="margin: 0 0 20px; font-size: 20px; font-weight: 900; text-align: center;">Update Gate</h3>
+                
+                <div style="display: flex; align-items: center; background: var(--bg); border: 2px solid var(--ios-grey); border-radius: 16px; padding: 10px; margin-bottom: 20px;">
+                    <span style="font-size: 14px; font-weight: 800; opacity: 0.5; margin-right: 8px;">Terminal</span>
+                    <input type="text" id="gate-input-term" style="flex: 1; width: 40px; border: none; background: transparent; font-size: 18px; font-weight: 900; color: var(--text); outline: none; text-align: center;" placeholder="-" autocomplete="off">
+                    
+                    <span style="font-size: 14px; font-weight: 800; opacity: 0.5; margin: 0 8px;">- Gate</span>
+                    <input type="text" id="gate-input-gate" style="flex: 1; width: 50px; border: none; background: transparent; font-size: 18px; font-weight: 900; color: var(--text); outline: none; text-align: center;" placeholder="-" autocomplete="off">
+                </div>
+                
+                <button id="btn-save-gate" class="action-btn" style="margin: 0;">Save Update</button>
+            </div>
+        </div>
 
         <div id="completion-modal" class="modal-overlay">
             <div class="modal-content admin-card">
@@ -308,6 +325,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.77"></script>
+    <script type="module" src="js/main.js?v=2.1.78"></script>
 </body>
 </html>
