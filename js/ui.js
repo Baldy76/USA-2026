@@ -1,29 +1,28 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
 import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
-
-export function escapeHTML(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-export function parseDateTime(dateStr, timeStr) {
-    if (!dateStr) return null;
-    const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
-    return isNaN(d.getTime()) ? null : d.getTime();
-}
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
     document.body.classList.toggle('light-mode', !isDark);
-    const btnLight = document.getElementById('btnLight'); const btnDark = document.getElementById('btnDark');
+    
+    const btnLight = document.getElementById('btnLight'); 
+    const btnDark = document.getElementById('btnDark');
     if (btnLight && btnDark) {
-        if (isDark) { btnLight.classList.remove('active'); btnDark.classList.add('active'); } 
-        else { btnLight.classList.add('active'); btnDark.classList.remove('active'); }
+        if (isDark) { 
+            btnLight.classList.remove('active'); 
+            btnDark.classList.add('active'); 
+        } else { 
+            btnLight.classList.add('active'); 
+            btnDark.classList.remove('active'); 
+        }
     }
     updateMetaThemeColor(document.querySelector('.tab-content.active')?.id || 'home');
 }
 
-export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
+export function setThemeMode(isDark) { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+}
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
@@ -31,26 +30,34 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     else if (pageId === 'utah') metaColor = '#ff3b30';
     else if (pageId === 'vegas') metaColor = '#af52de';
     else if (pageId === 'flights') metaColor = '#0284c7';
-    const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
+    const meta = document.getElementById('theme-meta'); 
+    if (meta) meta.content = metaColor;
 }
 
 function updateFlap(id, newVal) {
     const el = document.getElementById(id);
     if (!el || el.innerText === newVal) return;
-    el.classList.remove('flipping'); void el.offsetWidth; el.classList.add('flipping');
+    el.classList.remove('flipping'); 
+    void el.offsetWidth; 
+    el.classList.add('flipping');
     setTimeout(() => { el.innerText = newVal; }, 200);
 }
 
 export function updateGreeting() {
     const user = localStorage.getItem('appUser');
     let nameStr = (user && user !== 'All') ? ", " + user.split(' ')[0] : "";
+    
     const hour = new Date().getHours();
-    let greetings = ["Good Night", "Vegas time", "City lights", "Time to relax"]; let sky = 'sky-night';
+    let greetings = ["Good Night", "Vegas time", "City lights", "Time to relax"]; 
+    let sky = 'sky-night';
+    
     if (hour >= 5 && hour < 12) { greetings = ["Good Morning", "Rise and shine", "Let's go"]; sky = 'sky-morning'; }
     else if (hour >= 12 && hour < 17) { greetings = ["Good Afternoon", "Adventure awaits"]; sky = 'sky-day'; }
     else if (hour >= 17 && hour < 20) { greetings = ["Good Evening", "Golden hour"]; sky = 'sky-evening'; }
+    
     const titleEl = document.getElementById('greeting-title');
     if (titleEl) titleEl.innerHTML = `${greetings[Math.floor(Math.random() * greetings.length)]}${nameStr}!`;
+    
     const topCard = document.getElementById('dashboard-hero');
     if (topCard) { topCard.className = sky; }
 }
@@ -61,6 +68,7 @@ export function updateTimeAndCountdown() {
     
     const savedStart = localStorage.getItem('tripStartDate');
     const savedEnd = localStorage.getItem('tripEndDate');
+    
     const progBar = document.getElementById('trip-prog-bar');
     const cdDisplay = document.getElementById('countdown-display');
     const progLabel = document.getElementById('trip-prog-label');
@@ -69,6 +77,7 @@ export function updateTimeAndCountdown() {
     if (savedStart) {
         const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
         let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
+        
         if (now < tripStart) {
             const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
             updateFlap('cd-num', days.toString());
@@ -78,7 +87,8 @@ export function updateTimeAndCountdown() {
             if(progVal) progVal.innerText = "";
         } else {
             if(cdDisplay) cdDisplay.style.display = 'none';
-            const total = tripEnd - tripStart; const elapsed = now - tripStart;
+            const total = tripEnd - tripStart; 
+            const elapsed = now - tripStart;
             let percent = Math.min(100, (elapsed / total) * 100);
             if(progBar) progBar.style.width = `${percent}%`;
             if(progLabel) progLabel.innerText = "Trip Progress";
@@ -87,12 +97,16 @@ export function updateTimeAndCountdown() {
     }
 
     const ukTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' }).format(now).split(':');
-    updateFlap('uk-hr', ukTime[0]); updateFlap('uk-min', ukTime[1]);
+    updateFlap('uk-hr', ukTime[0]); 
+    updateFlap('uk-min', ukTime[1]);
 
     const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
     const locTz = activeTab === 'utah' ? 'America/Denver' : 'America/Los_Angeles';
     const locTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:locTz }).format(now).split(':');
-    updateFlap('loc-hr', locTime[0]); updateFlap('loc-min', locTime[1]);
+    
+    updateFlap('loc-hr', locTime[0]); 
+    updateFlap('loc-min', locTime[1]);
+    
     const dateEl = document.getElementById('clock-date');
     if(dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
     renderUpNext();
@@ -110,7 +124,9 @@ export function renderUpNext() {
     if (!titleEl || !timeEl) return;
 
     if (!state.itineraryData || state.itineraryData.length === 0) {
-        titleEl.innerText = "No upcoming plans"; timeEl.innerText = "Add something to the sheet!"; return;
+        titleEl.innerText = "No upcoming plans"; 
+        timeEl.innerText = "Add something to the sheet!"; 
+        return;
     }
 
     const now = new Date().getTime();
@@ -119,12 +135,20 @@ export function renderUpNext() {
     const murray = ['david', 'sarah', 'bexs', 'murray'];
 
     let upcoming = [];
+    
     state.itineraryData.forEach(cols => {
-        if(!cols || cols.length < 3) return;
-        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); 
-        const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim();
+        if(!cols || cols.length < 5) return;
         
-        let isMatch = false; const whoL = who.toLowerCase(); const filterL = filter.toLowerCase();
+        const d = (cols[0] || '').trim(); 
+        const loc = (cols[1] || '').trim(); 
+        const act = (cols[2] || '').trim(); 
+        const time = (cols[3] || '').trim(); 
+        const who = (cols[4] || '').trim();
+        
+        let isMatch = false; 
+        const whoL = who.toLowerCase(); 
+        const filterL = filter.toLowerCase();
+        
         if (filter === 'All' || whoL === 'everyone' || whoL === '') isMatch = true;
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true;
         else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true;
@@ -140,12 +164,15 @@ export function renderUpNext() {
         upcoming.sort((a, b) => a.timestamp - b.timestamp);
         const next = upcoming[0];
         titleEl.innerText = next.act;
+        
         const isToday = new Date(next.timestamp).toDateString() === new Date().toDateString();
         const datePrefix = isToday ? "Today" : next.date;
+        
         let locFormat = "📍 " + (next.loc.toLowerCase().includes('la') ? 'LA' : next.loc.toLowerCase().includes('utah') ? 'Utah' : next.loc.toLowerCase().includes('vegas') ? 'Vegas' : next.loc);
         timeEl.innerText = `${datePrefix} @ ${next.time} • ${locFormat}`;
     } else {
-        titleEl.innerText = "Trip Complete!"; timeEl.innerText = "Time to go home ✈️";
+        titleEl.innerText = "Trip Complete!"; 
+        timeEl.innerText = "Time to go home ✈️";
     }
 }
 
@@ -154,14 +181,18 @@ export function convertCurrency() {
     const clearBtn = document.getElementById('clear-usd');
     const usd = usdInput?.value;
     const rate = state.liveExchangeRate || 1.25; 
+    
     if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
     if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / rate).toFixed(2)}` : `£0.00`;
 }
 
 export let currentTipPercent = 18;
+
 export function setTip(percent, btnElement) { 
-    currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
-    if(btnElement) btnElement.classList.add('active'); calculateTip(); 
+    currentTipPercent = percent; 
+    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
+    if(btnElement) btnElement.classList.add('active'); 
+    calculateTip(); 
 }
 
 export function calculateTip() { 
@@ -169,7 +200,11 @@ export function calculateTip() {
     const splitBtn = document.querySelector('.split-btn.active');
     const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
     const rate = state.liveExchangeRate || 1.25; 
-    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
+    
+    const t = b * (1 + (currentTipPercent / 100));
+    const usd = t / s;
+    const gbp = usd / rate; 
+    
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
@@ -197,7 +232,10 @@ export function clearCustomFamilies() {
     }
 }
 
-const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
+const getWeatherIcon = (c) => { 
+    const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; 
+    return m[c] || '🌤️'; 
+};
 
 export async function initWeatherPill() {
     const loadSummary = async (lat, lon, id) => {
@@ -210,7 +248,10 @@ export async function initWeatherPill() {
             if(el) el.innerHTML = '🚫'; 
         }
     };
-    loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
+    
+    loadSummary(34.0522, -118.2437, 'wp-la'); 
+    loadSummary(37.0965, -113.5684, 'wp-utah'); 
+    loadSummary(36.1699, -115.1398, 'wp-vegas');
     
     const locEl = document.getElementById('wp-local');
     if (navigator.geolocation) {
@@ -270,6 +311,7 @@ export function openWeatherModal() {
     setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
     setWeatherCity('la');
 }
+
 export function closeWeatherModal() { 
     document.getElementById('weather-modal').classList.remove('active'); 
     setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
@@ -281,8 +323,17 @@ function renderWeatherDOM(data, fallbackName) {
         const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
         return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
     }).join('');
+    
     const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
+    if (wDash) wDash.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);">
+            <div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div>
+            <div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div>
+            <div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div>
+            <div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div>
+        </div>
+        <h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3>
+        <div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
@@ -291,18 +342,23 @@ export async function renderItinerary() {
     const completedTasks = await getVal('completedTasks') || [];
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
     let cLA = '', cUtah = '', cVegas = ''; 
-    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; 
+    const murray = ['david', 'sarah', 'bexs', 'murray'];
 
     const sortedData = [...state.itineraryData].sort((a, b) => {
-        const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
-        const dtB = parseDateTime(b[0] || '', b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
+        const dtA = parseDateTime(a[0], a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
+        const dtB = parseDateTime(b[0], b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
         return dtA - dtB;
     });
 
     sortedData.forEach(cols => {
-        if(!cols || cols.length < 3) return;
-        const d = (cols[0] || '').trim(); const loc = (cols[1] || '').trim(); const act = (cols[2] || '').trim(); 
-        const time = (cols[3] || '').trim(); const who = (cols[4] || '').trim(); const addr = (cols[5] || '').trim();
+        if(!cols || cols.length < 5) return;
+        const d = (cols[0] || '').trim();
+        const loc = (cols[1] || '').trim();
+        const act = (cols[2] || '').trim();
+        const time = (cols[3] || '').trim();
+        const who = (cols[4] || '').trim();
+        const addr = cols[5] ? cols[5].trim() : '';
         
         let isMatch = (filter === 'All' || who.toLowerCase().includes(filter.toLowerCase()));
         if (!isMatch && leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true;
@@ -310,10 +366,12 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
+            // THE FIX: Exact official Google Maps Native Search API string format
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
+            
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -326,33 +384,46 @@ export async function renderItinerary() {
                         ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
-            if (loc.toLowerCase().includes('la')) { isCompleted ? cLA += cardHtml : (!grouped['la'][d] && (grouped['la'][d]=[]), grouped['la'][d].push(cardHtml)); }
-            else if (loc.toLowerCase().includes('utah')) { isCompleted ? cUtah += cardHtml : (!grouped['utah'][d] && (grouped['utah'][d]=[]), grouped['utah'][d].push(cardHtml)); }
-            else if (loc.toLowerCase().includes('vegas')) { isCompleted ? cVegas += cardHtml : (!grouped['vegas'][d] && (grouped['vegas'][d]=[]), grouped['vegas'][d].push(cardHtml)); }
+                
+            if (loc.toLowerCase().includes('la')) { 
+                if (isCompleted) cLA += cardHtml; else { if (!grouped['la'][d]) grouped['la'][d] = []; grouped['la'][d].push(cardHtml); }
+            } else if (loc.toLowerCase().includes('utah')) { 
+                if (isCompleted) cUtah += cardHtml; else { if (!grouped['utah'][d]) grouped['utah'][d] = []; grouped['utah'][d].push(cardHtml); }
+            } else if (loc.toLowerCase().includes('vegas')) { 
+                if (isCompleted) cVegas += cardHtml; else { if (!grouped['vegas'][d]) grouped['vegas'][d] = []; grouped['vegas'][d].push(cardHtml); }
+            }
         }
     });
 
     const buildSec = (obj) => Object.entries(obj).map(([date, cards]) => `<details class="day-group" open><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content timeline">${cards.join('')}</div></details>`).join('');
-    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA;
-    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); document.getElementById('utah-completed-list').innerHTML = cUtah;
-    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); document.getElementById('vegas-completed-list').innerHTML = cVegas;
+    
+    document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); 
+    document.getElementById('la-completed-list').innerHTML = cLA;
+    document.getElementById('utah-itinerary').innerHTML = buildSec(grouped['utah']); 
+    document.getElementById('utah-completed-list').innerHTML = cUtah;
+    document.getElementById('vegas-itinerary').innerHTML = buildSec(grouped['vegas']); 
+    document.getElementById('vegas-completed-list').innerHTML = cVegas;
 }
 
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
-    const display = document.getElementById('flights-vault-display'); if(!display) return;
+    const display = document.getElementById('flights-vault-display'); 
+    if(!display) return;
+    
     let html = '';
     state.vaultAndStaysData.forEach(cols => {
         if(!cols || cols.length < 2) return;
         const type = (cols[1] || '').toLowerCase();
+        
         if(type === 'flight' || type === 'car') {
             const flightId = btoa(encodeURIComponent(`${cols[2]}-${cols[5]}-${cols[6]}`)).replace(/=/g, '');
-            const term = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : (cols[8] || '');
+            const term = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : cols[8];
+            
             html += `
             <div class="flip-container travel-card">
                 <div class="flip-card-inner">
                     <div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none; padding:20px; border-radius:24px;">
-                        <div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ ${escapeHTML(type.toUpperCase())} • ${escapeHTML(cols[2])}</div>
+                        <div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ ${escapeHTML(cols[1].toUpperCase())} • ${escapeHTML(cols[2])}</div>
                         <strong style="font-size: 22px; display:block; margin: 10px 0;">${escapeHTML(cols[3])} → ${escapeHTML(cols[4])}</strong>
                         <div style="font-size: 12px; opacity: 0.8;">${escapeHTML(cols[5])} ${escapeHTML(cols[6])} @ ${escapeHTML(cols[7])}</div>
                     </div>
@@ -371,53 +442,79 @@ export function renderTravelVault() {
 export function renderAccommodations() { 
     if (!state.vaultAndStaysData) return;
     let grouped = { 'la': '', 'utah': '', 'vegas': '' };
+    
     state.vaultAndStaysData.forEach(cols => {
-        if (!cols || cols.length < 2) return;
+        if (!cols || cols.length < 4) return;
         const type = (cols[1] || '').toLowerCase();
+        
         if (type === 'stay') {
             const fam = escapeHTML(cols[0] || '');
             const addr = escapeHTML(cols[4] || '');
             const link = escapeHTML(cols[6] || '');
             const img = escapeHTML(cols[7] || '');
+            
+            // THE FIX: Official Native Google Maps Route link
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             
-            const html = `<div class="admin-card stay-card" data-fam="${fam}" data-addr="${addr}" data-map="${mapLink}" data-link="${link}" data-img="${img}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${fam} Stay</h3></div></div>`;
+            const html = `
+            <div class="admin-card stay-card" data-fam="${fam}" data-addr="${addr}" data-map="${mapLink}" data-link="${link}" data-img="${img}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;">
+                <div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;">
+                    <h3 style="margin: 0; color: white; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${fam} Stay</h3>
+                </div>
+            </div>`;
+            
             const city = (cols[3] || '').toLowerCase();
-            if(city.includes('la')) grouped['la'] += html; else if(city.includes('utah')) grouped['utah'] += html; else if(city.includes('vegas')) grouped['vegas'] += html;
+            if(city.includes('la')) grouped['la'] += html; 
+            else if(city.includes('utah')) grouped['utah'] += html; 
+            else if(city.includes('vegas')) grouped['vegas'] += html;
         }
     });
+    
     document.getElementById('la-home-card').innerHTML = grouped['la'];
     document.getElementById('utah-home-card').innerHTML = grouped['utah'];
     document.getElementById('vegas-home-card').innerHTML = grouped['vegas'];
 }
 
-export function renderScoreboard() {
-    const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    const board = document.getElementById('roulette-scoreboard'); if (!board) return;
-    let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
-    let current = tallies[mode] || {};
-    let html = Object.entries(current).map(([n, c]) => c > 0 ? `<div style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">${escapeHTML(n)} <span style="background: var(--card); color: var(--accent); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${c}</span></div>` : '').join('');
-    board.innerHTML = html || `<div style="font-size: 11px; opacity: 0.6;">No spins yet.</div>`;
-}
-
 export async function handleFileUpload(event) {
     const file = event.target.files[0]; if(!file) return;
-    const reader = new FileReader(); reader.onload = async (e) => {
-        let docs = await getVal('offline_docs') || []; docs.push({ id: Date.now().toString(), name: file.name, type: file.type, data: e.target.result });
-        await setVal('offline_docs', docs); renderWallet();
-    }; reader.readAsDataURL(file);
+    const reader = new FileReader(); 
+    reader.onload = async (e) => {
+        let docs = await getVal('offline_docs') || []; 
+        docs.push({ id: Date.now().toString(), name: file.name, type: file.type, data: e.target.result });
+        await setVal('offline_docs', docs); 
+        renderWallet();
+    }; 
+    reader.readAsDataURL(file);
 }
 
 export async function renderWallet() {
-    const docs = await getVal('offline_docs') || []; const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
+    const docs = await getVal('offline_docs') || []; 
+    const gallery = document.getElementById('wallet-gallery'); 
+    if(!gallery) return;
+    
     gallery.innerHTML = docs.length === 0 ? '<div style="grid-column: span 2; opacity:0.5; text-align:center;">No docs yet.</div>' : docs.map(doc => `<div class="wallet-item" style="background: ${doc.type.startsWith('image/') ? `url(${doc.data})` : 'var(--ios-grey)'};">${doc.type.startsWith('image/') ? '' : '📄'}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`).join('');
 }
 
 export function openCompletionModal(taskId, taskName) {
     document.body.classList.add('no-scroll');
-    document.getElementById('modal-task-name').innerText = taskName; document.getElementById('modal-checkbox').checked = false;
-    const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId;
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
+    document.getElementById('modal-task-name').innerText = taskName; 
+    document.getElementById('modal-checkbox').checked = false;
+    const modal = document.getElementById('completion-modal'); 
+    modal.dataset.activeTaskId = taskId;
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10); 
+}
+
+export function renderScoreboard() {
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
+    const board = document.getElementById('roulette-scoreboard'); 
+    if (!board) return;
+    
+    let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
+    let current = tallies[mode] || {};
+    
+    let html = Object.entries(current).map(([n, c]) => c > 0 ? `<div style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">${escapeHTML(n)} <span style="background: var(--card); color: var(--accent); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${c}</span></div>` : '').join('');
+    board.innerHTML = html || `<div style="font-size: 11px; opacity: 0.6;">No spins yet.</div>`;
 }
 
 export function triggerConfetti() {
@@ -455,34 +552,44 @@ export function initWheel() {
     const wheel = document.getElementById('roulette-wheel'); if(!wheel) return;
     let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it"];
     wheel.dataset.names = JSON.stringify(names);
+    
     let html = ''; const sliceDeg = 360 / names.length;
     names.forEach((name, i) => {
-        const color = name === "Split it" ? '#34c759' : (i % 2 === 0 ? '#d0021b' : '#1c1c1e');
-        const startDeg = i * sliceDeg; const endDeg = (i + 1) * sliceDeg;
+        const startDeg = i * sliceDeg; 
         html += `<div class="roulette-label" style="transform: translateX(-50%) rotate(${startDeg + (sliceDeg/2)}deg);"><span>${name}</span></div>`;
     });
+    
     wheel.style.background = `conic-gradient(${names.map((n, i) => `${n === "Split it" ? '#34c759' : (i % 2 === 0 ? '#d0021b' : '#1c1c1e')} ${i * (360/names.length)}deg ${(i+1) * (360/names.length)}deg`).join(', ')})`;
-    wheel.innerHTML = html; renderScoreboard();
+    wheel.innerHTML = html; 
+    renderScoreboard();
 }
 
 export function spinRoulette() {
-    const wheel = document.getElementById('roulette-wheel'); const btn = document.getElementById('btn-spin-roulette');
+    const wheel = document.getElementById('roulette-wheel'); 
+    const btn = document.getElementById('btn-spin-roulette');
+    
     if(!wheel || !btn || btn.disabled) return;
     btn.disabled = true;
+    
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
     let names = JSON.parse(wheel.dataset.names || '[]');
     let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
     const totalRotation = currentRot + (360 * 6) + Math.floor(Math.random() * 360);
+    
     wheel.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1)';
-    wheel.style.transform = `rotate(${totalRotation}deg)`; wheel.dataset.currentRotation = totalRotation;
+    wheel.style.transform = `rotate(${totalRotation}deg)`; 
+    wheel.dataset.currentRotation = totalRotation;
+    
     const winner = names[Math.floor(((360 - (totalRotation % 360)) % 360) / (360 / names.length))];
+    
     setTimeout(() => {
         btn.disabled = false; document.getElementById('roulette-result-text').innerText = `${winner} Wins!`;
         let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
         if(!tallies[mode]) tallies[mode] = {};
         tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
         localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
-        renderScoreboard(); triggerConfetti();
+        renderScoreboard(); 
+        triggerConfetti();
     }, 4500);
 }
 
@@ -492,7 +599,8 @@ export function openTipsModal(city) {
     modal.dataset.city = city;
     document.getElementById('tips-modal-title').innerText = `💡 ${city.toUpperCase()} Tips`;
     renderTips('eating');
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function renderTips(category) {
@@ -503,24 +611,18 @@ export function renderTips(category) {
         const tipCat = (cols[3] || '').toLowerCase();
         return type === 'tip' && tipCity.includes(city.toLowerCase()) && tipCat === category.toLowerCase();
     });
+    
     document.getElementById('tips-content').innerHTML = filtered.length ? filtered.map(cols => `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700;">${escapeHTML(cols[4] || '')}</div><div style="font-size: 11px; opacity:0.5; margin-top:5px; font-weight: bold;">👤 ${escapeHTML(cols[0] || '')}</div></div>`).join('') : '<div class="empty-state">No tips yet.</div>';
-}
-
-export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
-    document.body.classList.add('no-scroll');
-    const modal = document.getElementById('stay-modal');
-    document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl ? `url('${imgUrl}')` : `none`;
-    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`;
-    document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`;
-    document.getElementById('stay-modal-buttons').innerHTML = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex:1;">🚗 Drive</button>${listLink ? `<button class="action-btn link-btn" data-url="${listLink}" style="flex:1; background:var(--ios-grey); color:var(--text);">🌐 Listing</button>` : ''}`;
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function openGateModal(flightId) {
     document.body.classList.add('no-scroll');
-    const modal = document.getElementById('gate-modal'); modal.dataset.flightid = flightId;
-    document.getElementById('gate-input-term').value = ''; document.getElementById('gate-input-gate').value = '';
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    const modal = document.getElementById('gate-modal'); 
+    modal.dataset.flightid = flightId;
+    document.getElementById('gate-input-term').value = ''; 
+    document.getElementById('gate-input-gate').value = '';
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function openQuoteModal(location) {
@@ -530,7 +632,8 @@ export function openQuoteModal(location) {
     document.getElementById('quote-modal-title').innerText = `💬 ${location.toUpperCase()} Quotes`;
     document.getElementById('new-quote-text').value = ''; 
     renderQuotes(location);
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function closeCompletionModal() { document.getElementById('completion-modal').classList.remove('active'); setTimeout(() => { document.getElementById('completion-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
