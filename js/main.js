@@ -1,15 +1,16 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
+// THE FIX: ALL 41 IMPORTS EXACTLY MATCH UI.JS
 import { 
-    applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
-    convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
+    applyTheme, setThemeMode, updateMetaThemeColor, updateGreeting, updateTimeAndCountdown, saveTripSettings, renderUpNext,
+    convertCurrency, setTip, calculateTip, populateDropdown, updateFamilyFilter, clearCustomFamilies, 
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
-    initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext, renderAnchor,
-    openQuoteModal, closeQuoteModal, submitNewQuote 
+    initWheel, renderScoreboard, spinRoulette, openTipsModal, renderTips, openStayModal, 
+    openGateModal, openQuoteModal, renderQuotes, submitNewQuote, renderAnchor,
+    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -69,18 +70,14 @@ function initParallax() {
 function startNotificationEngine() {
     setInterval(async () => {
         updateTimeAndCountdown(); 
-        
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
-        
         if(!state.itineraryData) return;
-
         state.itineraryData.forEach(cols => {
             if(!cols || cols.length < 5) return;
             const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
             if (notified.includes(taskId)) return;
-            
             const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
             if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { 
                 new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
@@ -120,12 +117,17 @@ function bindEvents() {
                     localStorage.setItem('carAnchor', JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude, timestamp: Date.now() }));
                     if(navigator.vibrate) navigator.vibrate([30, 50, 30]); triggerConfetti(); renderAnchor();
                 }, (err) => { alert("Check GPS permissions!"); renderAnchor(); }, { enableHighAccuracy: true, timeout: 10000 });
-            } return;
+            } else { alert("GPS not supported."); renderAnchor(); }
+            return;
         }
+        
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); return;
+            // THE FIX: Restored proper Native Google Maps URL!
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank'); 
+            return;
         }
+        
         if (e.target.closest('#btn-clear-anchor')) { e.stopPropagation(); if(confirm("Pull up anchor?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return; }
         
         const weatherBtn = e.target.closest('.weather-btn');
@@ -142,15 +144,16 @@ function bindEvents() {
             tipsTabBtn.classList.add('active'); renderTips(tipsTabBtn.dataset.cat); return; 
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
-        
-        if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
+        if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
+        if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
+        if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
+        if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
         if (e.target.closest('#btn-reset-tally')) {
             if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
             return;
         }
-        
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
@@ -162,7 +165,6 @@ function bindEvents() {
                 });
             } return;
         }
-        
         const tipBtn = e.target.closest('.tip-btn');
         if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
         const splitBtn = e.target.closest('.split-btn');
@@ -170,7 +172,6 @@ function bindEvents() {
             document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
             splitBtn.classList.add('active'); calculateTip(); return;
         }
-        
         if (e.target.closest('#clear-usd')) { 
             const usdInput = document.getElementById('usd-input'); if (usdInput) usdInput.value = ''; convertCurrency(); return; 
         }
@@ -178,8 +179,7 @@ function bindEvents() {
         if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
         if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
         if (e.target.closest('#btn-force-sync')) {
-            const btn = e.target.closest('#btn-force-sync');
-            btn.innerText = "⏳ Syncing..."; await loadAllData(); 
+            const btn = e.target.closest('#btn-force-sync'); btn.innerText = "⏳ Syncing..."; await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
         }
@@ -187,13 +187,9 @@ function bindEvents() {
             if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
             window.location.reload(true); return;
         }
-        
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
-        
-        if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
-        if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
         
         if (e.target.closest('#btn-confirm-modal')) {
             const modal = document.getElementById('completion-modal');
@@ -203,7 +199,7 @@ function bindEvents() {
 
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
-        if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
+
         if (e.target.closest('#btn-save-gate')) {
             const modal = document.getElementById('gate-modal');
             const term = document.getElementById('gate-input-term').value.trim(); const gate = document.getElementById('gate-input-gate').value.trim();
@@ -220,18 +216,19 @@ function bindEvents() {
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
         
+        // THE FIX: Only open Completion Modal if they didn't click the "Get Directions" link ('A' tag)!
         const activeCard = e.target.closest('.itin-card:not(.completed)');
-        if (activeCard) { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
         
         const completedCard = e.target.closest('.itin-card.completed');
-        if (completedCard) {
+        if (completedCard && e.target.tagName !== 'A') {
             let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
             await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
         }
 
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
-
+        
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -255,11 +252,13 @@ async function bootApp() {
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     });
     
-    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
-    if (document.getElementById('roulette-wheel')) initWheel();
+    initLiveCurrency(); 
+    updateTimeAndCountdown(); 
+    initWeatherPill();
     
-    startNotificationEngine(); // THE FIX: Notification engine is back to drive the background loop!
+    if (document.getElementById('roulette-wheel')) initWheel();
+    startNotificationEngine();
 }
 
-document.addEventListener('DOMContentLoaded', bootApp);
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
