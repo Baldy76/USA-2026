@@ -8,7 +8,7 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal
+    openGateModal, closeGateModal, openStepModal, closeStepModal, renderStepTracker
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -83,12 +83,39 @@ function bindEvents() {
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     
+    // THE FIX: Listen to the new Trip End Date setting!
+    document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
+    
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
     document.body.addEventListener('click', async (e) => {
         
+        // THE FIX: Step Tracker Click logic!
+        if (e.target.closest('#step-tracker-container')) { openStepModal(); return; }
+        if (e.target.closest('#btn-close-step')) { closeStepModal(); return; }
+        if (e.target.closest('#btn-save-step')) {
+            const input = document.getElementById('step-input-val');
+            if (input && input.value !== '') {
+                const steps = parseInt(input.value);
+                const todayStr = new Date().toDateString();
+                let stepData = JSON.parse(localStorage.getItem('stepTracker') || '{}');
+                const wasBelow = (stepData[todayStr] || 0) < 10000;
+                
+                stepData[todayStr] = steps;
+                localStorage.setItem('stepTracker', JSON.stringify(stepData));
+                
+                renderStepTracker();
+                closeStepModal();
+                
+                if (steps >= 10000 && wasBelow) {
+                    setTimeout(triggerConfetti, 300);
+                }
+            }
+            return;
+        }
+
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
@@ -110,7 +137,6 @@ function bindEvents() {
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         
-        // THE FIX: Reset Scoreboard Hook!
         if (e.target.closest('#btn-reset-tally')) {
             if(confirm("Clear the Vegas scoreboard?")) {
                 localStorage.removeItem('rouletteTallies');
