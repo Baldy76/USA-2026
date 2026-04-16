@@ -9,7 +9,7 @@ import {
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
-    openQuoteModal, closeQuoteModal, submitNewQuote // NEW
+    openQuoteModal, closeQuoteModal, submitNewQuote 
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -26,10 +26,62 @@ export function openTab(pageId) {
     document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
+function initSwipes() {
+    let touchstartX = 0; let touchendX = 0; const mainContent = document.getElementById('content'); if (!mainContent) return;
+    mainContent.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, { passive: true });
+    mainContent.addEventListener('touchend', e => { 
+        touchendX = e.changedTouches[0].screenX; const dist = touchendX - touchstartX; if (Math.abs(dist) < 60) return; 
+        const activeTab = document.querySelector('.tab-content.active'); if (!activeTab || !tabOrder.includes(activeTab.id)) return; 
+        const currentIndex = tabOrder.indexOf(activeTab.id);
+        if (dist < 0 && currentIndex < tabOrder.length - 1) openTab(tabOrder[currentIndex + 1]); 
+        else if (dist > 0 && currentIndex > 0) openTab(tabOrder[currentIndex - 1]); 
+    }, { passive: true });
+}
+
+function initPullToRefresh() {
+    let pStart = 0; const spinner = document.getElementById('ptr-spinner');
+    document.addEventListener('touchstart', e => { if (window.scrollY === 0) pStart = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => {
+        if (window.scrollY === 0 && pStart > 0) {
+            if (e.changedTouches[0].clientY - pStart > 150) {
+                if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
+                loadAllData().then(() => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); setTimeout(() => { if(spinner) spinner.classList.remove('refreshing');}, 1000); });
+            }
+        }
+        pStart = 0;
+    }, {passive: true});
+}
+
+function initParallax() {
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const activeHero = document.querySelector('.tab-content.active .city-hero');
+                if (activeHero) { activeHero.style.backgroundPosition = `center ${window.scrollY * 0.4}px`; }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
 function bindEvents() {
+    document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
+    document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
+    document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
+    document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
+    document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
+    document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
+    document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
+    
+    document.getElementById('modal-checkbox')?.addEventListener('change', function() {
+        const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
+    });
+
     document.body.addEventListener('click', async (e) => {
         
-        // NEW: QUOTE VAULT CLICKERS
         const quoteBtn = e.target.closest('.open-quote-btn');
         if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -59,34 +111,123 @@ function bindEvents() {
         if (navBtn) { openTab(navBtn.id.replace('nav-btn-', '')); return; }
         const tipsBtn = e.target.closest('.tips-btn');
         if (tipsBtn) { openTipsModal(tipsBtn.dataset.city); return; }
+        const tipsTabBtn = e.target.closest('.tips-tab-btn');
+        if (tipsTabBtn) { 
+            document.querySelectorAll('.tips-tab-btn').forEach(b => b.classList.remove('active')); 
+            tipsTabBtn.classList.add('active'); renderTips(tipsTabBtn.dataset.cat); return; 
+        }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
+        
+        if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
-        if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
+        if (e.target.closest('#btn-reset-tally')) {
+            if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
+            return;
+        }
+        
+        if (e.target.closest('#btn-enable-notifs')) {
+            const btn = e.target.closest('#btn-enable-notifs');
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        btn.innerHTML = '✅ Notifications Enabled';
+                        btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
+                    } else alert('Notifications denied.');
+                });
+            } return;
+        }
+        
+        const tipBtn = e.target.closest('.tip-btn');
+        if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
+        const splitBtn = e.target.closest('.split-btn');
+        if (splitBtn) {
+            document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
+            splitBtn.classList.add('active'); calculateTip(); return;
+        }
+        
+        if (e.target.closest('#clear-usd')) { 
+            const usdInput = document.getElementById('usd-input'); if (usdInput) usdInput.value = ''; convertCurrency(); return; 
+        }
+        if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
+        if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
+        if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
+        if (e.target.closest('#btn-force-sync')) {
+            const btn = e.target.closest('#btn-force-sync'); btn.innerText = "⏳ Syncing..."; await loadAllData(); 
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor();
+            btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
+        }
+        if (e.target.closest('#btn-update-version')) {
+            if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
+            window.location.reload(true); return;
+        }
+        
+        if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
+        if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
+        if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
+        
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
+        if (e.target.closest('#btn-confirm-modal')) {
+            const modal = document.getElementById('completion-modal');
+            let completedTasks = await getVal('completedTasks') || []; completedTasks.push(modal.dataset.activeTaskId);
+            await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
+        }
+
+        const editGateBtn = e.target.closest('.edit-gate-btn');
+        if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
         if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
-        
+        if (e.target.closest('#btn-save-gate')) {
+            const modal = document.getElementById('gate-modal');
+            const term = document.getElementById('gate-input-term').value.trim(); const gate = document.getElementById('gate-input-gate').value.trim();
+            let finalString = "Check Board";
+            if (term && gate) finalString = `Terminal ${term} - Gate ${gate}`; else if (term) finalString = `Terminal ${term}`; else if (gate) finalString = `Gate ${gate}`;
+            if (!state.gateOverrides) state.gateOverrides = {}; state.gateOverrides[modal.dataset.flightid] = finalString;
+            await setVal('gateOverrides', state.gateOverrides); syncToCloud('gateUpdate', state.gateOverrides);
+            renderTravelVault(); closeGateModal(); return;
+        }
+
         const travelCard = e.target.closest('.flip-container');
-        if (travelCard && !e.target.closest('.edit-gate-btn')) { travelCard.classList.toggle('is-flipped'); return; }
-        
+        if (travelCard && !e.target.closest('.edit-gate-btn')) { travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; }
         const stayCard = e.target.closest('.stay-card');
         if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
-        
         const activeCard = e.target.closest('.itin-card:not(.completed)');
         if (activeCard) { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        const completedCard = e.target.closest('.itin-card.completed');
+        if (completedCard) {
+            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
+            await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
+        }
+
+        const linkBtn = e.target.closest('.link-btn');
+        if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
+        const deleteDocBtn = e.target.closest('.delete-doc-btn');
+        if (deleteDocBtn) {
+            e.preventDefault(); e.stopPropagation();
+            if(confirm("Delete doc?")) { let docs = await getVal('offline_docs') || []; docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id); await setVal('offline_docs', docs); renderWallet(); }
+            return;
+        }
     });
 }
 
+window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
+
 async function bootApp() {
-    bindEvents();
+    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
+    history.replaceState({ pageId: 'home' }, '', '#home');
+    try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
+    
     loadAllData().then(() => {
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     });
-    setInterval(updateTimeAndCountdown, 60000); updateTimeAndCountdown(); initLiveCurrency();
+    
+    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
+    if (document.getElementById('roulette-wheel')) initWheel();
+    
+    setInterval(updateTimeAndCountdown, 60000); // Drives the clocks, sky, and Up Next.
 }
 
 document.addEventListener('DOMContentLoaded', bootApp);
