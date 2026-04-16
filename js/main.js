@@ -7,7 +7,8 @@ import {
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
-    initWheel, spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal
+    initWheel, spinRoulette, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    openGateModal, closeGateModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -170,25 +171,48 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
         }
 
-        // THE FIX: Intercept Edit Gate clicks to prevent the card from flipping back!
+        // THE FIX: Trigger the custom Gate Input UI!
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
             e.stopPropagation(); 
             const flightId = editGateBtn.dataset.flightid;
-            const newGate = prompt("Enter new Terminal / Gate info:");
-            if (newGate !== null && newGate.trim() !== "") {
-                if (!state.gateOverrides) state.gateOverrides = {};
-                state.gateOverrides[flightId] = newGate.trim();
-                await setVal('gateOverrides', state.gateOverrides);
-                syncToCloud('gateUpdate', state.gateOverrides);
-                const gateText = document.getElementById(`gate-text-${flightId}`);
-                if(gateText) gateText.innerText = newGate.trim();
-            } return;
+            openGateModal(flightId);
+            return;
         }
 
-        // THE FIX: Trigger the 3D Flip instead of Modal!
+        if (e.target.closest('#btn-close-gate')) {
+            closeGateModal();
+            return;
+        }
+
+        // THE FIX: Stitching the Terminal and Gate text together!
+        if (e.target.closest('#btn-save-gate')) {
+            const modal = document.getElementById('gate-modal');
+            const flightId = modal.dataset.flightid;
+            const term = document.getElementById('gate-input-term').value.trim();
+            const gate = document.getElementById('gate-input-gate').value.trim();
+            
+            let finalString = "Check Board";
+            if (term && gate) finalString = `Terminal ${term} - Gate ${gate}`;
+            else if (term) finalString = `Terminal ${term}`;
+            else if (gate) finalString = `Gate ${gate}`;
+            
+            if (!state.gateOverrides) state.gateOverrides = {};
+            state.gateOverrides[flightId] = finalString;
+            
+            await setVal('gateOverrides', state.gateOverrides);
+            syncToCloud('gateUpdate', state.gateOverrides);
+            
+            const gateText = document.getElementById(`gate-text-${flightId}`);
+            if(gateText) gateText.innerText = finalString;
+            
+            renderTravelVault();
+            closeGateModal();
+            return;
+        }
+
         const travelCard = e.target.closest('.flip-container');
-        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') { 
+        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') { 
             travelCard.classList.toggle('is-flipped'); 
             if(navigator.vibrate) navigator.vibrate(20);
             return; 
