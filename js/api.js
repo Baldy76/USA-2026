@@ -1,36 +1,39 @@
-import { state, setVal, getVal } from './store.js?v=2.1.98';
+import { state, setVal, getVal } from './store.js';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
+const QUOTES_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1357435334&single=true&output=csv";
 
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
 const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
 export async function loadAllData() {
     try {
-        const [itinRes, vaultRes] = await Promise.all([
-            fetch(SHEET_CSV_URL),
-            fetch(VAULT_CSV_URL)
-        ]);
+        const fetches = [fetch(SHEET_CSV_URL), fetch(VAULT_CSV_URL), fetch(QUOTES_CSV_URL)];
+        const responses = await Promise.all(fetches);
 
-        if (!itinRes.ok || !vaultRes.ok) throw new Error("Network response was not ok");
+        if (!responses[0].ok || !responses[1].ok || !responses[2].ok) throw new Error("Network response was not ok");
 
-        const itinText = await itinRes.text();
-        const vaultText = await vaultRes.text();
+        const itinText = await responses[0].text();
+        const vaultText = await responses[1].text();
+        const quotesText = await responses[2].text();
 
         state.itineraryData = parseCSV(itinText).slice(1);
         state.vaultAndStaysData = parseCSV(vaultText).slice(1);
+        state.quotesData = parseCSV(quotesText).slice(1);
 
         state.sheetFamilies = [...new Set(state.itineraryData.map(row => row[4]?.trim()).filter(Boolean))];
 
         await setVal('offlineItin', state.itineraryData);
         await setVal('offlineVault', state.vaultAndStaysData);
+        await setVal('offlineQuotes', state.quotesData);
         await setVal('offlineFamilies', state.sheetFamilies);
 
     } catch (error) {
         console.log("Offline mode: Loading from Cache");
         state.itineraryData = await getVal('offlineItin') || [];
         state.vaultAndStaysData = await getVal('offlineVault') || [];
+        state.quotesData = await getVal('offlineQuotes') || [];
         state.sheetFamilies = await getVal('offlineFamilies') || [];
     }
 }
@@ -99,6 +102,24 @@ export async function syncToCloud(action, payload) {
     } catch (e) {
         console.error("Cloud sync failed", e);
     }
+}
+
+export async function saveQuoteToSheet(location, quote, author) {
+    // 1. Immediately save locally for offline support
+    if (!state.quotesData) state.quotesData = [];
+    state.quotesData.push([location, quote, author]);
+    await setVal('offlineQuotes', state.quotesData);
+
+    // 2. Send to Google Apps Script
+    if (!navigator.onLine || !APPS_SCRIPT_URL) return;
+    try {
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'addQuote', payload: { location, quote, author } })
+        });
+    } catch (e) { console.error("Quote save failed", e); }
 }
 
 export function preCacheImages() {
