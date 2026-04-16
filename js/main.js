@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=2.1.98';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=2.1.98';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -8,8 +8,9 @@ import {
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext, renderAnchor
-} from './ui.js?v=2.1.98';
+    openGateModal, closeGateModal, renderUpNext, renderAnchor,
+    openQuoteModal, closeQuoteModal, submitNewQuote // NEW IMPORTS
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -22,7 +23,6 @@ export function openTab(pageId) {
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
-    document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
 function initSwipes() {
@@ -51,25 +51,8 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
-function initParallax() {
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                const activeHero = document.querySelector('.tab-content.active .city-hero');
-                if (activeHero) {
-                    activeHero.style.backgroundPosition = `center ${window.scrollY * 0.4}px`;
-                }
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-}
-
 function startNotificationEngine() {
     setInterval(async () => {
-        updateTimeAndCountdown(); 
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
@@ -85,10 +68,12 @@ function startNotificationEngine() {
                 setVal('notifiedTasks', notified);
             }
         });
+        renderUpNext();
     }, 60000); 
 }
 
 function bindEvents() {
+    
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -103,6 +88,12 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+
+        // NEW: Quote Vault clicks
+        const quoteBtn = e.target.closest('.open-quote-btn');
+        if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
+        if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
+        if (e.target.closest('#btn-save-quote')) { submitNewQuote(); return; }
 
         if (e.target.closest('#btn-drop-anchor')) {
             const btn = e.target.closest('#btn-drop-anchor');
@@ -126,7 +117,7 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
@@ -268,8 +259,7 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
-    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
-    
+    bindEvents(); initSwipes(); initPullToRefresh(); 
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -295,4 +285,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=2.1.98').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
