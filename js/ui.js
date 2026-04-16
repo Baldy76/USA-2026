@@ -15,7 +15,6 @@ export function applyTheme(isDark) {
 
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
-// THE FIX: Phone browser header bar is now Sunny Yellow for LA!
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
     if (pageId === 'la') metaColor = '#ffcc00';
@@ -343,6 +342,7 @@ export async function renderItinerary() {
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
 }
 
+// THE FIX: Vibrant 3D Flip Cards for Travel!
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -369,19 +369,19 @@ export function renderTravelVault() {
                 html += `
                 <div class="flip-container travel-card">
                     <div class="flip-card-inner">
-                        <div class="flip-front" style="border-left: 5px solid var(--accent);">
+                        <div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">✈️ Flight • ${date}</div>
-                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5;">${escapeHTML(fam)}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ Flight • ${date}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                                 <strong style="font-size: 22px; font-weight: 900;">${dep} → ${arr}</strong>
                                 <div style="text-align: right;">
-                                    <div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div>
-                                    <div style="font-size: 12px; opacity: 0.6; font-weight: 700;">${ftime}</div>
+                                    <div style="color: #bae6fd; font-weight: 800;">${airline} ${fnum}</div>
+                                    <div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ftime}</div>
                                 </div>
                             </div>
-                            <div style="font-size: 11px; font-weight: 800; color: var(--accent); text-align: center; margin-top: 15px; opacity: 0.7;">Tap for Boarding Pass ⤵</div>
+                            <div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Boarding Pass ⤵</div>
                         </div>
                         <div class="flip-back">
                             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
@@ -404,19 +404,19 @@ export function renderTravelVault() {
                 html += `
                 <div class="flip-container travel-card">
                     <div class="flip-card-inner">
-                        <div class="flip-front" style="border-left: 5px solid #34c759;">
+                        <div class="flip-front" style="background: linear-gradient(135deg, #34c759, #28a745); color: white; border: none;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">🚗 Car Rental • ${pdate}</div>
-                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5;">${escapeHTML(fam)}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🚗 Car Rental • ${pdate}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                                 <strong style="font-size: 22px; font-weight: 900;">${company}</strong>
                                 <div style="text-align: right;">
-                                    <div style="color: #34c759; font-weight: 800;">Pick-up</div>
-                                    <div style="font-size: 12px; opacity: 0.6; font-weight: 700;">${ploc}</div>
+                                    <div style="color: #bbf7d0; font-weight: 800;">Pick-up</div>
+                                    <div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ploc}</div>
                                 </div>
                             </div>
-                            <div style="font-size: 11px; font-weight: 800; color: #34c759; text-align: center; margin-top: 15px; opacity: 0.7;">Tap for Details ⤵</div>
+                            <div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Details ⤵</div>
                         </div>
                         <div class="flip-back car-back" style="background: linear-gradient(135deg, #34c759, #28a745);">
                             <div style="font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; justify-content: space-between;">
