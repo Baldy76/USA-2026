@@ -192,3 +192,31 @@ body.theme-vegas .day-group[open] summary .item-count { background: #af52de; }
     border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid white; 
     filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
 }
+
+/* THE FIX: DYNAMIC SKIES */
+.sky-morning { background: linear-gradient(135deg, #ff9500, #ff2d55); color: white; }
+.sky-day { background: linear-gradient(135deg, #5ac8fa, #007aff); color: white; }
+.sky-evening { background: linear-gradient(135deg, #ff5e3a, #ff9500); color: white; }
+.sky-night { background: linear-gradient(135deg, #302b63, #0f0c29); color: white; }
+
+/* THE FIX: MECHANICAL FLAP CLOCKS */
+.flap-board { display: inline-flex; align-items: center; justify-content: center; }
+.flap { 
+    background: #1c1c1e; color: #f2f2f7; 
+    padding: 6px 10px; border-radius: 6px; 
+    font-family: 'Courier New', Courier, monospace; 
+    font-size: 32px; font-weight: 900; 
+    position: relative; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2); 
+    line-height: 1; overflow: hidden; display: inline-block;
+}
+.flap::after { 
+    content: ''; position: absolute; left: 0; right: 0; top: 50%; 
+    height: 2px; background: rgba(0,0,0,0.5); transform: translateY(-50%); 
+}
+.flap.flipping { animation: mechanicalFlip 0.4s cubic-bezier(0.4, 0.0, 0.2, 1); }
+@keyframes mechanicalFlip { 
+    0% { transform: rotateX(0deg); } 
+    50% { transform: rotateX(90deg); filter: brightness(0.5); } 
+    100% { transform: rotateX(0deg); } 
+}
