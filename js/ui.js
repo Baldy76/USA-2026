@@ -12,7 +12,6 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
-
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
@@ -342,7 +341,6 @@ export async function renderItinerary() {
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
 }
 
-// THE FIX: Vibrant 3D Flip Cards for Travel!
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -578,6 +576,29 @@ export function initWheel() {
     
     const resText = document.getElementById('roulette-result-text');
     if(resText) { resText.innerText = "Tap to Spin!"; resText.style.color = "white"; }
+    
+    renderScoreboard();
+}
+
+// THE FIX: LIVE SCOREBOARD RENDERER
+export function renderScoreboard() {
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
+    const board = document.getElementById('roulette-scoreboard');
+    if (!board) return;
+    
+    let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
+    let currentTallies = tallies[mode] || {};
+    
+    let html = '';
+    for (const [name, count] of Object.entries(currentTallies)) {
+        if (count > 0) {
+            html += `<div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">${escapeHTML(name)} <span style="background: var(--card); color: var(--accent); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${count}</span></div>`;
+        }
+    }
+    if (html === '') {
+        html = `<div style="font-size: 11px; opacity: 0.6; font-weight: 700; width: 100%;">No spins yet. Let's play!</div>`;
+    }
+    board.innerHTML = html;
 }
 
 export function spinRoulette() {
@@ -585,6 +606,8 @@ export function spinRoulette() {
     const btn = document.getElementById('btn-spin-roulette');
     const resText = document.getElementById('roulette-result-text');
     if(!wheel || !btn || btn.disabled) return;
+    
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
     
     btn.disabled = true; btn.style.opacity = '0.5';
     if(resText) { resText.innerText = "Spinning..."; resText.style.color = "rgba(255,255,255,0.7)"; }
@@ -622,6 +645,14 @@ export function spinRoulette() {
             resText.style.transform = 'scale(1.2)';
             setTimeout(() => resText.style.transform = 'scale(1)', 200);
         }
+        
+        // THE FIX: Save the winning tally!
+        let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
+        if (!tallies[mode]) tallies[mode] = {};
+        tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
+        localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
+        renderScoreboard();
+        
         triggerConfetti();
     }, 4500);
 }
