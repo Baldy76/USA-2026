@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.1.81">
+    <link rel="stylesheet" href="style.css?v=2.1.82">
 </head>
 <body class="light-mode theme-home">
 
@@ -68,22 +68,41 @@
         </section>
 
         <section id="home" class="page tab-content active">
-            <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px;">
-                <h2 id="greeting-title" style="margin: 0; font-size: 28px; font-weight: 900; letter-spacing: 1px;">USA 2026</h2>
-                <div id="greeting-subtitle" style="font-size: 15px; font-weight: 800; opacity: 0.9; margin-top: 5px;">Road Trip Dashboard</div>
+            
+            <div style="background: linear-gradient(135deg, #ff2d55, #ff9500); border-radius: 24px; padding: 24px 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(255, 45, 85, 0.3);">
+                <h2 id="greeting-title" style="margin: 0 0 20px 0; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-align: center;">Good Morning!</h2>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+                            <span id="trip-prog-label">Countdown</span>
+                            <span id="trip-prog-val">--</span>
+                        </div>
+                        <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
+                            <div id="trip-prog-bar" style="height: 100%; width: 0%; background: #fff; border-radius: 5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="step-tracker-container" style="cursor: pointer;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+                            <span>👟 Today's Steps</span>
+                            <span id="step-prog-val">0 / 10k</span>
+                        </div>
+                        <div style="height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
+                            <div id="step-prog-bar" style="height: 100%; width: 0%; background: #34c759; border-radius: 5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="countdown-display" style="display: none; background: linear-gradient(135deg, #ff3b30, #d0021b); color: white; padding: 24px 20px; border-radius: 24px; text-align: center;">
-                    <div id="cd-text" style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">-- Days!</div>
-                    <div id="cd-date" style="font-size: 14px; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 12px; display: inline-block;">...</div>
-                </div>
-                <div id="dual-clocks" style="display: none; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
-                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
+                <div id="dual-clocks" style="display: block; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
+                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 10px;">
                         <div><div style="font-size: 12px; font-weight: 800; opacity: 0.5;">🇬🇧 UK</div><div id="clock-uk" style="font-size: 32px; font-weight: 900; color: var(--accent);">--:--</div></div>
                         <div style="width: 2px; background: var(--ios-grey);"></div>
                         <div><div id="local-tz-label" style="font-size: 12px; font-weight: 800; opacity: 0.5;">🇺🇸 LOCAL</div><div id="clock-local" style="font-size: 32px; font-weight: 900;">--:--</div></div>
                     </div>
+                    <div id="clock-date" style="text-align: center; font-size: 13px; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">...</div>
                 </div>
             </div>
 
@@ -199,11 +218,16 @@
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
                 <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Enable Push Notifications</button>
             </div>
+            
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
-                <label style="font-size: 14px; font-weight: 700; opacity: 0.7;">Trip Start Date:</label>
-                <input type="date" id="trip-start-date" class="settings-input" />
+                <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip Start Date:</label>
+                <input type="date" id="trip-start-date" class="settings-input" style="margin-bottom: 15px;" />
+                
+                <label style="font-size: 14px; font-weight: 700; opacity: 0.7; display: block; margin-bottom: 5px;">Trip End Date:</label>
+                <input type="date" id="trip-end-date" class="settings-input" />
             </div>
+            
             <div class="admin-card">
                 <h3>App Settings</h3>
                 <label style="font-size: 14px; font-weight: 700;">Name:</label><select id="family-selector" class="settings-input"></select>
@@ -214,8 +238,18 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.81</div>
+            <div class="version-control">v2.1.82</div>
         </section>
+
+        <div id="step-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 24px; text-align: center;">
+                <button id="btn-close-step" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
+                <h3 style="margin: 0 0 10px; font-size: 20px; font-weight: 900;">Log Steps</h3>
+                <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">What's the Apple Watch saying?</p>
+                <input type="number" id="step-input-val" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--ios-grey); font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 20px; outline: none; background: var(--bg); color: var(--text);" placeholder="0">
+                <button id="btn-save-step" class="action-btn" style="margin: 0; background: #34c759;">Save Steps</button>
+            </div>
+        </div>
 
         <div id="gate-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px;">
@@ -328,6 +362,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.81"></script>
+    <script type="module" src="js/main.js?v=2.1.82"></script>
 </body>
 </html>
