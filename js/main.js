@@ -171,7 +171,6 @@ function bindEvents() {
             await setVal('completedTasks', completedTasks); syncToCloud('completion', completedTasks); triggerConfetti(); closeCompletionModal(); renderItinerary(); return;
         }
 
-        // THE FIX: Trigger the custom Gate Input UI!
         const editGateBtn = e.target.closest('.edit-gate-btn');
         if (editGateBtn) {
             e.stopPropagation(); 
@@ -185,7 +184,6 @@ function bindEvents() {
             return;
         }
 
-        // THE FIX: Stitching the Terminal and Gate text together!
         if (e.target.closest('#btn-save-gate')) {
             const modal = document.getElementById('gate-modal');
             const flightId = modal.dataset.flightid;
