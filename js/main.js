@@ -1,4 +1,4 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
 import { 
@@ -9,7 +9,7 @@ import {
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, renderScoreboard, spinRoulette, openTipsModal, renderTips, openStayModal, 
     openGateModal, openQuoteModal, renderQuotes, submitNewQuote, renderAnchor,
-    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal, parseDateTime
+    closeTipsModal, closeStayModal, closeGateModal, closeQuoteModal
 } from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -74,18 +74,12 @@ function startNotificationEngine() {
         const now = Date.now();
         if(!state.itineraryData) return;
         state.itineraryData.forEach(cols => {
-            if(!cols || cols.length < 4) return;
-            const d = (cols[0] || '').trim();
-            const loc = (cols[1] || '').trim();
-            const act = (cols[2] || '').trim();
-            const time = (cols[3] || '').trim();
-            
-            const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, '');
+            if(!cols || cols.length < 5) return;
+            const taskId = btoa(encodeURIComponent(`${cols[0].trim()}-${cols[1].trim()}-${cols[2].trim()}-${cols[3].trim()}`)).replace(/=/g, '');
             if (notified.includes(taskId)) return;
-            
-            const taskTime = parseDateTime(d, time);
+            const taskTime = parseDateTime(cols[0].trim(), cols[3].trim());
             if (taskTime && taskTime > now && (taskTime - now) <= 1800000) { 
-                new Notification('Upcoming Activity', { body: `${time} - ${act}`, icon: 'img/icon-192.png' });
+                new Notification('Upcoming Activity', { body: `${cols[3].trim()} - ${cols[2].trim()}`, icon: 'img/icon-192.png' });
                 notified.push(taskId);
                 setVal('notifiedTasks', notified);
             }
@@ -129,6 +123,8 @@ function bindEvents() {
             const btn = e.target.closest('#btn-find-car');
             const destLat = btn.dataset.lat;
             const destLon = btn.dataset.lon;
+            
+            // THE FIX: Official Native Google Maps Walking Directions API
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLon}&travelmode=walking`, '_blank'); 
             return;
         }
