@@ -73,7 +73,6 @@ main { padding: env(safe-area-inset-top, 40px) 20px 100px; max-width: 600px; mar
 .color-card .segment.active { background: #ffffff; color: #000000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .color-card input::placeholder { color: rgba(255,255,255,0.6); }
 
-/* THE FIX: APPLE WALLET 3D FLIP CSS */
 .flip-container { perspective: 1000px; margin-bottom: 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .flip-card-inner { display: grid; position: relative; width: 100%; transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
 .flip-container.is-flipped .flip-card-inner { transform: rotateY(180deg); }
