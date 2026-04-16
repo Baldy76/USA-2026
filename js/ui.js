@@ -64,7 +64,8 @@ export function updateTimeAndCountdown() {
             const total = tripEnd - tripStart; const elapsed = now - tripStart;
             let percent = Math.min(100, (elapsed / total) * 100);
             if(progBar) progBar.style.width = `${percent}%`;
-            document.getElementById('trip-prog-val').innerText = `Day ${Math.floor(elapsed/(864e5))+1}`;
+            const valEl = document.getElementById('trip-prog-val');
+            if(valEl) valEl.innerText = `Day ${Math.floor(elapsed/(864e5))+1}`;
         }
     }
 
@@ -75,16 +76,17 @@ export function updateTimeAndCountdown() {
     const locTz = activeTab === 'utah' ? 'America/Denver' : 'America/Los_Angeles';
     const locTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:locTz }).format(now).split(':');
     updateFlap('loc-hr', locTime[0]); updateFlap('loc-min', locTime[1]);
-    document.getElementById('clock-date').innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+    const dateEl = document.getElementById('clock-date');
+    if(dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
     renderUpNext();
 }
 
-// THE NEW FEATURE: Quote Vault UI
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('quote-modal');
     modal.dataset.location = location;
     document.getElementById('quote-modal-title').innerText = `💬 ${location.toUpperCase()} Quotes`;
+    document.getElementById('new-quote-text').value = ''; // THE FIX: Clear old input!
     renderQuotes(location);
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
@@ -144,8 +146,6 @@ export function renderAnchor() {
     }
 }
 
-/* Rest of the rendering functions (Itinerary, TravelVault, Accommodations, Roulette, Tips, Stay, Weather) remain unchanged... */
-
 export async function renderItinerary() {
     if (!state.itineraryData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -165,6 +165,9 @@ export async function renderItinerary() {
         const [d, loc, act, time, who] = [cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim()];
         const addr = cols[5] ? cols[5].trim() : '';
         let isMatch = (filter === 'All' || who.toLowerCase().includes(filter.toLowerCase()));
+        if (!isMatch && leech.includes(filter.toLowerCase()) && who.toLowerCase().includes('leech')) isMatch = true;
+        if (!isMatch && murray.includes(filter.toLowerCase()) && who.toLowerCase().includes('murray')) isMatch = true;
+
         if (isMatch) {
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -222,7 +225,6 @@ export function renderTravelVault() {
 
 export function renderAccommodations() { 
     if (!state.vaultAndStaysData) return;
-    const filter = localStorage.getItem('appUser') || 'All'; 
     let grouped = { 'la': '', 'utah': '', 'vegas': '' };
     state.vaultAndStaysData.forEach(cols => {
         if (cols[1].toLowerCase() === 'stay') {
@@ -328,6 +330,7 @@ export function spinRoulette() {
     setTimeout(() => {
         btn.disabled = false; document.getElementById('roulette-result-text').innerText = `${winner} Wins!`;
         let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
+        if(!tallies[mode]) tallies[mode] = {};
         tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
         localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
         renderScoreboard(); triggerConfetti();
@@ -346,7 +349,7 @@ export function openTipsModal(city) {
 export function renderTips(category) {
     const city = document.getElementById('tips-modal').dataset.city;
     const filtered = (state.vaultAndStaysData || []).filter(cols => cols[1].toLowerCase() === 'tip' && cols[2].toLowerCase().includes(city.toLowerCase()) && cols[3].toLowerCase() === category.toLowerCase());
-    document.getElementById('tips-content').innerHTML = filtered.length ? filtered.map(cols => `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03);"><div style="font-size: 15px; font-weight: 700;">${cols[4]}</div><div style="font-size: 11px; opacity:0.5; margin-top:5px;">👤 ${cols[0]}</div></div>`).join('') : '<div class="empty-state">No tips yet.</div>';
+    document.getElementById('tips-content').innerHTML = filtered.length ? filtered.map(cols => `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700;">${escapeHTML(cols[4])}</div><div style="font-size: 11px; opacity:0.5; margin-top:5px; font-weight: bold;">👤 ${escapeHTML(cols[0])}</div></div>`).join('') : '<div class="empty-state">No tips yet.</div>';
 }
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
@@ -366,7 +369,6 @@ export function openGateModal(flightId) {
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
-/* Modals Closing Logic */
 export function closeTipsModal() { document.getElementById('tips-modal').classList.remove('active'); setTimeout(() => { document.getElementById('tips-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeStayModal() { document.getElementById('stay-modal').classList.remove('active'); setTimeout(() => { document.getElementById('stay-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 export function closeGateModal() { document.getElementById('gate-modal').classList.remove('active'); setTimeout(() => { document.getElementById('gate-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
