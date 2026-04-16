@@ -341,6 +341,7 @@ export async function renderItinerary() {
     document.querySelectorAll('.completed-section').forEach(sec => { sec.style.display = sec.querySelector('.timeline')?.innerHTML ? 'block' : 'none'; });
 }
 
+// THE FIX: Apple Wallet 3D Flip Builder!
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
@@ -362,10 +363,78 @@ export function renderTravelVault() {
             if (type === 'flight') {
                 hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
                 const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
-                html += `<div class="admin-card travel-card" data-type="flight" data-flightid="${flightId}" data-fam="${escapeHTML(fam)}" data-date="${date}" data-dep="${dep}" data-arr="${arr}" data-airline="${airline}" data-fnum="${fnum}" data-ftime="${ftime}" data-term="${activeTerm}" data-ref="${escapeHTML(cols[9]?.trim() || '')}" data-link="https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent); cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">✈️ Flight • ${date}</div><strong style="font-size: 18px;">${dep} → ${arr}</strong></div><div style="text-align: right;"><div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.6;">${ftime}</div></div></div>`;
+                const flLink = `https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}`;
+
+                html += `
+                <div class="flip-container travel-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-front" style="border-left: 5px solid var(--accent);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">✈️ Flight • ${date}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5;">${escapeHTML(fam)}</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <strong style="font-size: 22px; font-weight: 900;">${dep} → ${arr}</strong>
+                                <div style="text-align: right;">
+                                    <div style="color: var(--accent); font-weight: 800;">${airline} ${fnum}</div>
+                                    <div style="font-size: 12px; opacity: 0.6; font-weight: 700;">${ftime}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; font-weight: 800; color: var(--accent); text-align: center; margin-top: 15px; opacity: 0.7;">Tap for Boarding Pass ⤵</div>
+                        </div>
+                        <div class="flip-back">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+                                <span>Terminal / Gate</span>
+                                <span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                                <div id="gate-text-${flightId}" style="font-size: 24px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div>
+                                <button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">✏️ Edit</button>
+                            </div>
+                            <div style="font-size: 12px; font-weight: 700; margin-bottom: 15px;">
+                                <a href="${flLink}" target="_blank" style="color: white; text-decoration: underline;">Track Flight ↗</a>
+                            </div>
+                            <div class="barcode" style="background: repeating-linear-gradient(90deg, white, white 2px, transparent 2px, transparent 4px, white 4px, white 6px, transparent 6px, transparent 10px); height: 30px; opacity: 0.8; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                </div>`;
             } else if (type === 'car') {
                 hasData = true; const pdate = escapeHTML(cols[2]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim());
-                html += `<div class="admin-card travel-card" data-type="car" data-fam="${escapeHTML(fam)}" data-company="${company}" data-pdate="${pdate}" data-ptime="${escapeHTML(cols[6]?.trim())}" data-ploc="${ploc}" data-ddate="${escapeHTML(cols[3]?.trim())}" data-dtime="${escapeHTML(cols[7]?.trim())}" data-dloc="${escapeHTML(cols[8]?.trim())||ploc}" data-ref="${escapeHTML(cols[9]?.trim())}" style="padding: 20px; margin-bottom: 16px; border-left: 5px solid #34c759; cursor: pointer;"><div><div style="font-size: 11px; font-weight: 900; opacity: 0.5;">🚗 Car Rental • ${pdate}</div><strong style="font-size: 18px;">${company}</strong></div><div style="text-align: right;"><div style="color: #34c759; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.6;">${ploc}</div></div></div>`;
+                html += `
+                <div class="flip-container travel-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-front" style="border-left: 5px solid #34c759;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5; text-transform: uppercase;">🚗 Car Rental • ${pdate}</div>
+                                <div style="font-size: 11px; font-weight: 900; opacity: 0.5;">${escapeHTML(fam)}</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <strong style="font-size: 22px; font-weight: 900;">${company}</strong>
+                                <div style="text-align: right;">
+                                    <div style="color: #34c759; font-weight: 800;">Pick-up</div>
+                                    <div style="font-size: 12px; opacity: 0.6; font-weight: 700;">${ploc}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; font-weight: 800; color: #34c759; text-align: center; margin-top: 15px; opacity: 0.7;">Tap for Details ⤵</div>
+                        </div>
+                        <div class="flip-back car-back" style="background: linear-gradient(135deg, #34c759, #28a745);">
+                            <div style="font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                                <span>Booking Details</span>
+                                <span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-size: 11px; opacity: 0.8; font-weight: 700;">PICK-UP</div>
+                                <div style="font-size: 14px; font-weight: 900;">${ploc}</div>
+                                <div style="font-size: 12px; opacity: 0.9;">${pdate} @ ${escapeHTML(cols[6]?.trim() || '')}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.8; font-weight: 700;">DROP-OFF</div>
+                                <div style="font-size: 14px; font-weight: 900;">${escapeHTML(cols[8]?.trim())||ploc}</div>
+                                <div style="font-size: 12px; opacity: 0.9;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             }
         }
     }); display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
@@ -530,6 +599,7 @@ export function spinRoulette() {
     wheel.style.transform = `rotate(${totalRotation}deg)`;
     wheel.dataset.currentRotation = totalRotation;
     
+    // Math to track what is exactly under the pointer!
     const pointerAngle = (360 - (totalRotation % 360)) % 360;
     const sliceDeg = 360 / names.length;
     const winningIndex = Math.floor(pointerAngle / sliceDeg);
@@ -623,71 +693,6 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
 
 export function closeStayModal() {
     const modal = document.getElementById('stay-modal');
-    modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
-}
-
-export function openTravelModal(cardData) {
-    document.body.classList.add('no-scroll');
-    if(navigator.vibrate) navigator.vibrate(40);
-    const modal = document.getElementById('travel-modal');
-    const wrapper = document.getElementById('travel-modal-wrapper');
-    const content = document.getElementById('travel-modal-content');
-
-    if (cardData.type === 'flight') {
-        wrapper.style.background = 'transparent';
-        wrapper.style.border = 'none';
-        wrapper.style.boxShadow = 'none';
-        
-        const linkHtml = cardData.link !== '#' ? `<a href="${cardData.link}" target="_blank" style="color:white; text-decoration:underline;">${cardData.airline} ${cardData.fnum} ↗</a>` : `${cardData.airline} ${cardData.fnum}`;
-        
-        content.innerHTML = `
-        <div class="flight-card" style="margin-bottom:0; box-shadow:none;">
-            <div class="flight-header">
-                <span class="flight-num">${linkHtml}</span>
-                <span style="font-size:12px; font-weight:800; opacity:0.8; text-align: right;">${cardData.date} <br> TIME: ${cardData.ftime}</span>
-            </div>
-            <div class="flight-path" style="margin: 25px 0;">
-                <div class="path-node"><span>From</span><strong style="font-size: 20px;">${cardData.dep}</strong></div>
-                <div class="plane-icon"></div>
-                <div class="path-node"><span>To</span><strong style="font-size: 20px;">${cardData.arr}</strong></div>
-            </div>
-            <div style="margin-top:15px; display:flex; justify-content: space-between; align-items:center; font-size:13px; font-weight:700; opacity:0.9;">
-                <span>Term/Gate: <strong id="modal-gate-text" style="color: #ffd60a;">${cardData.term || "Check Screens"}</strong> <button class="edit-gate-btn action-btn" data-flightid="${cardData.flightid}" style="padding: 4px 10px; font-size: 11px; width: auto; margin: 0 0 0 10px; display: inline-block; background: rgba(255,255,255,0.2); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.4);">✏️ Update</button></span>
-                <span>Ref: ${cardData.ref}</span>
-            </div>
-            <div class="barcode"></div>
-        </div>`;
-    } else if (cardData.type === 'car') {
-        wrapper.style.background = 'var(--card)';
-        wrapper.style.border = '1px solid var(--ios-grey)';
-        wrapper.style.boxShadow = '0 8px 24px var(--shadow)';
-
-        content.innerHTML = `
-        <div style="padding: 24px;">
-            <div style="font-size:12px; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 15px;">🚗 Car Rental</div>
-            <h3 style="margin: 0 0 20px; font-size: 24px; font-weight: 900;">${cardData.company}</h3>
-            <div style="margin-bottom: 16px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
-                <strong style="font-size: 14px;">Pick-up:</strong><br>
-                <span style="font-size: 16px; font-weight: 800;">${cardData.ploc}</span><br>
-                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.pdate} @ ${cardData.ptime}</span>
-            </div>
-            <div style="margin-bottom: 20px; padding-left: 12px; border-left: 3px solid var(--ios-grey);">
-                <strong style="font-size: 14px;">Drop-off:</strong><br>
-                <span style="font-size: 16px; font-weight: 800;">${cardData.dloc}</span><br>
-                <span style="font-size:14px; font-weight:600; opacity:0.7;">${cardData.ddate} @ ${cardData.dtime}</span>
-            </div>
-            <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 12px; font-size: 15px;">
-                <strong>Ref:</strong> <span style="color: var(--accent); font-weight: 800;">${cardData.ref}</span>
-            </div>
-        </div>`;
-    }
-
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-}
-
-export function closeTravelModal() {
-    const modal = document.getElementById('travel-modal');
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
