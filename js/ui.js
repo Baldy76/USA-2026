@@ -870,3 +870,33 @@ export function closeGateModal() {
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
+
+// THE FIX: Rendering the Anchor UI
+export function renderAnchor() {
+    const container = document.getElementById('anchor-container');
+    if (!container) return;
+
+    const saved = localStorage.getItem('carAnchor');
+    if (saved) {
+        const data = JSON.parse(saved);
+        const timeStr = new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        container.innerHTML = `
+        <div class="admin-card color-card pulse-btn" style="margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745); box-shadow: 0 8px 24px rgba(52, 199, 89, 0.4); text-align: center; position: relative;">
+            <button id="btn-clear-anchor" style="position:absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer; z-index: 10;">✕</button>
+            <div id="btn-find-car" data-lat="${data.lat}" data-lon="${data.lon}" style="cursor: pointer; padding: 10px;">
+                <div style="font-size: 48px; margin-bottom: 10px; animation: float 3s ease-in-out infinite;">🧭🚶‍♂️</div>
+                <h3 style="margin: 0 0 5px; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">Find The Car</h3>
+                <div style="font-size: 12px; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Anchored at ${timeStr}</div>
+            </div>
+        </div>`;
+    } else {
+        container.innerHTML = `
+        <div class="admin-card color-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #0ea5e9, #2563eb); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3); text-align: center;">
+            <div id="btn-drop-anchor" style="cursor: pointer; padding: 10px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚓🚗</div>
+                <h3 style="margin: 0 0 5px; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">Drop Anchor</h3>
+                <div style="font-size: 12px; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Save parking spot</div>
+            </div>
+        </div>`;
+    }
+}
