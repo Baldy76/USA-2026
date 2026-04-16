@@ -1,7 +1,6 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
-// THE FIX: ALL IMPORTS MATCH EXACTLY
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
@@ -53,6 +52,9 @@ function initPullToRefresh() {
 
 function startNotificationEngine() {
     setInterval(async () => {
+        // THE FIX: Trigger a clock flip and sky check every 60 seconds!
+        updateTimeAndCountdown(); 
+        
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
@@ -72,8 +74,6 @@ function startNotificationEngine() {
             }
         });
         
-        renderUpNext();
-        
     }, 60000); 
 }
 
@@ -83,6 +83,7 @@ function bindEvents() {
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
     document.getElementById('bill-total')?.addEventListener('input', calculateTip);
+    document.getElementById('split-ways')?.addEventListener('change', calculateTip);
     document.getElementById('wallet-upload')?.addEventListener('change', handleFileUpload);
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
@@ -92,7 +93,7 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-
+        
         const weatherBtn = e.target.closest('.weather-btn');
         if (weatherBtn) { setWeatherCity(weatherBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
