@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.2';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.2';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.2.1';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.2.1';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -57,7 +57,7 @@ export function updateTimeAndCountdown() {
             const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 ${timePT}`;
             const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 ${timePT}`;
             const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 ${timeMT}`;
-        } catch(e) { console.error("Time zone error:", e); }
+        } catch(e) {}
 
         try {
             const options = { weekday: 'long', month: 'long', day: 'numeric' };
@@ -80,7 +80,8 @@ export function updateTimeAndCountdown() {
             const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
             if (now < tripStart) {
-                const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+                const diff = tripStart - now;
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 if(progLabel) progLabel.innerText = "Countdown";
                 
                 updateFlap('cd-num', days.toString());
@@ -411,9 +412,8 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            // OFFICIAL GOOGLE MAPS URL
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=...${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -587,8 +587,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            // OFFICIAL GOOGLE MAPS URL
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=...${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -732,7 +731,7 @@ export function spinRoulette() {
     let names = JSON.parse(wheel.dataset.names || '[]');
     let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
     
-    const extraSpins = 360 * 6; // 6 full spins!
+    const extraSpins = 360 * 6; 
     const randomStop = Math.floor(Math.random() * 360);
     const totalRotation = currentRot + extraSpins + randomStop;
     
@@ -988,29 +987,64 @@ export function renderAnchor() {
     }
 }
 
-export function renderMeetupBoard() {
+// --- MEETUP & URGENT ALERT ENGINE ---
+export async function renderMeetupBoard() {
+    const board = document.getElementById('btn-open-meetup');
     const boardText = document.getElementById('meetup-text');
     const boardAuthor = document.getElementById('meetup-author');
-    if (!boardText) return;
+    const statusLabel = document.getElementById('meetup-status-label');
+    if (!boardText || !board) return;
 
     const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
     if (meetups.length > 0) {
         const latest = meetups[meetups.length - 1]; 
-        boardText.innerText = `"${escapeHTML(latest[1])}"`;
+        const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
+        const lastSeenId = await getVal('lastSeenMeetupId');
+        const currentUser = localStorage.getItem('appUser') || 'Unknown';
+        const isUrgent = latest[1].includes('[ALERT]');
+        const cleanText = latest[1].replace('[ALERT]', '').trim();
+
+        boardText.innerText = `"${escapeHTML(cleanText)}"`;
         boardAuthor.innerText = `— ${escapeHTML(latest[2])}`;
+
+        if (messageId !== lastSeenId) {
+            board.classList.add('new-alert-pulse');
+            if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
+            
+            if (latest[2] !== currentUser) {
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                if (Notification.permission === 'granted') {
+                    new Notification(isUrgent ? '🚨 URGENT MEETUP' : '📢 Meetup Update', { body: cleanText, icon: 'img/icon-192.png' });
+                }
+                if (isUrgent) {
+                    const overlay = document.getElementById('urgent-alert-overlay');
+                    if(overlay && overlay.style.display === 'none') {
+                        document.getElementById('urgent-alert-msg').innerText = `${cleanText}\n\n— ${latest[2]}`;
+                        overlay.style.display = 'flex';
+                        if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500]);
+                    }
+                }
+            }
+        } else {
+            board.classList.remove('new-alert-pulse');
+            if(statusLabel) statusLabel.innerText = "Live Bulletin";
+        }
     } else {
         boardText.innerText = "No active announcements.";
         boardAuthor.innerText = "Tap here to broadcast a message to the group!";
+        board.classList.remove('new-alert-pulse');
+        if(statusLabel) statusLabel.innerText = "Live Bulletin";
     }
 }
 
 export function openMeetupModal() {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('meetup-modal');
-    document.getElementById('new-meetup-author').value = '';
+    document.getElementById('new-meetup-author').value = localStorage.getItem('appUser') || '';
     document.getElementById('new-meetup-text').value = '';
-    modal.style.display = 'flex'; 
-    setTimeout(() => modal.classList.add('active'), 10);
+    const urgentToggle = document.getElementById('urgent-toggle');
+    if(urgentToggle) urgentToggle.checked = false;
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function closeMeetupModal() {
@@ -1021,12 +1055,15 @@ export function closeMeetupModal() {
 
 export async function submitMeetup() {
     const author = document.getElementById('new-meetup-author').value.trim();
-    const text = document.getElementById('new-meetup-text').value.trim();
+    let text = document.getElementById('new-meetup-text').value.trim();
+    const urgentToggle = document.getElementById('urgent-toggle');
+    const isUrgent = urgentToggle ? urgentToggle.checked : false;
     
     if (!text || !author) {
         alert("Please enter both your name and the announcement!");
         return;
     }
+    if (isUrgent) text = `[ALERT] ${text}`;
     
     if (navigator.vibrate) navigator.vibrate(20);
     
@@ -1036,11 +1073,16 @@ export async function submitMeetup() {
     
     await saveQuoteToSheet('MEETUP', text, author);
     
+    // Mark as seen immediately for the author so it doesn't flash
+    const messageId = btoa(text + author).substring(0, 12);
+    await setVal('lastSeenMeetupId', messageId);
+    
     btn.innerText = "Post Announcement";
     btn.disabled = false;
     
     document.getElementById('new-meetup-author').value = '';
     document.getElementById('new-meetup-text').value = '';
+    if (urgentToggle) urgentToggle.checked = false;
     
     renderMeetupBoard();
     triggerConfetti();
