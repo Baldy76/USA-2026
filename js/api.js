@@ -77,14 +77,28 @@ export async function initLiveCurrency() {
         if (!response.ok) throw new Error("Offline");
         
         const data = await response.json();
+        
+        // 1. Set the rates globally to kill cache ghosts
         state.liveExchangeRate = data.rates.USD; 
+        window.liveExchangeRate = data.rates.USD; 
+        
         localStorage.setItem('offline_exchange_rate', state.liveExchangeRate);
         
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
+        
+        // 2. FORCE AUTO-RECALCULATE if the user typed numbers before the server connected!
+        const usdInput = document.getElementById('usd-input');
+        if (usdInput && usdInput.value) usdInput.dispatchEvent(new Event('input'));
+        
+        const billInput = document.getElementById('bill-total');
+        if (billInput && billInput.value) billInput.dispatchEvent(new Event('input'));
+        
     } catch (error) {
         const savedRate = localStorage.getItem('offline_exchange_rate');
         state.liveExchangeRate = savedRate ? parseFloat(savedRate) : 1.25; 
+        window.liveExchangeRate = state.liveExchangeRate;
+        
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)} (OFFLINE)`;
     }
