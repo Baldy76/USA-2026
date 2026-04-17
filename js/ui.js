@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.2.1';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.2.1';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
+import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -731,7 +731,7 @@ export function spinRoulette() {
     let names = JSON.parse(wheel.dataset.names || '[]');
     let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
     
-    const extraSpins = 360 * 6; 
+    const extraSpins = 360 * 6; // 6 full spins!
     const randomStop = Math.floor(Math.random() * 360);
     const totalRotation = currentRot + extraSpins + randomStop;
     
@@ -987,7 +987,6 @@ export function renderAnchor() {
     }
 }
 
-// --- MEETUP & URGENT ALERT ENGINE ---
 export async function renderMeetupBoard() {
     const board = document.getElementById('btn-open-meetup');
     const boardText = document.getElementById('meetup-text');
@@ -1044,6 +1043,14 @@ export function openMeetupModal() {
     document.getElementById('new-meetup-text').value = '';
     const urgentToggle = document.getElementById('urgent-toggle');
     if(urgentToggle) urgentToggle.checked = false;
+    
+    // Toggle Clear button visibility
+    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
+    const clearBtn = document.getElementById('btn-clear-meetup');
+    if (clearBtn) {
+        clearBtn.style.display = meetups.length > 0 ? 'block' : 'none';
+    }
+
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -1073,7 +1080,6 @@ export async function submitMeetup() {
     
     await saveQuoteToSheet('MEETUP', text, author);
     
-    // Mark as seen immediately for the author so it doesn't flash
     const messageId = btoa(text + author).substring(0, 12);
     await setVal('lastSeenMeetupId', messageId);
     
@@ -1087,4 +1093,26 @@ export async function submitMeetup() {
     renderMeetupBoard();
     triggerConfetti();
     closeMeetupModal();
+}
+
+// NEW FIX: The "Clear Active Bulletin" Function
+export async function clearActiveMeetup() {
+    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
+    if (meetups.length > 0) {
+        if(confirm("Clear the current active bulletin?")) {
+            const latest = meetups[meetups.length - 1];
+            const btn = document.getElementById('btn-clear-meetup');
+            if(btn) { btn.innerText = "Clearing..."; btn.disabled = true; }
+            
+            await deleteQuoteFromSheet('MEETUP', latest[1], latest[2]);
+            
+            localStorage.removeItem('lastSeenMeetupId');
+            renderMeetupBoard();
+            closeMeetupModal();
+            
+            if(btn) { btn.innerText = "Clear"; btn.disabled = false; }
+        }
+    } else {
+        alert("No active bulletin to clear!");
+    }
 }
