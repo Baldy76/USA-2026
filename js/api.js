@@ -1,4 +1,4 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal } from './store.js?v=5.0.0';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
@@ -10,9 +10,9 @@ const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969";
 export async function loadAllData() {
     try {
         const [itinRes, vaultRes, quotesRes] = await Promise.all([
-            fetch(SHEET_CSV_URL),
-            fetch(VAULT_CSV_URL),
-            fetch(QUOTES_CSV_URL)
+            fetch(SHEET_CSV_URL + '&t=' + Date.now()),
+            fetch(VAULT_CSV_URL + '&t=' + Date.now()),
+            fetch(QUOTES_CSV_URL + '&t=' + Date.now())
         ]);
 
         if (!itinRes.ok || !vaultRes.ok || !quotesRes.ok) throw new Error("Network response was not ok");
@@ -25,7 +25,7 @@ export async function loadAllData() {
         state.vaultAndStaysData = parseCSV(vaultText).slice(1);
         state.quotesData = parseCSV(quotesText).slice(1);
 
-        state.sheetFamilies = [...new Set(state.itineraryData.map(row => row[4]?.trim()).filter(Boolean))];
+        state.sheetFamilies = [...new Set(state.itineraryData.map(row => (row[4] || '').trim()).filter(Boolean))];
 
         await setVal('offlineItin', state.itineraryData);
         await setVal('offlineVault', state.vaultAndStaysData);
@@ -78,16 +78,13 @@ export async function initLiveCurrency() {
         
         const data = await response.json();
         state.liveExchangeRate = data.rates.USD; 
-        
         localStorage.setItem('offline_exchange_rate', state.liveExchangeRate);
         
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
-        
     } catch (error) {
         const savedRate = localStorage.getItem('offline_exchange_rate');
         state.liveExchangeRate = savedRate ? parseFloat(savedRate) : 1.25; 
-        
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)} (OFFLINE)`;
     }
@@ -144,9 +141,8 @@ export async function deleteQuoteFromSheet(location, quote, author) {
 export function preCacheImages() {
     if (!state.vaultAndStaysData) return;
     state.vaultAndStaysData.forEach(row => {
-        if (row.length > 7 && row[1]?.trim().toLowerCase() === 'stay' && row[7]) {
-            const img = new Image();
-            img.src = row[7].trim();
+        if (row.length > 7 && (row[1] || '').trim().toLowerCase() === 'stay' && row[7]) {
+            const img = new Image(); img.src = row[7].trim();
         }
     });
 }
