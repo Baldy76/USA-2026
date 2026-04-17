@@ -1,5 +1,5 @@
-import { escapeHTML } from '../store.js?v=7.0.0';
-import { triggerConfetti } from '../ui.js?v=7.0.0';
+import { escapeHTML } from '../store.js';
+import { triggerConfetti } from '../ui.js';
 
 export function initWheel() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
