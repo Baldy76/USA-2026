@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=2.2.0';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=2.2.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -12,7 +12,6 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
-
 export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
@@ -386,8 +385,12 @@ export async function renderItinerary() {
     const todayStr = now.toDateString(); 
 
     const sortedData = [...state.itineraryData].sort((a, b) => {
-        const dtA = parseDateTime(a[0], a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
-        const dtB = parseDateTime(b[0], b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
+        if(!a || a.length < 4) return 1;
+        if(!b || b.length < 4) return -1;
+        const dA = (a[0] || '').trim(), tA = (a[3] || '').trim();
+        const dB = (b[0] || '').trim(), tB = (b[3] || '').trim();
+        const dtA = parseDateTime(dA, tA || '23:59') || Number.MAX_SAFE_INTEGER; 
+        const dtB = parseDateTime(dB, tB || '23:59') || Number.MAX_SAFE_INTEGER;
         return dtA - dtB;
     });
 
@@ -430,7 +433,7 @@ export async function renderItinerary() {
                             <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
+                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
 
@@ -819,7 +822,9 @@ export function renderTips(category) {
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
-// THE NEW FEATURE: Quote Vault Rendering & Modals
+// ----------------------------------------------------
+// THE NEW QUOTE VAULT FUNCTIONS ADDED SAFELY HERE
+// ----------------------------------------------------
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('quote-modal');
@@ -883,6 +888,39 @@ export function closeQuoteModal() {
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
+
+export function openManageQuotesModal() {
+    document.body.classList.add('no-scroll');
+    const modal = document.getElementById('manage-quotes-modal');
+    renderAdminQuotes();
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeManageQuotesModal() {
+    const modal = document.getElementById('manage-quotes-modal');
+    modal.classList.remove('active');
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
+
+export function renderAdminQuotes() {
+    const list = document.getElementById('admin-quotes-list');
+    if (!state.quotesData || state.quotesData.length === 0) {
+        list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`;
+        return;
+    }
+    
+    list.innerHTML = state.quotesData.map((q, index) => `
+        <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);">
+            <div style="flex: 1; padding-right: 10px;">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div>
+                <div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div>
+            </div>
+            <button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button>
+        </div>
+    `).reverse().join('');
+}
+// ----------------------------------------------------
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     document.body.classList.add('no-scroll');
@@ -959,31 +997,4 @@ export function renderAnchor() {
             </div>
         </div>`;
     }
-}
-
-export function openManageQuotesModal() {
-    document.body.classList.add('no-scroll');
-    const modal = document.getElementById('manage-quotes-modal');
-    renderAdminQuotes();
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
-}
-
-export function renderAdminQuotes() {
-    const list = document.getElementById('admin-quotes-list');
-    if (!state.quotesData || state.quotesData.length === 0) {
-        list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`;
-        return;
-    }
-    
-    // Renders every quote with a red trash can button
-    list.innerHTML = state.quotesData.map((q, index) => `
-        <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);">
-            <div style="flex: 1; padding-right: 10px;">
-                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div>
-                <div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div>
-            </div>
-            <button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button>
-        </div>
-    `).reverse().join('');
 }
