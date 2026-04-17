@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.0.0';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -10,7 +10,7 @@ import {
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=6.0.0';
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -137,7 +137,6 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // OFFICIAL GOOGLE MAPS WALKING ROUTE
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -262,11 +261,9 @@ window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTra
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); 
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
-    
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
     history.replaceState({ pageId: 'home' }, '', '#home');
-    
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
     try {
@@ -277,12 +274,15 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     initLiveCurrency(); 
-    setInterval(updateTimeAndCountdown, 60000); 
+    
+    // THE FIX: Clock interval securely established!
     updateTimeAndCountdown(); 
+    setInterval(updateTimeAndCountdown, 10000); 
+
     initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.0').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.1').catch(e => console.error(e));
