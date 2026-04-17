@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
-import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.4.0';
+import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js?v=6.4.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -395,8 +395,9 @@ export async function renderItinerary() {
     const nowTime = now.getTime();
     const todayStr = now.toDateString(); 
 
+    // THE FIX: Strict, crash-proof sorting logic!
     const sortedData = [...state.itineraryData].sort((a, b) => {
-        const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
+        const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER;
         const dtB = parseDateTime(b[0] || '', b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
         return dtA - dtB;
     });
@@ -412,8 +413,9 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
+            // THE FIX: Standard, official Google Maps Search API
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=...${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -477,7 +479,14 @@ export function renderTravelVault() {
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
     const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
-    if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]||'', null) - parseDateTime(b[2]||'', null));
+    if(!display) return; let html = ''; let hasData = false; 
+    
+    const sortedData = [...state.vaultAndStaysData].sort((a,b) => {
+        const dtA = parseDateTime(a[2] || '', null) || Number.MAX_SAFE_INTEGER;
+        const dtB = parseDateTime(b[2] || '', null) || Number.MAX_SAFE_INTEGER;
+        return dtA - dtB;
+    });
+    
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
     sortedData.forEach(cols => {
@@ -587,7 +596,8 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=...${encodeURIComponent(addr)}`;
+            // THE FIX: Official Google Maps Search API Link
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -987,6 +997,7 @@ export function renderAnchor() {
     }
 }
 
+// --- NEW MEETUP & ALERTS ENGINE ---
 export async function renderMeetupBoard() {
     const board = document.getElementById('btn-open-meetup');
     const boardText = document.getElementById('meetup-text');
@@ -1010,6 +1021,7 @@ export async function renderMeetupBoard() {
             board.classList.add('new-alert-pulse');
             if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
             
+            // Only trigger physical feedback if you aren't the author
             if (latest[2] !== currentUser) {
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 if (Notification.permission === 'granted') {
@@ -1044,12 +1056,9 @@ export function openMeetupModal() {
     const urgentToggle = document.getElementById('urgent-toggle');
     if(urgentToggle) urgentToggle.checked = false;
     
-    // Toggle Clear button visibility
     const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
     const clearBtn = document.getElementById('btn-clear-meetup');
-    if (clearBtn) {
-        clearBtn.style.display = meetups.length > 0 ? 'block' : 'none';
-    }
+    if (clearBtn) { clearBtn.style.display = meetups.length > 0 ? 'block' : 'none'; }
 
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
@@ -1066,36 +1075,27 @@ export async function submitMeetup() {
     const urgentToggle = document.getElementById('urgent-toggle');
     const isUrgent = urgentToggle ? urgentToggle.checked : false;
     
-    if (!text || !author) {
-        alert("Please enter both your name and the announcement!");
-        return;
-    }
+    if (!text || !author) { alert("Please enter both your name and the announcement!"); return; }
     if (isUrgent) text = `[ALERT] ${text}`;
     
     if (navigator.vibrate) navigator.vibrate(20);
     
     const btn = document.getElementById('btn-save-meetup');
-    btn.innerText = "Posting...";
-    btn.disabled = true;
+    btn.innerText = "Posting..."; btn.disabled = true;
     
     await saveQuoteToSheet('MEETUP', text, author);
     
+    // Mark as seen immediately for the author so it doesn't flash
     const messageId = btoa(text + author).substring(0, 12);
     await setVal('lastSeenMeetupId', messageId);
     
-    btn.innerText = "Post Announcement";
-    btn.disabled = false;
-    
-    document.getElementById('new-meetup-author').value = '';
-    document.getElementById('new-meetup-text').value = '';
+    btn.innerText = "Post Announcement"; btn.disabled = false;
+    document.getElementById('new-meetup-author').value = ''; document.getElementById('new-meetup-text').value = '';
     if (urgentToggle) urgentToggle.checked = false;
     
-    renderMeetupBoard();
-    triggerConfetti();
-    closeMeetupModal();
+    renderMeetupBoard(); triggerConfetti(); closeMeetupModal();
 }
 
-// NEW FIX: The "Clear Active Bulletin" Function
 export async function clearActiveMeetup() {
     const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
     if (meetups.length > 0) {
@@ -1105,14 +1105,9 @@ export async function clearActiveMeetup() {
             if(btn) { btn.innerText = "Clearing..."; btn.disabled = true; }
             
             await deleteQuoteFromSheet('MEETUP', latest[1], latest[2]);
-            
             localStorage.removeItem('lastSeenMeetupId');
-            renderMeetupBoard();
-            closeMeetupModal();
-            
+            renderMeetupBoard(); closeMeetupModal();
             if(btn) { btn.innerText = "Clear"; btn.disabled = false; }
         }
-    } else {
-        alert("No active bulletin to clear!");
-    }
+    } else { alert("No active bulletin to clear!"); }
 }
