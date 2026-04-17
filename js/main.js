@@ -1,16 +1,16 @@
-import { state, setVal, getVal, parseDateTime } from './store.js';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=5.0.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=5.0.0';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
-    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
+    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js';
+} from './ui.js?v=5.0.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -44,7 +44,13 @@ function initPullToRefresh() {
         if (window.scrollY === 0 && pStart > 0) {
             if (e.changedTouches[0].clientY - pStart > 150) {
                 if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
-                loadAllData().then(() => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); setTimeout(() => { if(spinner) spinner.classList.remove('refreshing');}, 1000); });
+                loadAllData().then(() => { 
+                    populateDropdown(); 
+                    renderItinerary(); 
+                    renderTravelVault(); 
+                    renderAccommodations(); 
+                    setTimeout(() => { if(spinner) spinner.classList.remove('refreshing');}, 1000); 
+                });
             }
         }
         pStart = 0;
@@ -89,7 +95,7 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // --- NEW QUOTE BUTTONS ---
+        // --- QUOTE VAULT BUTTONS ---
         const quoteBtn = e.target.closest('.open-quote-btn');
         if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -133,6 +139,7 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
+            // THE FIX: Official Native Google Maps Walking Directions API
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -255,22 +262,38 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
-    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
+    bindEvents(); initSwipes(); initPullToRefresh(); 
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+    
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
     history.replaceState({ pageId: 'home' }, '', '#home');
+    
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
     try {
         await loadAllData();
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        console.error("Critical Boot Error:", e);
+    }
     
-    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
-    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
+    populateDropdown(); 
+    renderItinerary(); 
+    renderTravelVault(); 
+    renderAccommodations(); 
+    preCacheImages(); 
+    renderWallet(); 
+    renderUpNext(); 
+    renderAnchor();
+    
+    initLiveCurrency(); 
+    setInterval(updateTimeAndCountdown, 60000); 
+    updateTimeAndCountdown(); 
+    initWeatherPill();
+    
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=5.0.0').catch(e => console.error(e));
