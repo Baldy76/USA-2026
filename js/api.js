@@ -1,4 +1,4 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal } from './store.js?v=6.1.0';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
@@ -77,8 +77,6 @@ export async function initLiveCurrency() {
         if (!response.ok) throw new Error("Offline");
         
         const data = await response.json();
-        
-        // 1. Set the rates globally to kill cache ghosts
         state.liveExchangeRate = data.rates.USD; 
         window.liveExchangeRate = data.rates.USD; 
         
@@ -87,7 +85,6 @@ export async function initLiveCurrency() {
         const tag = document.getElementById('live-rate-tag');
         if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
         
-        // 2. FORCE AUTO-RECALCULATE if the user typed numbers before the server connected!
         const usdInput = document.getElementById('usd-input');
         if (usdInput && usdInput.value) usdInput.dispatchEvent(new Event('input'));
         
@@ -122,7 +119,7 @@ export async function saveQuoteToSheet(location, quote, author) {
     await setVal('offlineQuotes', state.quotesData);
 
     if (!navigator.onLine || !APPS_SCRIPT_URL) { 
-        alert("Offline: Quote saved locally only."); return; 
+        alert("Offline: Saved locally only."); return; 
     }
     try {
         fetch(APPS_SCRIPT_URL, {
@@ -131,7 +128,7 @@ export async function saveQuoteToSheet(location, quote, author) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'addQuote', payload: { location, quote, author } })
         });
-    } catch (e) { console.error("Quote save failed", e); }
+    } catch (e) { console.error("Save failed", e); }
 }
 
 export async function deleteQuoteFromSheet(location, quote, author) {
@@ -149,7 +146,7 @@ export async function deleteQuoteFromSheet(location, quote, author) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deleteQuote', payload: { location, quote, author } })
         });
-    } catch (e) { console.error("Quote delete failed", e); }
+    } catch (e) { console.error("Delete failed", e); }
 }
 
 export function preCacheImages() {
