@@ -30,8 +30,8 @@ export function escapeHTML(str) {
         .replace(/&/g, '&')
         .replace(/</g, '<')
         .replace(/>/g, '>')
-        .replace(/"/g, '"')
-        .replace(/'/g, '&#39;');
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 export function parseDateTime(dateStr, timeStr) {
