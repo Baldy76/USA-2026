@@ -7,19 +7,12 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=6.2.0">
+    <link rel="stylesheet" href="style.css?v=6.1.2">
 </head>
 <body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
-
-    <div id="urgent-alert-overlay" style="display:none; position:fixed; inset:0; background: rgba(255,59,48,0.95); z-index: 20000; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; backdrop-filter: blur(10px);">
-        <div style="font-size: 80px; margin-bottom: 20px; animation: scalePulse 0.5s infinite alternate;">🚨</div>
-        <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 10px;">URGENT MESSAGE</h1>
-        <div id="urgent-alert-msg" style="font-size: 20px; font-weight: 700; line-height: 1.4; margin-bottom: 30px;"></div>
-        <button id="btn-close-urgent" class="action-btn" style="background: white; color: #ff3b30; width: 200px; font-weight: 900;">OK, GOT IT!</button>
-    </div>
 
     <div id="splash" class="active">
         <div class="splash-container">
@@ -86,11 +79,9 @@
                 </div>
             </div>
 
-            <div class="admin-card" id="btn-open-meetup" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); color: white; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); cursor: pointer; border: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div class="admin-card pulse-btn" id="btn-open-meetup" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); color: white; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); cursor: pointer; border: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
-                        📢 <span id="meetup-status-label">Live Bulletin</span>
-                    </div>
+                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 12px;">📢 Live Bulletin</div>
                     <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">Tap to post ↗</div>
                 </div>
                 <div id="meetup-text" style="font-size: 18px; font-weight: 900; line-height: 1.4; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Loading announcements...</div>
@@ -221,15 +212,17 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
+            
             <div class="admin-card">
                 <h3>💬 Manage Quotes</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental quotes or announcements.</div>
                 <button id="btn-manage-quotes" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Review & Delete Quotes</button>
             </div>
+
             <div class="admin-card">
                 <h3>🔔 Smart Notifications</h3>
-                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted for itinerary tasks and group announcements.</div>
-                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Enable Notifications</button>
+                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
+                <button id="btn-enable-notifs" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Enable Push Notifications</button>
             </div>
             <div class="admin-card">
                 <h3>✈️ Trip Settings</h3>
@@ -248,7 +241,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v6.2.0</div>
+            <div class="version-control">v6.1.2</div>
         </section>
 
         <div id="meetup-modal" class="modal-overlay">
@@ -257,14 +250,8 @@
                 <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">📢 Post Announcement</h3>
                 <div style="background: var(--bg); padding: 15px; border-radius: 16px; border: 1px solid var(--ios-grey);">
                     <input type="text" id="new-meetup-author" placeholder="Your Name" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; font-size: 14px;">
-                    <textarea id="new-meetup-text" placeholder="e.g. Meet at the fountains at 11:30!" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; resize: none; height: 80px; font-size: 14px;"></textarea>
-                    
-                    <label style="display: flex; align-items: center; gap: 10px; margin-top: 15px; cursor: pointer; user-select: none;">
-                        <input type="checkbox" id="urgent-toggle" style="width: 20px; height: 20px; accent-color: #ff3b30;">
-                        <span style="font-size: 14px; font-weight: 800; color: #ff3b30;">🚨 URGENT ALERT?</span>
-                    </label>
-
-                    <button id="btn-save-meetup" class="action-btn" style="margin: 15px 0 0; padding: 12px; font-size: 14px; background: linear-gradient(135deg, #ff2d55, #ffcc00); box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);">Post Announcement</button>
+                    <textarea id="new-meetup-text" placeholder="e.g. Meet at the Bellagio fountains at 11:30!" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; resize: none; height: 80px; font-size: 14px;"></textarea>
+                    <button id="btn-save-meetup" class="action-btn" style="margin: 10px 0 0; padding: 12px; font-size: 14px; background: linear-gradient(135deg, #ff2d55, #ffcc00); box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);">Post Announcement</button>
                 </div>
             </div>
         </div>
@@ -377,22 +364,27 @@
                 const userName = this.value;
                 localStorage.setItem('appUser', userName);
                 localStorage.setItem('savedFamilyFilter', userName);
+                
                 loginSelector.style.display = 'none';
                 splashGoBtn.innerText = `Let's go, ${userName}! ✈️`;
                 splashGoBtn.style.display = 'block';
                 splashGoBtn.disabled = false;
                 splashGoBtn.style.opacity = '1';
+                
                 if (window.forceAppUpdate) window.forceAppUpdate();
             });
 
             splashGoBtn.addEventListener('click', () => {
                 splash.style.pointerEvents = 'none';
                 splash.style.opacity = '0';
-                setTimeout(() => { splash.classList.remove('active'); splash.style.display = 'none'; }, 300);
+                setTimeout(() => {
+                    splash.classList.remove('active');
+                    splash.style.display = 'none';
+                }, 300);
             });
         });
     </script>
 
-    <script type="module" src="js/main.js?v=6.2.0"></script>
+    <script type="module" src="js/main.js?v=6.1.2"></script>
 </body>
 </html>
