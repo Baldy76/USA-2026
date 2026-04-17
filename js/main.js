@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=6.4.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.4.0';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -11,7 +11,7 @@ import {
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
     renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup
-} from './ui.js';
+} from './ui.js?v=6.4.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -71,6 +71,7 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
+        // URGENT ALERT CLOSE
         if (e.target.closest('#btn-close-urgent')) {
             document.getElementById('urgent-alert-overlay').style.display = 'none';
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
@@ -83,6 +84,7 @@ function bindEvents() {
             return;
         }
 
+        // MEETUP BOARD LOGIC
         if (e.target.closest('#btn-open-meetup')) { 
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
             if (meetups.length > 0) {
@@ -126,11 +128,16 @@ function bindEvents() {
 
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${btn.dataset.lat},${btn.dataset.lon}&travelmode=walking`, '_blank');
+            const lat = btn.dataset.lat; const lon = btn.dataset.lon;
+            // THE FIX: Official Google Maps Directions API
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
-        if (e.target.closest('#btn-clear-anchor')) { if(confirm("Clear location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return; }
+        if (e.target.closest('#btn-clear-anchor')) {
+            if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); }
+            return;
+        }
         
         const wBtn = e.target.closest('.weather-btn'); if (wBtn) { setWeatherCity(wBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
@@ -143,7 +150,6 @@ function bindEvents() {
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         if (e.target.closest('#btn-reset-tally')) { if(confirm("Clear scores?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); } return; }
         
-        // FIX: Rebuilt Settings Buttons With Visual Feedback
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
@@ -165,6 +171,13 @@ function bindEvents() {
             }
             return;
         }
+        
+        const tipBtn = e.target.closest('.tip-btn'); if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
+        const splitBtn = e.target.closest('.split-btn'); if (splitBtn) { document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active')); splitBtn.classList.add('active'); calculateTip(); return; }
+        if (e.target.closest('#clear-usd')) { document.getElementById('usd-input').value = ''; convertCurrency(); return; }
+        if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
+        if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
+        if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
 
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
@@ -186,13 +199,7 @@ function bindEvents() {
             setTimeout(() => { window.location.reload(true); }, 500);
             return;
         }
-        
-        const tipBtn = e.target.closest('.tip-btn'); if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
-        const splitBtn = e.target.closest('.split-btn'); if (splitBtn) { document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active')); splitBtn.classList.add('active'); calculateTip(); return; }
-        if (e.target.closest('#clear-usd')) { document.getElementById('usd-input').value = ''; convertCurrency(); return; }
-        if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
-        if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
-        if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
+
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
@@ -203,7 +210,7 @@ function bindEvents() {
             await setVal('completedTasks', done); syncToCloud('completion', done); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
         const editGateBtn = e.target.closest('.edit-gate-btn');
-        if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
+        if (editGateBtn) { e.stopPropagation(); openGateModal(e.target.closest('.edit-gate-btn').dataset.flightid); return; }
         if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
         if (e.target.closest('#btn-save-gate')) {
             const m = document.getElementById('gate-modal'); const res = `T${document.getElementById('gate-input-term').value} G${document.getElementById('gate-input-gate').value}`;
@@ -223,7 +230,7 @@ function bindEvents() {
             await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
         }
         const linkBtn = e.target.closest('.link-btn');
-        if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
+        if (linkBtn && linkBtn.dataset.url) { window.open(e.target.closest('.link-btn').dataset.url, '_blank'); return; }
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
@@ -251,11 +258,11 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); initWeatherPill();
-    updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
+    updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     if (document.getElementById('roulette-wheel')) initWheel();
 
-    // HEARTBEAT SYNC ENGINE
+    // HEARTBEAT SYNC ENGINE (60 Seconds)
     setInterval(async () => {
         if ('Notification' in window && Notification.permission === 'granted') {
             const notified = await getVal('notifiedTasks') || [];
@@ -282,4 +289,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.3.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.4.0');
