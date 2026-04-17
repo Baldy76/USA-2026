@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.0.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.0.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -156,10 +156,20 @@ export function renderUpNext() {
 export function convertCurrency() { 
     const usdInput = document.getElementById('usd-input');
     const clearBtn = document.getElementById('clear-usd');
-    const usd = usdInput?.value;
-    const rate = state.liveExchangeRate || 1.25; 
-    if (clearBtn) clearBtn.style.display = usd ? 'flex' : 'none';
-    if(document.getElementById('gbp-output')) document.getElementById('gbp-output').innerText = usd ? `£${(usd / rate).toFixed(2)}` : `£0.00`;
+    const usd = parseFloat(usdInput?.value);
+    
+    // THE FIX: Grabs the live global window rate, bypassing module caches
+    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
+    
+    if (clearBtn) clearBtn.style.display = usdInput?.value ? 'flex' : 'none';
+    
+    if(document.getElementById('gbp-output')) {
+        if(!isNaN(usd)) {
+            document.getElementById('gbp-output').innerText = `£${(usd / rate).toFixed(2)}`;
+        } else {
+            document.getElementById('gbp-output').innerText = `£0.00`;
+        }
+    }
 }
 
 export let currentTipPercent = 18;
@@ -172,8 +182,14 @@ export function calculateTip() {
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
     const splitBtn = document.querySelector('.split-btn.active');
     const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
-    const rate = state.liveExchangeRate || 1.25; 
-    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
+    
+    // THE FIX: Grabs the live global window rate
+    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
+    
+    const t = b * (1 + (currentTipPercent / 100));
+    const usd = t / s;
+    const gbp = usd / rate; 
+    
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
@@ -319,7 +335,9 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = "https://www.google.com/maps/search/?api=1&query=..." + encodeURIComponent(addr || `${act} ${loc}`);
+            const mapQuery = addr || `${act} ${loc}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -492,7 +510,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=...${encodeURIComponent(addr)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -866,7 +884,6 @@ export function closeGateModal() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-// THE FIX: Updated Anchor UI. Time and X removed, "Found it" button added.
 export function renderAnchor() {
     const container = document.getElementById('anchor-container');
     if (!container) return;
