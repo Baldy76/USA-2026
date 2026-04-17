@@ -183,12 +183,26 @@ function bindEvents() {
 
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); 
-    applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
-    await loadAllData();
-    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
+    if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
+
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
+    history.replaceState({ pageId: 'home' }, '', '#home');
+
+    try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
+
+    try { await loadAllData(); } catch(e) { console.error("Boot error:", e); }
+    
+    // THE FIX: preCacheImages() is back
+    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
+    
     initLiveCurrency(); initWeatherPill();
+    
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
+    // THE FIX: Restored the initialization call for the Decider Wheel!
+    if (document.getElementById('roulette-wheel')) initWheel();
+
     // HEARTBEAT SYNC ENGINE
     setInterval(async () => {
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -216,4 +230,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.2.1');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.2.2');
