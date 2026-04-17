@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.0.2';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.0.2';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=6.0.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.0.0';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -10,7 +10,7 @@ import {
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=6.0.2';
+} from './ui.js?v=6.0.3';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -79,7 +79,6 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
-    
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -137,14 +136,13 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // THE FIX: Official Google Maps Walking Directions API
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
+            window.open(`https://www.google.com/maps/search/?api=1&query=...${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
         if (e.target.closest('#btn-clear-anchor')) {
             e.stopPropagation();
-            if(confirm("Pull up the anchor?")) { localStorage.removeItem('carAnchor'); renderAnchor(); }
+            if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); }
             return;
         }
         
@@ -287,4 +285,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.2').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.3').catch(e => console.error(e));
