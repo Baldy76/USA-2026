@@ -11,7 +11,7 @@ import {
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
     renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup
-} from './ui.js?v=6.5.0';
+} from './ui.js?v=6.5.1';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -96,6 +96,8 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
         if (e.target.closest('#btn-save-meetup')) { submitMeetup(); return; }
+        
+        // This is now triggered from the Admin page!
         if (e.target.closest('#btn-clear-meetup')) { clearActiveMeetup(); return; }
 
         if (e.target.closest('.open-quote-btn')) { openQuoteModal(e.target.closest('.open-quote-btn').dataset.location); return; }
@@ -127,7 +129,6 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // THE FIX: Official Google Maps Walking Directions Format
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -208,7 +209,7 @@ function bindEvents() {
             await setVal('completedTasks', done); syncToCloud('completion', done); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
         const editGateBtn = e.target.closest('.edit-gate-btn');
-        if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
+        if (editGateBtn) { e.stopPropagation(); openGateModal(e.target.closest('.edit-gate-btn').dataset.flightid); return; }
         if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
         if (e.target.closest('#btn-save-gate')) {
             const m = document.getElementById('gate-modal'); const res = `T${document.getElementById('gate-input-term').value} G${document.getElementById('gate-input-gate').value}`;
@@ -256,11 +257,10 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); initWeatherPill();
-    
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
+    
     if (document.getElementById('roulette-wheel')) initWheel();
 
-    // HEARTBEAT SYNC ENGINE
     setInterval(async () => {
         if ('Notification' in window && Notification.permission === 'granted') {
             const notified = await getVal('notifiedTasks') || [];
@@ -287,4 +287,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.5.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.5.1');
