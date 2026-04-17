@@ -1,12 +1,12 @@
-const CACHE_NAME = 'holiday-planner-v6.1.1';
+const CACHE_NAME = 'holiday-planner-v6.1.2';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=6.1.1',
-    './js/main.js?v=6.1.1',
-    './js/store.js?v=6.1.1',
-    './js/api.js?v=6.1.1',
-    './js/ui.js?v=6.1.1',
+    './style.css?v=6.1.2',
+    './js/main.js?v=6.1.2',
+    './js/store.js?v=6.1.2',
+    './js/api.js?v=6.1.2',
+    './js/ui.js?v=6.1.2',
     './manifest.json',
     './img/la.jpg',
     './img/utah.jpg',
