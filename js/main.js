@@ -1,7 +1,6 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=7.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=7.0.0';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
-// CORE UI IMPORTS
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     populateDropdown, clearCustomFamilies, updateFamilyFilter, renderItinerary, renderTravelVault, 
@@ -9,13 +8,12 @@ import {
     triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=7.0.0';
+} from './ui.js';
 
-// NEW: FEATURE MODULE IMPORTS!
-import { convertCurrency, setTip, calculateTip } from './features/tools.js?v=7.0.0';
-import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js?v=7.0.0';
-import { initWheel, spinRoulette, renderScoreboard } from './features/roulette.js?v=7.0.0';
-import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js?v=7.0.0';
+import { convertCurrency, setTip, calculateTip } from './features/tools.js';
+import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js';
+import { initWheel, spinRoulette, renderScoreboard } from './features/roulette.js';
+import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -83,8 +81,7 @@ function bindEvents() {
                 const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
                 await setVal('lastSeenMeetupId', messageId);
             }
-            renderMeetupBoard();
-            return;
+            renderMeetupBoard(); return;
         }
 
         if (e.target.closest('#btn-open-meetup')) { 
@@ -94,9 +91,7 @@ function bindEvents() {
                 const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
                 await setVal('lastSeenMeetupId', messageId);
             }
-            renderMeetupBoard();
-            openMeetupModal(); 
-            return; 
+            renderMeetupBoard(); openMeetupModal(); return; 
         }
         if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
         if (e.target.closest('#btn-save-meetup')) { submitMeetup(); return; }
@@ -114,8 +109,7 @@ function bindEvents() {
             if (confirm("Permanently delete?")) {
                 await deleteQuoteFromSheet(btn.dataset.loc, btn.dataset.quote, btn.dataset.author);
                 renderAdminQuotes(); renderMeetupBoard();
-            }
-            return;
+            } return;
         }
 
         if (e.target.closest('#btn-drop-anchor')) {
@@ -124,8 +118,7 @@ function bindEvents() {
                     localStorage.setItem('carAnchor', JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude, timestamp: Date.now() }));
                     triggerConfetti(); renderAnchor();
                 }, err => alert("GPS Error"), { enableHighAccuracy: true });
-            }
-            return;
+            } return;
         }
 
         if (e.target.closest('#btn-find-car')) {
@@ -136,8 +129,7 @@ function bindEvents() {
         }
 
         if (e.target.closest('#btn-clear-anchor')) {
-            if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); }
-            return;
+            if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return;
         }
         
         const wBtn = e.target.closest('.weather-btn'); if (wBtn) { setWeatherCity(wBtn.id.replace('btn-w-', '')); return; }
@@ -155,21 +147,13 @@ function bindEvents() {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
                 if (Notification.permission === 'granted') {
-                    btn.innerHTML = '✅ Already Enabled';
-                    btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
-                    return;
+                    btn.innerHTML = '✅ Already Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; return;
                 }
                 Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') {
-                        btn.innerHTML = '✅ Enabled';
-                        btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
-                    } else {
-                        alert('Notifications denied in device settings.');
-                    }
+                    if (perm === 'granted') { btn.innerHTML = '✅ Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; } 
+                    else { alert('Notifications denied in device settings.'); }
                 });
-            } else {
-                alert('Push notifications are not supported on this device.');
-            }
+            } else { alert('Push notifications are not supported on this device.'); }
             return;
         }
         
@@ -182,23 +166,17 @@ function bindEvents() {
 
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ Syncing...";
+            const originalText = btn.innerText; btn.innerText = "⏳ Syncing...";
             await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard();
-            btn.innerText = "✅ Synced!"; 
-            setTimeout(() => { btn.innerText = originalText; }, 2000); 
+            btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = originalText; }, 2000); 
             return;
         }
 
         if (e.target.closest('#btn-update-version')) {
-            const btn = e.target.closest('#btn-update-version');
-            btn.innerText = "⏳ Updating...";
-            if('serviceWorker' in navigator) { 
-                navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); 
-            }
-            setTimeout(() => { window.location.reload(true); }, 500);
-            return;
+            const btn = e.target.closest('#btn-update-version'); btn.innerText = "⏳ Updating...";
+            if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); }
+            setTimeout(() => { window.location.reload(true); }, 500); return;
         }
 
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
@@ -222,13 +200,13 @@ function bindEvents() {
             travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; 
         }
         const stayCard = e.target.closest('.stay-card');
-        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
+        if (stayCard) { const s = e.target.closest('.stay-card').dataset; openStayModal(s.fam, s.addr, s.map, s.link, s.img); return; }
         const activeCard = e.target.closest('.itin-card:not(.completed)');
-        if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        if (activeCard && e.target.tagName !== 'A') { const c = e.target.closest('.itin-card'); openCompletionModal(c.dataset.taskId, c.dataset.taskName); return; }
         const completedCard = e.target.closest('.itin-card.completed');
         if (completedCard && e.target.tagName !== 'A') {
-            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
-            await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
+            let done = await getVal('completedTasks') || []; done = done.filter(id => id !== e.target.closest('.itin-card').dataset.taskId);
+            await setVal('completedTasks', done); renderItinerary(); renderUpNext(); return;
         }
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { window.open(e.target.closest('.link-btn').dataset.url, '_blank'); return; }
@@ -281,13 +259,10 @@ async function bootApp() {
                 });
             }
         }
-        if(navigator.onLine) {
-            await loadAllData();
-            renderMeetupBoard();
-        }
+        if(navigator.onLine) { await loadAllData(); renderMeetupBoard(); }
         renderUpNext();
     }, 60000);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.0.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.1.0');
