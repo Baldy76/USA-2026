@@ -12,7 +12,11 @@ export function applyTheme(isDark) {
     const activePage = document.querySelector('.tab-content.active')?.id || 'home';
     updateMetaThemeColor(activePage, isDark);
 }
-export function setThemeMode(isDark) { applyTheme(isDark); localStorage.setItem('HolidayPlanner_Theme', isDark); }
+
+export function setThemeMode(isDark) { 
+    applyTheme(isDark); 
+    localStorage.setItem('HolidayPlanner_Theme', isDark); 
+}
 
 export function updateMetaThemeColor(pageId, isDark = document.body.classList.contains('dark-mode')) {
     let metaColor = isDark ? '#0b0e14' : '#f2f2f7';
@@ -263,7 +267,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$?q=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -444,7 +448,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$?q=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -483,6 +487,7 @@ export function openCompletionModal(taskId, taskName) {
     const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId;
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
 }
+
 export function closeCompletionModal() {
     const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
