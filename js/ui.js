@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.1';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.1';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.2';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.2';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -80,8 +80,7 @@ export function updateTimeAndCountdown() {
             const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
             if (now < tripStart) {
-                const diff = tripStart - now;
-                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
                 if(progLabel) progLabel.innerText = "Countdown";
                 
                 updateFlap('cd-num', days.toString());
@@ -412,6 +411,7 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
+            // OFFICIAL GOOGLE MAPS URL
             const mapQuery = addr || `${act} ${loc}`;
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
@@ -587,6 +587,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
+            // OFFICIAL GOOGLE MAPS URL
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
