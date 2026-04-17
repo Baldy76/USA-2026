@@ -1,17 +1,16 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=5.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=5.0.0';
-import { deleteQuoteFromSheet } from './api.js?v=5.0.0'; // explicit safe import
+import { state, setVal, getVal, parseDateTime } from './store.js?v=6.0.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.0.0';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
-    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
+    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=5.0.0';
+} from './ui.js?v=6.0.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -80,6 +79,7 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
+    
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -95,7 +95,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // --- QUOTE VAULT BUTTONS ---
         const quoteBtn = e.target.closest('.open-quote-btn');
         if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -138,6 +137,7 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
+            // OFFICIAL GOOGLE MAPS WALKING ROUTE
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -277,15 +277,12 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     initLiveCurrency(); 
-    
-    // THE FIX: Clock cycle correctly activated here
     setInterval(updateTimeAndCountdown, 60000); 
     updateTimeAndCountdown(); 
-    
     initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=5.0.0').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.0').catch(e => console.error(e));
