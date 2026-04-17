@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.1.1';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.1.1';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=6.1.2';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.1.2';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -11,7 +11,7 @@ import {
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
     renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup
-} from './ui.js?v=6.1.1';
+} from './ui.js?v=6.1.2';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -144,7 +144,8 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            window.open(`https://www.google.com/maps/...{lat},${lon}&travelmode=walking`, '_blank');
+            // OFFICIAL GOOGLE MAPS WALKING DIRECTIONS
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
@@ -293,4 +294,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.1.1').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.1.2').catch(e => console.error(e));
