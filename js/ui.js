@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.5.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js?v=6.5.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=7.0.0';
+import { syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js?v=7.0.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -70,8 +70,6 @@ export function updateTimeAndCountdown() {
         const progVal = document.getElementById('trip-prog-val');
         const progBar = document.getElementById('trip-prog-bar');
         const cdDisplay = document.getElementById('countdown-display');
-        
-        // NEW: EMOJI ICONS
         const iconStart = document.getElementById('prog-icon-start');
         const iconEnd = document.getElementById('prog-icon-end');
         
@@ -84,7 +82,6 @@ export function updateTimeAndCountdown() {
             const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
             if (now < tripStart) {
-                // COUNTDOWN MODE: Home to Plane
                 if(iconStart) iconStart.innerText = '🏠';
                 if(iconEnd) iconEnd.innerText = '✈️';
                 
@@ -107,7 +104,6 @@ export function updateTimeAndCountdown() {
                     }
                 }
             } else if (now >= tripStart && now <= tripEnd) {
-                // ON HOLIDAY MODE: Sun to Home
                 if(iconStart) iconStart.innerText = '☀️';
                 if(iconEnd) iconEnd.innerText = '🏠';
                 
@@ -124,7 +120,6 @@ export function updateTimeAndCountdown() {
                 if(cdDisplay) cdDisplay.style.display = 'none';
                 if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
             } else {
-                // TRIP FINISHED: Plane back to Home
                 if(iconStart) iconStart.innerText = '✈️';
                 if(iconEnd) iconEnd.innerText = '🏠';
                 
@@ -215,34 +210,6 @@ export function renderUpNext() {
     }
 }
 
-export function convertCurrency() { 
-    const usdInput = document.getElementById('usd-input');
-    const clearBtn = document.getElementById('clear-usd');
-    const usd = parseFloat(usdInput?.value);
-    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    if (clearBtn) clearBtn.style.display = usdInput?.value ? 'flex' : 'none';
-    if(document.getElementById('gbp-output')) {
-        if(!isNaN(usd)) document.getElementById('gbp-output').innerText = `£${(usd / rate).toFixed(2)}`;
-        else document.getElementById('gbp-output').innerText = `£0.00`;
-    }
-}
-
-export let currentTipPercent = 18;
-export function setTip(percent, btnElement) { 
-    currentTipPercent = percent; document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
-    if(btnElement) btnElement.classList.add('active'); calculateTip(); 
-}
-
-export function calculateTip() { 
-    const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
-    const splitBtn = document.querySelector('.split-btn.active');
-    const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
-    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
-    if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
-    if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
-}
-
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
     sel.innerHTML = '<option value="All">Show All</option>';
@@ -264,141 +231,6 @@ export function clearCustomFamilies() {
         localStorage.removeItem('customFamilies'); localStorage.removeItem('appUser'); localStorage.removeItem('savedFamilyFilter');
         window.location.reload(); 
     }
-}
-
-const getWeatherIcon = (c) => { const m = { '01d':'☀️', '01n':'🌙', '02d':'⛅', '02n':'☁️', '03d':'☁️', '03n':'☁️', '04d':'☁️', '04n':'☁️', '09d':'🌧️', '09n':'🌧️', '10d':'🌧️', '10n':'🌧️', '11d':'🌦️', '11n':'🌧️', '13d':'🌨️', '13n':'🌨️', '50d':'💨' }; return m[c] || '🌤️'; };
-
-export async function initWeatherPill() {
-    const loadSummary = async (lat, lon, id) => {
-        try {
-            const data = await fetchWeather(lat, lon);
-            const el = document.getElementById(id);
-            if(el) el.innerHTML = `${getWeatherIcon(data.current.weather[0].icon)} ${Math.round(data.current.main.temp)}°`;
-        } catch(e) { 
-            const el = document.getElementById(id);
-            if(el) el.innerHTML = '🚫'; 
-        }
-    };
-    loadSummary(34.0522, -118.2437, 'wp-la'); loadSummary(37.0965, -113.5684, 'wp-utah'); loadSummary(36.1699, -115.1398, 'wp-vegas');
-    
-    const locEl = document.getElementById('wp-local');
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            pos => loadSummary(pos.coords.latitude, pos.coords.longitude, 'wp-local'),
-            err => { if(locEl) locEl.innerHTML = '🚫'; },
-            { timeout: 5000, maximumAge: 60000 }
-        );
-    } else {
-        if(locEl) locEl.innerHTML = '🚫';
-    }
-}
-
-export async function setWeatherCity(target) {
-    document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
-    const activeBtn = document.getElementById(`btn-w-${target}`); if (activeBtn) activeBtn.classList.add('active');
-    
-    const wDash = document.getElementById('WTH-dashboard');
-    if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
-    
-    try {
-        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles", tz = 'America/Los_Angeles';
-        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; tz = 'America/Denver'; }
-        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; tz = 'America/Los_Angeles'; }
-        else if (target === 'local') {
-            tz = undefined;
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (pos) => { 
-                        try {
-                            const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
-                            renderWeatherDOM(data, "Local GPS", tz); 
-                        } catch(e) {
-                            const fallbackData = await fetchWeather(lat, lon);
-                            renderWeatherDOM(fallbackData, "Los Angeles", 'America/Los_Angeles');
-                        }
-                    }, 
-                    async () => { 
-                        const fallbackData = await fetchWeather(lat, lon);
-                        renderWeatherDOM(fallbackData, "Los Angeles", 'America/Los_Angeles'); 
-                    }, 
-                    { timeout: 5000 }
-                ); 
-                return;
-            }
-            locName = "Local (Default LA)";
-            tz = 'America/Los_Angeles';
-        }
-        const data = await fetchWeather(lat, lon);
-        renderWeatherDOM(data, locName, tz);
-    } catch(e) {
-        if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">🚫</span><div class="empty-text">Weather Offline</div></div>`;
-    }
-}
-
-export function openWeatherModal() {
-    document.body.classList.add('no-scroll');
-    document.getElementById('weather-modal').style.display = 'flex';
-    setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
-    setWeatherCity('la');
-}
-
-export function closeWeatherModal() { 
-    document.getElementById('weather-modal').classList.remove('active'); 
-    setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
-}
-
-function renderWeatherDOM(data, fallbackName, tz) {
-    const d = data.current; const locName = fallbackName || d.name;
-    let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
-        const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
-        return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
-    }).join('');
-
-    const timeOpts = tz ? {hour: '2-digit', minute:'2-digit', timeZone: tz} : {hour: '2-digit', minute:'2-digit'};
-    const sunriseStr = new Date(d.sys.sunrise * 1000).toLocaleTimeString([], timeOpts);
-    const sunsetStr = new Date(d.sys.sunset * 1000).toLocaleTimeString([], timeOpts);
-    
-    const nowMs = Date.now();
-    let daylightText = "";
-    if (nowMs < d.sys.sunrise * 1000) daylightText = "Waiting for Sunrise 🌅";
-    else if (nowMs > d.sys.sunset * 1000) daylightText = "Sun has set 🌙";
-    else {
-        const diffMs = (d.sys.sunset * 1000) - nowMs;
-        const hrs = Math.floor(diffMs / 3600000);
-        const mins = Math.floor((diffMs % 3600000) / 60000);
-        daylightText = `☀️ ${hrs}h ${mins}m of daylight left`;
-    }
-
-    const daylightHtml = `
-        <div style="background: var(--bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--ios-grey);">
-            <div>
-                <div style="font-size: 24px; margin-bottom: 5px;">🌅</div>
-                <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Sunrise</div>
-                <div style="font-size: 15px; font-weight: 900;">${sunriseStr}</div>
-            </div>
-            <div style="width: 1px; background: var(--ios-grey);"></div>
-            <div>
-                <div style="font-size: 24px; margin-bottom: 5px;">🌇</div>
-                <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Sunset</div>
-                <div style="font-size: 15px; font-weight: 900;">${sunsetStr}</div>
-            </div>
-        </div>
-        <div style="text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); margin-top: -10px; margin-bottom: 20px; background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--ios-grey);">
-            ${daylightText}
-        </div>
-    `;
-
-    const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `
-        <div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);">
-            <div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div>
-            <div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div>
-            <div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div>
-            <div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div>
-        </div>
-        ${daylightHtml}
-        <h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3>
-        <div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
@@ -686,127 +518,15 @@ export function triggerEmojiRain(city) {
     }
 }
 
-export function initWheel() {
-    const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    const wheel = document.getElementById('roulette-wheel');
-    if(!wheel) return;
-    
-    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Split it"];
-    wheel.dataset.names = JSON.stringify(names);
-    
-    let gradient = [];
-    let html = '';
-    const sliceDeg = 360 / names.length;
-    
-    names.forEach((name, i) => {
-        let color = i % 2 === 0 ? '#d0021b' : '#1c1c1e'; 
-        if (name === "Split it") color = '#34c759'; 
-        
-        const startDeg = i * sliceDeg;
-        const endDeg = (i + 1) * sliceDeg;
-        gradient.push(`${color} ${startDeg}deg ${endDeg}deg`);
-        
-        const textRotate = startDeg + (sliceDeg / 2);
-        html += `<div class="roulette-label" style="transform: translateX(-50%) rotate(${textRotate}deg);"><span>${name}</span></div>`;
-    });
-    
-    wheel.style.background = `conic-gradient(${gradient.join(', ')})`;
-    wheel.innerHTML = html;
-    wheel.style.transition = 'none';
-    wheel.style.transform = `rotate(0deg)`;
-    wheel.dataset.currentRotation = 0;
-    
-    const resText = document.getElementById('roulette-result-text');
-    if(resText) { resText.innerText = "Tap to Spin!"; resText.style.color = "white"; }
-    
-    renderScoreboard();
-}
-
-export function renderScoreboard() {
-    const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    const board = document.getElementById('roulette-scoreboard');
-    if (!board) return;
-    
-    let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
-    let currentTallies = tallies[mode] || {};
-    
-    let html = '';
-    for (const [name, count] of Object.entries(currentTallies)) {
-        if (count > 0) {
-            html += `<div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">${escapeHTML(name)} <span style="background: var(--card); color: var(--accent); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${count}</span></div>`;
-        }
-    }
-    if (html === '') {
-        html = `<div style="font-size: 11px; opacity: 0.6; font-weight: 700; width: 100%;">No spins yet. Let's play!</div>`;
-    }
-    board.innerHTML = html;
-}
-
-export function spinRoulette() {
-    const wheel = document.getElementById('roulette-wheel');
-    const btn = document.getElementById('btn-spin-roulette');
-    const resText = document.getElementById('roulette-result-text');
-    if(!wheel || !btn || btn.disabled) return;
-    
-    const mode = document.getElementById('roulette-mode')?.value || 'bill';
-    
-    btn.disabled = true; btn.style.opacity = '0.5';
-    if(resText) { resText.innerText = "Spinning..."; resText.style.color = "rgba(255,255,255,0.7)"; }
-    
-    let names = JSON.parse(wheel.dataset.names || '[]');
-    let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
-    
-    const extraSpins = 360 * 6; 
-    const randomStop = Math.floor(Math.random() * 360);
-    const totalRotation = currentRot + extraSpins + randomStop;
-    
-    wheel.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1)';
-    wheel.style.transform = `rotate(${totalRotation}deg)`;
-    wheel.dataset.currentRotation = totalRotation;
-    
-    const pointerAngle = (360 - (totalRotation % 360)) % 360;
-    const sliceDeg = 360 / names.length;
-    const winningIndex = Math.floor(pointerAngle / sliceDeg);
-    const winner = names[winningIndex];
-    
-    let ticks = 0;
-    const tickInterval = setInterval(() => {
-        if(navigator.vibrate) navigator.vibrate(10);
-        ticks++;
-        if(ticks > 25) clearInterval(tickInterval);
-    }, 150);
-
-    setTimeout(() => {
-        clearInterval(tickInterval);
-        if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
-        btn.disabled = false; btn.style.opacity = '1';
-        if(resText) {
-            resText.innerText = `${winner} Wins!`;
-            resText.style.color = "#ffd60a"; 
-            resText.style.transform = 'scale(1.2)';
-            setTimeout(() => resText.style.transform = 'scale(1)', 200);
-        }
-        
-        let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
-        if (!tallies[mode]) tallies[mode] = {};
-        tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
-        localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
-        renderScoreboard();
-        
-        triggerConfetti();
-    }, 4500);
-}
-
-let currentTipsCity = 'la';
 export function openTipsModal(city) {
     document.body.classList.add('no-scroll');
     if(navigator.vibrate) navigator.vibrate(40);
-    currentTipsCity = city.toLowerCase();
     const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
-    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[currentTipsCity]} Tips`;
+    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[city.toLowerCase()]} Tips`;
     document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); });
-    renderTips('eating');
     const modal = document.getElementById('tips-modal');
+    modal.dataset.city = city.toLowerCase();
+    renderTips('eating');
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -819,6 +539,7 @@ export function closeTipsModal() {
 export function renderTips(category) {
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
+    const currentTipsCity = document.getElementById('tips-modal').dataset.city;
     const contentDiv = document.getElementById('tips-content'); let html = '';
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
 
@@ -1010,112 +731,4 @@ export function renderAnchor() {
             </div>
         </div>`;
     }
-}
-
-export async function renderMeetupBoard() {
-    const board = document.getElementById('btn-open-meetup');
-    const boardText = document.getElementById('meetup-text');
-    const boardAuthor = document.getElementById('meetup-author');
-    const statusLabel = document.getElementById('meetup-status-label');
-    if (!boardText || !board) return;
-
-    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
-    if (meetups.length > 0) {
-        const latest = meetups[meetups.length - 1]; 
-        const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
-        const lastSeenId = await getVal('lastSeenMeetupId');
-        const currentUser = localStorage.getItem('appUser') || 'Unknown';
-        const isUrgent = latest[1].includes('[ALERT]');
-        const cleanText = latest[1].replace('[ALERT]', '').trim();
-
-        boardText.innerText = `"${escapeHTML(cleanText)}"`;
-        boardAuthor.innerText = `— ${escapeHTML(latest[2])}`;
-
-        if (messageId !== lastSeenId) {
-            board.classList.add('new-alert-pulse');
-            if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
-            
-            if (latest[2] !== currentUser) {
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                if (Notification.permission === 'granted') {
-                    new Notification(isUrgent ? '🚨 URGENT MEETUP' : '📢 Meetup Update', { body: cleanText, icon: 'img/icon-192.png' });
-                }
-                if (isUrgent) {
-                    const overlay = document.getElementById('urgent-alert-overlay');
-                    if(overlay && overlay.style.display === 'none') {
-                        document.getElementById('urgent-alert-msg').innerText = `${cleanText}\n\n— ${latest[2]}`;
-                        overlay.style.display = 'flex';
-                        if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500]);
-                    }
-                }
-            }
-        } else {
-            board.classList.remove('new-alert-pulse');
-            if(statusLabel) statusLabel.innerText = "Live Bulletin";
-        }
-    } else {
-        boardText.innerText = "No active announcements.";
-        boardAuthor.innerText = "Tap here to broadcast a message to the group!";
-        board.classList.remove('new-alert-pulse');
-        if(statusLabel) statusLabel.innerText = "Live Bulletin";
-    }
-}
-
-export function openMeetupModal() {
-    document.body.classList.add('no-scroll');
-    const modal = document.getElementById('meetup-modal');
-    document.getElementById('new-meetup-author').value = localStorage.getItem('appUser') || '';
-    document.getElementById('new-meetup-text').value = '';
-    const urgentToggle = document.getElementById('urgent-toggle');
-    if(urgentToggle) urgentToggle.checked = false;
-    
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-}
-
-export function closeMeetupModal() {
-    const modal = document.getElementById('meetup-modal');
-    modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
-}
-
-export async function submitMeetup() {
-    const author = document.getElementById('new-meetup-author').value.trim();
-    let text = document.getElementById('new-meetup-text').value.trim();
-    const urgentToggle = document.getElementById('urgent-toggle');
-    const isUrgent = urgentToggle ? urgentToggle.checked : false;
-    
-    if (!text || !author) { alert("Please enter both your name and the announcement!"); return; }
-    if (isUrgent) text = `[ALERT] ${text}`;
-    
-    if (navigator.vibrate) navigator.vibrate(20);
-    
-    const btn = document.getElementById('btn-save-meetup');
-    btn.innerText = "Posting..."; btn.disabled = true;
-    
-    await saveQuoteToSheet('MEETUP', text, author);
-    
-    const messageId = btoa(text + author).substring(0, 12);
-    await setVal('lastSeenMeetupId', messageId);
-    
-    btn.innerText = "Post Announcement"; btn.disabled = false;
-    document.getElementById('new-meetup-author').value = ''; document.getElementById('new-meetup-text').value = '';
-    if (urgentToggle) urgentToggle.checked = false;
-    
-    renderMeetupBoard(); triggerConfetti(); closeMeetupModal();
-}
-
-export async function clearActiveMeetup() {
-    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
-    if (meetups.length > 0) {
-        if(confirm("Clear the current active bulletin?")) {
-            const latest = meetups[meetups.length - 1];
-            const btn = document.getElementById('btn-clear-meetup');
-            if(btn) { btn.innerText = "Clearing..."; btn.disabled = true; }
-            
-            await deleteQuoteFromSheet('MEETUP', latest[1], latest[2]);
-            localStorage.removeItem('lastSeenMeetupId');
-            renderMeetupBoard(); 
-            if(btn) { btn.innerText = "Clear Active Bulletin"; btn.disabled = false; }
-        }
-    } else { alert("No active bulletin to clear!"); }
 }
