@@ -395,7 +395,6 @@ export async function renderItinerary() {
     const nowTime = now.getTime();
     const todayStr = now.toDateString(); 
 
-    // THE FIX: Safe Sorting to prevent memory crashes
     const sortedData = [...state.itineraryData].sort((a, b) => {
         const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
         const dtB = parseDateTime(b[0] || '', b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
@@ -413,9 +412,8 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            // THE FIX: Official Google Maps Directions Link
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -596,7 +594,6 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            // THE FIX: Official Google Maps Places API Link
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
@@ -1020,6 +1017,7 @@ export async function renderMeetupBoard() {
             board.classList.add('new-alert-pulse');
             if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
             
+            // Only trigger physical feedback if you aren't the author
             if (latest[2] !== currentUser) {
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 if (Notification.permission === 'granted') {
@@ -1053,11 +1051,6 @@ export function openMeetupModal() {
     document.getElementById('new-meetup-text').value = '';
     const urgentToggle = document.getElementById('urgent-toggle');
     if(urgentToggle) urgentToggle.checked = false;
-    
-    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
-    const clearBtn = document.getElementById('btn-clear-meetup');
-    if (clearBtn) { clearBtn.style.display = meetups.length > 0 ? 'block' : 'none'; }
-
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -1103,8 +1096,9 @@ export async function clearActiveMeetup() {
             
             await deleteQuoteFromSheet('MEETUP', latest[1], latest[2]);
             localStorage.removeItem('lastSeenMeetupId');
-            renderMeetupBoard(); closeMeetupModal();
-            if(btn) { btn.innerText = "Clear"; btn.disabled = false; }
+            renderMeetupBoard(); 
+            // Not closing modal here because this is now called from the Admin page!
+            if(btn) { btn.innerText = "Clear Active Bulletin"; btn.disabled = false; }
         }
     } else { alert("No active bulletin to clear!"); }
 }
