@@ -1,5 +1,5 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.0.2';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -53,10 +53,8 @@ export function updateTimeAndCountdown() {
         const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
         
         try {
-            // THE FIX: Cleaned format to just output the raw 10:48 AM strings
             const timePT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' }).format(now);
             const timeMT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Denver' }).format(now);
-            
             const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 ${timePT}`;
             const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 ${timePT}`;
             const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 ${timeMT}`;
@@ -324,7 +322,6 @@ export function openWeatherModal() {
     setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
     setWeatherCity('la');
 }
-
 export function closeWeatherModal() { 
     document.getElementById('weather-modal').classList.remove('active'); 
     setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
@@ -341,7 +338,7 @@ function renderWeatherDOM(data, fallbackName) {
 }
 
 export async function renderItinerary() {
-    if (!state.itineraryData) return;
+    if (!state.itineraryData || state.itineraryData.length === 0) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
     const completedTasks = await getVal('completedTasks') || [];
     const grouped = { 'la': {}, 'utah': {}, 'vegas': {} }; 
@@ -369,7 +366,10 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
+            // THE FIX: Official, bulletproof Google Maps search URL format
+            const mapQuery = addr || `${act} ${loc}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -542,6 +542,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
+            // THE FIX: Official Google Maps Search link for accommodations
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
