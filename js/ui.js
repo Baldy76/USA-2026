@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.4.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js?v=6.4.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.5.0';
+import { fetchWeather, syncToCloud, saveQuoteToSheet, deleteQuoteFromSheet } from './api.js?v=6.5.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -395,9 +395,9 @@ export async function renderItinerary() {
     const nowTime = now.getTime();
     const todayStr = now.toDateString(); 
 
-    // THE FIX: Strict, crash-proof sorting logic!
+    // THE FIX: Safe Sorting to prevent memory crashes
     const sortedData = [...state.itineraryData].sort((a, b) => {
-        const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER;
+        const dtA = parseDateTime(a[0] || '', a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
         const dtB = parseDateTime(b[0] || '', b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
         return dtA - dtB;
     });
@@ -413,9 +413,9 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            // THE FIX: Standard, official Google Maps Search API
+            // THE FIX: Official Google Maps Directions Link
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -444,7 +444,7 @@ export async function renderItinerary() {
                             <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
+                        ${addr || act ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
 
@@ -596,7 +596,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            // THE FIX: Official Google Maps Search API Link
+            // THE FIX: Official Google Maps Places API Link
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
@@ -741,7 +741,7 @@ export function spinRoulette() {
     let names = JSON.parse(wheel.dataset.names || '[]');
     let currentRot = parseFloat(wheel.dataset.currentRotation || 0);
     
-    const extraSpins = 360 * 6; // 6 full spins!
+    const extraSpins = 360 * 6; 
     const randomStop = Math.floor(Math.random() * 360);
     const totalRotation = currentRot + extraSpins + randomStop;
     
@@ -997,7 +997,6 @@ export function renderAnchor() {
     }
 }
 
-// --- NEW MEETUP & ALERTS ENGINE ---
 export async function renderMeetupBoard() {
     const board = document.getElementById('btn-open-meetup');
     const boardText = document.getElementById('meetup-text');
@@ -1021,7 +1020,6 @@ export async function renderMeetupBoard() {
             board.classList.add('new-alert-pulse');
             if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
             
-            // Only trigger physical feedback if you aren't the author
             if (latest[2] !== currentUser) {
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 if (Notification.permission === 'granted') {
@@ -1085,7 +1083,6 @@ export async function submitMeetup() {
     
     await saveQuoteToSheet('MEETUP', text, author);
     
-    // Mark as seen immediately for the author so it doesn't flash
     const messageId = btoa(text + author).substring(0, 12);
     await setVal('lastSeenMeetupId', messageId);
     
