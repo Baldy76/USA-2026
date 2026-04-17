@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=5.0.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=5.0.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=3.1.0';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=3.1.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -272,7 +272,6 @@ export function openWeatherModal() {
     setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
     setWeatherCity('la');
 }
-
 export function closeWeatherModal() { 
     document.getElementById('weather-modal').classList.remove('active'); 
     setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
@@ -317,7 +316,6 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            // THE FIX: Official Google Maps Search link for itinerary addresses
             const mapQuery = addr || `${act} ${loc}`;
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
@@ -383,7 +381,7 @@ export function renderTravelVault() {
     if (!state.vaultAndStaysData) return;
     const filter = localStorage.getItem('appUser') || 'All'; 
     const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
-    if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2], null) - parseDateTime(b[2], null));
+    if(!display) return; let html = ''; let hasData = false; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]||'', null) - parseDateTime(b[2]||'', null));
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
     sortedData.forEach(cols => {
@@ -436,7 +434,7 @@ export function renderTravelVault() {
                     </div>
                 </div>`;
             } else if (type === 'car') {
-                hasData = true; const pdate = escapeHTML(cols[2]?.trim()); const company = escapeHTML(cols[4]?.trim()); const ploc = escapeHTML(cols[5]?.trim());
+                hasData = true; const pdate = escapeHTML(cols[2]?.trim()||''); const company = escapeHTML(cols[4]?.trim()||''); const ploc = escapeHTML(cols[5]?.trim()||'');
                 html += `
                 <div class="flip-container travel-card">
                     <div class="flip-card-inner">
@@ -466,7 +464,7 @@ export function renderTravelVault() {
                             </div>
                             <div>
                                 <div style="font-size: 11px; opacity: 0.8; font-weight: 700;">DROP-OFF</div>
-                                <div style="font-size: 14px; font-weight: 900;">${escapeHTML(cols[8]?.trim())||ploc}</div>
+                                <div style="font-size: 14px; font-weight: 900;">${escapeHTML(cols[8]?.trim()||ploc)}</div>
                                 <div style="font-size: 12px; opacity: 0.9;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</div>
                             </div>
                         </div>
@@ -493,7 +491,6 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            // THE FIX: Official Google Maps Search link for accommodations
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
@@ -550,21 +547,6 @@ export function triggerConfetti() {
         conf.style.animationDelay = (Math.random() * 0.5) + 's';
         document.body.appendChild(conf);
         setTimeout(() => conf.remove(), 4000);
-    }
-}
-
-export function triggerEmojiRain(city) {
-    if(navigator.vibrate) navigator.vibrate([30, 30]);
-    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
-    const set = emojis[city] || ['✨'];
-    for(let i=0; i<30; i++) {
-        const em = document.createElement('div');
-        em.className = 'particle emoji-drop';
-        em.innerText = set[Math.floor(Math.random() * set.length)];
-        em.style.left = Math.random() * 100 + 'vw';
-        em.style.animationDuration = (Math.random() * 2 + 2) + 's';
-        document.body.appendChild(em);
-        setTimeout(() => em.remove(), 4000);
     }
 }
 
@@ -674,7 +656,6 @@ export function spinRoulette() {
         tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
         localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
         renderScoreboard();
-        
         triggerConfetti();
     }, 4500);
 }
@@ -700,32 +681,22 @@ export function closeTipsModal() {
 
 export function renderTips(category) {
     if (!state.vaultAndStaysData) return;
-    const filter = localStorage.getItem('appUser') || 'All'; 
     const contentDiv = document.getElementById('tips-content'); let html = '';
-    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
-
+    
     state.vaultAndStaysData.forEach(cols => {
         if(!cols || cols.length < 5) return; 
         const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
         const city = (cols[2] || '').trim().toLowerCase(); const cat = (cols[3] || '').trim().toLowerCase(); const details = (cols[4] || '').trim();
-        
-        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-        if (filter === 'All' || famL === 'everyone') isMatch = true; 
-        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
-        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
-        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
 
-        if (type === 'tip' && city.includes(currentTipsCity) && cat === category && isMatch) {
+        if (type === 'tip' && city.includes(currentTipsCity) && cat === category) {
             const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px; font-weight: 800; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(fam)}</span>` : '';
-            html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div></div>`;
+            html += `<div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 700; line-height: 1.5;">${escapeHTML(details)}<br>${badge}</div></div>`;
         }
     }); 
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
-// ----------------------------------------------------
-// QUOTE VAULT FUNCTIONS ADDED SAFELY HERE
-// ----------------------------------------------------
+// --- QUOTE VAULT FUNCTIONS ---
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('quote-modal');
@@ -821,6 +792,7 @@ export function renderAdminQuotes() {
         </div>
     `).reverse().join('');
 }
+// ----------------------------------------------------
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     document.body.classList.add('no-scroll');
