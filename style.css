@@ -220,12 +220,15 @@ body.theme-vegas .day-group[open] summary .item-count { background: #af52de; }
     100% { transform: rotateX(0deg); } 
 }
 /* --- ALERT ANIMATIONS --- */
-@keyframes alertPulseRed {
-    0% { transform: scale(1); box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); border: 2px solid rgba(255,255,255,0); }
-    50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(255, 45, 85, 1); border: 2px solid rgba(255,255,255,1); }
-    100% { transform: scale(1); box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); border: 2px solid rgba(255,255,255,0); }
+@keyframes alertPulsePurple {
+    0% { transform: scale(1); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.2); }
+    50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(175, 82, 222, 0.8); }
+    100% { transform: scale(1); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.2); }
 }
 
 .new-alert-pulse {
+    animation: alertPulsePurple 1.5s infinite ease-in-out !important;
+    border-color: #af52de !important;
+}
     animation: alertPulseRed 1.5s infinite ease-in-out;
 }
