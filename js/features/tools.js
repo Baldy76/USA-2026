@@ -1,4 +1,4 @@
-import { state } from '../store.js?v=7.0.0';
+import { state } from '../store.js';
 
 export let currentTipPercent = 18;
 
