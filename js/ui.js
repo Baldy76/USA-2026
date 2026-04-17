@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.0';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.0';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -45,61 +45,104 @@ export function updateGreeting() {
     if (topCard) { topCard.className = sky; }
 }
 
-export function updateTimeAndCountdown() {
-    const now = new Date();
-    updateGreeting();
-    
-    const savedStart = localStorage.getItem('tripStartDate');
-    const savedEnd = localStorage.getItem('tripEndDate');
-    const progBar = document.getElementById('trip-prog-bar');
-    const cdDisplay = document.getElementById('countdown-display');
-    const progLabel = document.getElementById('trip-prog-label');
-    const progVal = document.getElementById('trip-prog-val');
-    
-    if (savedStart) {
-        const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
-        let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
+export function updateTimeAndCountdown() { 
+    try {
+        updateGreeting();
+        const now = new Date();
+        const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
         
-        if (now < tripStart) {
-            const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
-            updateFlap('cd-num', days.toString());
-            if(cdDisplay) cdDisplay.style.display = 'flex';
-            if(progLabel) progLabel.innerText = "Countdown";
+        try {
+            const timePT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' }).format(now);
+            const timeMT = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Denver' }).format(now);
+            const elLA = document.getElementById('time-la'); if(elLA) elLA.innerText = `🕒 ${timePT}`;
+            const elVegas = document.getElementById('time-vegas'); if(elVegas) elVegas.innerText = `🕒 ${timePT}`;
+            const elUtah = document.getElementById('time-utah'); if(elUtah) elUtah.innerText = `🕒 ${timeMT}`;
+        } catch(e) { console.error("Time zone error:", e); }
+
+        try {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            const clockDateEl = document.getElementById('clock-date'); if(clockDateEl) clockDateEl.textContent = now.toLocaleDateString(undefined, options);
+        } catch(e) {}
+
+        const savedStart = localStorage.getItem('tripStartDate');
+        const savedEnd = localStorage.getItem('tripEndDate');
+        const progLabel = document.getElementById('trip-prog-label');
+        const progVal = document.getElementById('trip-prog-val');
+        const progBar = document.getElementById('trip-prog-bar');
+        const cdDisplay = document.getElementById('countdown-display');
+        
+        if (savedStart) {
+            const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
+            let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
+            tripEnd.setHours(23,59,59,999);
             
-            if(progBar) { 
-                if (days > 100) {
-                    progBar.style.width = '0%';
-                    if(progVal) progVal.innerText = "Waiting for 100 Day mark...";
-                } else {
-                    const progressPercent = 100 - days;
-                    progBar.style.width = `${progressPercent}%`; 
-                    progBar.style.background = '#34c759'; 
-                    if(progVal) progVal.innerText = `100-Day Milestone: ${progressPercent}% Complete`;
+            const inputStart = document.getElementById('trip-start-date'); if(inputStart) inputStart.value = savedStart;
+            const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
+
+            if (now < tripStart) {
+                const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+                if(progLabel) progLabel.innerText = "Countdown";
+                
+                updateFlap('cd-num', days.toString());
+                if(cdDisplay) cdDisplay.style.display = 'flex';
+                
+                if(progBar) { 
+                    if (days > 100) {
+                        progBar.style.width = '0%';
+                        if(progVal) progVal.innerText = "Waiting for 100 Day mark...";
+                    } else {
+                        const progressPercent = 100 - days;
+                        progBar.style.width = `${progressPercent}%`; 
+                        progBar.style.background = '#34c759'; 
+                        if(progVal) progVal.innerText = `100-Day Milestone: ${progressPercent}% Complete`;
+                    }
                 }
+            } else if (now >= tripStart && now <= tripEnd) {
+                const totalDuration = tripEnd - tripStart;
+                const elapsed = now - tripStart;
+                let percent = (elapsed / totalDuration) * 100;
+                if(percent > 100) percent = 100;
+                
+                const dayNum = Math.floor(elapsed / (1000 * 60 * 60 * 24)) + 1;
+                const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
+                
+                if(progLabel) progLabel.innerText = "Trip Progress";
+                if(progVal) progVal.innerText = `Day ${dayNum} of ${totalDays}`;
+                if(cdDisplay) cdDisplay.style.display = 'none';
+                if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
+            } else {
+                if(progLabel) progLabel.innerText = "Trip Complete";
+                if(progVal) progVal.innerText = `Hope you had fun!`;
+                if(cdDisplay) cdDisplay.style.display = 'none';
+                if(progBar) { progBar.style.width = `100%`; progBar.style.background = '#34c759'; }
             }
         } else {
+            if(progLabel) progLabel.innerText = "No Trip Date Set";
+            if(progVal) progVal.innerText = "Go to Settings";
             if(cdDisplay) cdDisplay.style.display = 'none';
-            const total = tripEnd - tripStart; const elapsed = now - tripStart;
-            let percent = Math.min(100, (elapsed / total) * 100);
-            if(progBar) {
-                progBar.style.width = `${percent}%`;
-                progBar.style.background = '#ffd60a'; 
-            }
-            if(progLabel) progLabel.innerText = "Trip Progress";
-            if(progVal) progVal.innerText = `Day ${Math.floor(elapsed/(864e5))+1}`;
+            if(progBar) progBar.style.width = '0%';
         }
-    }
+        
+        try {
+            const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
+            let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 LOCAL (PT)';
+            if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 LOCAL (MT)'; }
+            
+            const ukTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: 'Europe/London' }).format(now);
+            const localTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: localTz }).format(now);
+            
+            const ukMatch = ukTimeStr.match(/(\d{1,2})[^\d](\d{2})/);
+            if(ukMatch) { updateFlap('uk-hr', ukMatch[1].padStart(2, '0')); updateFlap('uk-min', ukMatch[2]); }
+            
+            const locMatch = localTimeStr.match(/(\d{1,2})[^\d](\d{2})/);
+            if(locMatch) { updateFlap('loc-hr', locMatch[1].padStart(2, '0')); updateFlap('loc-min', locMatch[2]); }
 
-    const ukTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' }).format(now).split(':');
-    updateFlap('uk-hr', ukTime[0]); updateFlap('uk-min', ukTime[1]);
+            const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
+        } catch(e) {}
+        
+        renderUpNext();
 
-    const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
-    const locTz = activeTab === 'utah' ? 'America/Denver' : 'America/Los_Angeles';
-    const locTime = new Intl.DateTimeFormat('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:locTz }).format(now).split(':');
-    updateFlap('loc-hr', locTime[0]); updateFlap('loc-min', locTime[1]);
-    const dateEl = document.getElementById('clock-date');
-    if(dateEl) dateEl.innerText = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
-    renderUpNext();
+    } catch(e) { console.error(e); }
 }
 
 export function saveTripSettings() { 
@@ -157,18 +200,11 @@ export function convertCurrency() {
     const usdInput = document.getElementById('usd-input');
     const clearBtn = document.getElementById('clear-usd');
     const usd = parseFloat(usdInput?.value);
-    
-    // THE FIX: Grabs the live global window rate, bypassing module caches
     const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    
     if (clearBtn) clearBtn.style.display = usdInput?.value ? 'flex' : 'none';
-    
     if(document.getElementById('gbp-output')) {
-        if(!isNaN(usd)) {
-            document.getElementById('gbp-output').innerText = `£${(usd / rate).toFixed(2)}`;
-        } else {
-            document.getElementById('gbp-output').innerText = `£0.00`;
-        }
+        if(!isNaN(usd)) document.getElementById('gbp-output').innerText = `£${(usd / rate).toFixed(2)}`;
+        else document.getElementById('gbp-output').innerText = `£0.00`;
     }
 }
 
@@ -182,14 +218,8 @@ export function calculateTip() {
     const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
     const splitBtn = document.querySelector('.split-btn.active');
     const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
-    
-    // THE FIX: Grabs the live global window rate
     const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    
-    const t = b * (1 + (currentTipPercent / 100));
-    const usd = t / s;
-    const gbp = usd / rate; 
-    
+    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
     if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
     if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
 }
@@ -252,24 +282,25 @@ export async function setWeatherCity(target) {
     if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">📡</span><div class="empty-text">Syncing Radar...</div></div>`;
     
     try {
-        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles";
-        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; }
-        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; }
+        let lat = 34.0522, lon = -118.2437, locName = "Los Angeles", tz = 'America/Los_Angeles';
+        if (target === 'utah') { lat = 37.0965; lon = -113.5684; locName = "Utah"; tz = 'America/Denver'; }
+        else if (target === 'vegas') { lat = 36.1699; lon = -115.1398; locName = "Las Vegas"; tz = 'America/Los_Angeles'; }
         else if (target === 'local') {
+            tz = undefined;
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     async (pos) => { 
                         try {
                             const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
-                            renderWeatherDOM(data, "Local GPS"); 
+                            renderWeatherDOM(data, "Local GPS", tz); 
                         } catch(e) {
                             const fallbackData = await fetchWeather(lat, lon);
-                            renderWeatherDOM(fallbackData, "Los Angeles");
+                            renderWeatherDOM(fallbackData, "Los Angeles", 'America/Los_Angeles');
                         }
                     }, 
                     async () => { 
                         const fallbackData = await fetchWeather(lat, lon);
-                        renderWeatherDOM(fallbackData, "Los Angeles"); 
+                        renderWeatherDOM(fallbackData, "Los Angeles", 'America/Los_Angeles'); 
                     }, 
                     { timeout: 5000 }
                 ); 
@@ -278,7 +309,7 @@ export async function setWeatherCity(target) {
             locName = "Local (Default LA)";
         }
         const data = await fetchWeather(lat, lon);
-        renderWeatherDOM(data, locName);
+        renderWeatherDOM(data, locName, tz);
     } catch(e) {
         if(wDash) wDash.innerHTML = `<div class="empty-state"><span class="empty-icon">🚫</span><div class="empty-text">Weather Offline</div></div>`;
     }
@@ -290,20 +321,64 @@ export function openWeatherModal() {
     setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
     setWeatherCity('la');
 }
-
 export function closeWeatherModal() { 
     document.getElementById('weather-modal').classList.remove('active'); 
     setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
 }
 
-function renderWeatherDOM(data, fallbackName) {
+function renderWeatherDOM(data, fallbackName, tz) {
     const d = data.current; const locName = fallbackName || d.name;
     let forecastHtml = data.forecast.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 5).map(day => { 
         const dayName = new Date(day.dt * 1000).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(); 
         return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
     }).join('');
+
+    // --- DAYLIGHT TRACKER MAGIC ---
+    const timeOpts = tz ? {hour: '2-digit', minute:'2-digit', timeZone: tz} : {hour: '2-digit', minute:'2-digit'};
+    const sunriseStr = new Date(d.sys.sunrise * 1000).toLocaleTimeString([], timeOpts);
+    const sunsetStr = new Date(d.sys.sunset * 1000).toLocaleTimeString([], timeOpts);
+    
+    const nowMs = Date.now();
+    let daylightText = "";
+    if (nowMs < d.sys.sunrise * 1000) daylightText = "Waiting for Sunrise 🌅";
+    else if (nowMs > d.sys.sunset * 1000) daylightText = "Sun has set 🌙";
+    else {
+        const diffMs = (d.sys.sunset * 1000) - nowMs;
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        daylightText = `☀️ ${hrs}h ${mins}m of daylight left`;
+    }
+
+    const daylightHtml = `
+        <div style="background: var(--bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--ios-grey);">
+            <div>
+                <div style="font-size: 24px; margin-bottom: 5px;">🌅</div>
+                <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Sunrise</div>
+                <div style="font-size: 15px; font-weight: 900;">${sunriseStr}</div>
+            </div>
+            <div style="width: 1px; background: var(--ios-grey);"></div>
+            <div>
+                <div style="font-size: 24px; margin-bottom: 5px;">🌇</div>
+                <div style="font-size: 11px; font-weight: 800; opacity: 0.5; text-transform: uppercase;">Sunset</div>
+                <div style="font-size: 15px; font-weight: 900;">${sunsetStr}</div>
+            </div>
+        </div>
+        <div style="text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); margin-top: -10px; margin-bottom: 20px; background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--ios-grey);">
+            ${daylightText}
+        </div>
+    `;
+
     const wDash = document.getElementById('WTH-dashboard');
-    if (wDash) wDash.innerHTML = `<div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);"><div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div><div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div><div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div><div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div></div><h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3><div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
+    if (wDash) wDash.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.05)); border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 20px; border: 2px solid var(--accent);">
+            <div style="font-size: 70px; line-height: 1;">${getWeatherIcon(d.weather[0].icon)}</div>
+            <div style="font-size: 48px; font-weight: 900; color: var(--accent); margin: 10px 0;">${Math.round(d.main.temp)}°C</div>
+            <div style="text-transform: capitalize; font-weight: 700;">${d.weather[0].description}</div>
+            <div style="opacity: 0.5; margin-top: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">📍 ${escapeHTML(locName)}</div>
+        </div>
+        ${daylightHtml}
+        <h3 style="margin: 0 0 10px; font-size: 18px; opacity: 0.8;">5-Day Forecast</h3>
+        <div style="background: var(--bg); border-radius: 16px; padding: 10px;">${forecastHtml}</div>`; 
 }
 
 export async function renderItinerary() {
@@ -335,9 +410,7 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
-            
+            const mapLink = `https://www.google.com/maps/...${encodeURIComponent(addr || `${act} ${loc}`)}`;
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -510,7 +583,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+            const mapLink = `https://www.google.com/maps/...${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -908,4 +981,64 @@ export function renderAnchor() {
             </div>
         </div>`;
     }
+}
+
+// --- NEW MEETUP FUNCTIONS ---
+export function renderMeetupBoard() {
+    const boardText = document.getElementById('meetup-text');
+    const boardAuthor = document.getElementById('meetup-author');
+    if (!boardText) return;
+
+    const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
+    if (meetups.length > 0) {
+        const latest = meetups[meetups.length - 1]; 
+        boardText.innerText = `"${escapeHTML(latest[1])}"`;
+        boardAuthor.innerText = `— ${escapeHTML(latest[2])}`;
+    } else {
+        boardText.innerText = "No active announcements.";
+        boardAuthor.innerText = "Tap here to broadcast a message to the group!";
+    }
+}
+
+export function openMeetupModal() {
+    document.body.classList.add('no-scroll');
+    const modal = document.getElementById('meetup-modal');
+    document.getElementById('new-meetup-author').value = '';
+    document.getElementById('new-meetup-text').value = '';
+    modal.style.display = 'flex'; 
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeMeetupModal() {
+    const modal = document.getElementById('meetup-modal');
+    modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
+
+export async function submitMeetup() {
+    const author = document.getElementById('new-meetup-author').value.trim();
+    const text = document.getElementById('new-meetup-text').value.trim();
+    
+    if (!text || !author) {
+        alert("Please enter both your name and the announcement!");
+        return;
+    }
+    
+    if (navigator.vibrate) navigator.vibrate(20);
+    
+    const btn = document.getElementById('btn-save-meetup');
+    btn.innerText = "Posting...";
+    btn.disabled = true;
+    
+    await saveQuoteToSheet('MEETUP', text, author);
+    
+    btn.innerText = "Post Announcement";
+    btn.disabled = false;
+    
+    document.getElementById('new-meetup-author').value = '';
+    document.getElementById('new-meetup-text').value = '';
+    
+    renderMeetupBoard();
+    triggerConfetti();
+    closeMeetupModal();
 }
