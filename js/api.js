@@ -1,22 +1,25 @@
-import { state, setVal, getVal } from './store.js';
+import { state, setVal, getVal } from './store.js?v=2.2.0';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
 const QUOTES_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1357435334&single=true&output=csv";
-
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
+
 const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
 export async function loadAllData() {
     try {
-        const fetches = [fetch(SHEET_CSV_URL), fetch(VAULT_CSV_URL), fetch(QUOTES_CSV_URL)];
-        const responses = await Promise.all(fetches);
+        const [itinRes, vaultRes, quotesRes] = await Promise.all([
+            fetch(SHEET_CSV_URL),
+            fetch(VAULT_CSV_URL),
+            fetch(QUOTES_CSV_URL)
+        ]);
 
-        if (!responses[0].ok || !responses[1].ok || !responses[2].ok) throw new Error("Network response was not ok");
+        if (!itinRes.ok || !vaultRes.ok || !quotesRes.ok) throw new Error("Network response was not ok");
 
-        const itinText = await responses[0].text();
-        const vaultText = await responses[1].text();
-        const quotesText = await responses[2].text();
+        const itinText = await itinRes.text();
+        const vaultText = await vaultRes.text();
+        const quotesText = await quotesRes.text();
 
         state.itineraryData = parseCSV(itinText).slice(1);
         state.vaultAndStaysData = parseCSV(vaultText).slice(1);
@@ -105,13 +108,13 @@ export async function syncToCloud(action, payload) {
 }
 
 export async function saveQuoteToSheet(location, quote, author) {
-    // 1. Immediately save locally for offline support
     if (!state.quotesData) state.quotesData = [];
     state.quotesData.push([location, quote, author]);
     await setVal('offlineQuotes', state.quotesData);
 
-    // 2. Send to Google Apps Script
-    if (!navigator.onLine || !APPS_SCRIPT_URL) return;
+    if (!navigator.onLine || !APPS_SCRIPT_URL) { 
+        alert("Offline: Quote saved locally only."); return; 
+    }
     try {
         fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -122,6 +125,26 @@ export async function saveQuoteToSheet(location, quote, author) {
     } catch (e) { console.error("Quote save failed", e); }
 }
 
+export async function deleteQuoteFromSheet(location, quote, author) {
+    if (state.quotesData) {
+        const index = state.quotesData.findIndex(q => q[0] === location && q[1] === quote && q[2] === author);
+        if (index > -1) state.quotesData.splice(index, 1);
+        await setVal('offlineQuotes', state.quotesData);
+    }
+
+    if (!navigator.onLine || !APPS_SCRIPT_URL) { 
+        alert("Offline: Quote deleted locally, but will reappear later if not deleted from the live sheet."); return; 
+    }
+    try {
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deleteQuote', payload: { location, quote, author } })
+        });
+    } catch (e) { console.error("Quote delete failed", e); }
+}
+
 export function preCacheImages() {
     if (!state.vaultAndStaysData) return;
     state.vaultAndStaysData.forEach(row => {
@@ -130,26 +153,4 @@ export function preCacheImages() {
             img.src = row[7].trim();
         }
     });
-}
-export async function deleteQuoteFromSheet(location, quote, author) {
-    // 1. Remove it locally so the app updates instantly
-    if (state.quotesData) {
-        const index = state.quotesData.findIndex(q => q[0] === location && q[1] === quote && q[2] === author);
-        if (index > -1) state.quotesData.splice(index, 1);
-        await setVal('offlineQuotes', state.quotesData);
-    }
-
-    // 2. Tell Google Sheets to delete the row
-    if (!navigator.onLine) { 
-        alert("Offline: Quote deleted locally, but will reappear later if not deleted from the live sheet."); 
-        return; 
-    }
-    try {
-        fetch("https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec", {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deleteQuote', payload: { location, quote, author } })
-        });
-    } catch (e) { console.error("Quote delete failed", e); }
 }
