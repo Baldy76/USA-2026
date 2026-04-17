@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.2.1';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.2.1';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -10,8 +10,8 @@ import {
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
-    renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup
-} from './ui.js?v=6.2.1';
+    renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -71,7 +71,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // URGENT ALERT CLOSE
         if (e.target.closest('#btn-close-urgent')) {
             document.getElementById('urgent-alert-overlay').style.display = 'none';
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
@@ -84,7 +83,6 @@ function bindEvents() {
             return;
         }
 
-        // MEETUP BOARD OPEN
         if (e.target.closest('#btn-open-meetup')) { 
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
             if (meetups.length > 0) {
@@ -98,6 +96,7 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
         if (e.target.closest('#btn-save-meetup')) { submitMeetup(); return; }
+        if (e.target.closest('#btn-clear-meetup')) { clearActiveMeetup(); return; }
 
         if (e.target.closest('.open-quote-btn')) { openQuoteModal(e.target.closest('.open-quote-btn').dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -144,8 +143,48 @@ function bindEvents() {
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         if (e.target.closest('#btn-reset-tally')) { if(confirm("Clear scores?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); } return; }
         
+        // FIX: Rebuilt Settings Buttons With Visual Feedback
         if (e.target.closest('#btn-enable-notifs')) {
-            if ('Notification' in window) { Notification.requestPermission().then(perm => { if (perm === 'granted') { e.target.innerText = '✅ Enabled'; e.target.style.background = '#34c759'; } }); } return;
+            const btn = e.target.closest('#btn-enable-notifs');
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    btn.innerHTML = '✅ Already Enabled';
+                    btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
+                    return;
+                }
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        btn.innerHTML = '✅ Enabled';
+                        btn.style.backgroundColor = '#34c759'; btn.style.color = 'white';
+                    } else {
+                        alert('Notifications denied in device settings.');
+                    }
+                });
+            } else {
+                alert('Push notifications are not supported on this device.');
+            }
+            return;
+        }
+
+        if (e.target.closest('#btn-force-sync')) {
+            const btn = e.target.closest('#btn-force-sync');
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ Syncing...";
+            await loadAllData(); 
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard();
+            btn.innerText = "✅ Synced!"; 
+            setTimeout(() => { btn.innerText = originalText; }, 2000); 
+            return;
+        }
+
+        if (e.target.closest('#btn-update-version')) {
+            const btn = e.target.closest('#btn-update-version');
+            btn.innerText = "⏳ Updating...";
+            if('serviceWorker' in navigator) { 
+                navigator.serviceWorker.getRegistrations().then(regs => { for(let r of regs) r.update(); }); 
+            }
+            setTimeout(() => { window.location.reload(true); }, 500);
+            return;
         }
         
         const tipBtn = e.target.closest('.tip-btn'); if (tipBtn) { setTip(parseInt(tipBtn.dataset.tip), tipBtn); return; }
@@ -154,8 +193,6 @@ function bindEvents() {
         if (e.target.closest('#btnLight')) { setThemeMode(false); return; }
         if (e.target.closest('#btnDark')) { setThemeMode(true); return; }
         if (e.target.closest('#btn-clear-families')) { clearCustomFamilies(); return; }
-        if (e.target.closest('#btn-force-sync')) { await loadAllData(); populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderMeetupBoard(); return; }
-        if (e.target.closest('#btn-update-version')) { if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update())); window.location.reload(true); return; }
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
@@ -165,21 +202,40 @@ function bindEvents() {
             let done = await getVal('completedTasks') || []; done.push(document.getElementById('completion-modal').dataset.activeTaskId);
             await setVal('completedTasks', done); syncToCloud('completion', done); triggerConfetti(); closeCompletionModal(); renderItinerary(); renderUpNext(); return;
         }
-        if (e.target.closest('.edit-gate-btn')) { e.stopPropagation(); openGateModal(e.target.closest('.edit-gate-btn').dataset.flightid); return; }
+        const editGateBtn = e.target.closest('.edit-gate-btn');
+        if (editGateBtn) { e.stopPropagation(); openGateModal(editGateBtn.dataset.flightid); return; }
+        if (e.target.closest('#btn-close-gate')) { closeGateModal(); return; }
         if (e.target.closest('#btn-save-gate')) {
             const m = document.getElementById('gate-modal'); const res = `T${document.getElementById('gate-input-term').value} G${document.getElementById('gate-input-gate').value}`;
             state.gateOverrides[m.dataset.flightid] = res; await setVal('gateOverrides', state.gateOverrides); syncToCloud('gateUpdate', state.gateOverrides); renderTravelVault(); closeGateModal(); return;
         }
-        if (e.target.closest('.flip-container')) { e.target.closest('.flip-container').classList.toggle('is-flipped'); return; }
-        if (e.target.closest('.stay-card')) { const s = e.target.closest('.stay-card').dataset; openStayModal(s.fam, s.addr, s.map, s.link, s.img); return; }
-        if (e.target.closest('.itin-card:not(.completed)')) { const c = e.target.closest('.itin-card'); openCompletionModal(c.dataset.taskId, c.dataset.taskName); return; }
-        if (e.target.closest('.itin-card.completed')) {
-            let done = await getVal('completedTasks') || []; done = done.filter(id => id !== e.target.closest('.itin-card').dataset.taskId);
-            await setVal('completedTasks', done); renderItinerary(); renderUpNext(); return;
+        const travelCard = e.target.closest('.flip-container');
+        if (travelCard && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') { 
+            travelCard.classList.toggle('is-flipped'); if(navigator.vibrate) navigator.vibrate(20); return; 
         }
-        if (e.target.closest('.link-btn')) { window.open(e.target.closest('.link-btn').dataset.url, '_blank'); return; }
+        const stayCard = e.target.closest('.stay-card');
+        if (stayCard) { openStayModal(stayCard.dataset.fam, stayCard.dataset.addr, stayCard.dataset.map, stayCard.dataset.link, stayCard.dataset.img); return; }
+        const activeCard = e.target.closest('.itin-card:not(.completed)');
+        if (activeCard && e.target.tagName !== 'A') { openCompletionModal(activeCard.dataset.taskId, activeCard.dataset.taskName); return; }
+        const completedCard = e.target.closest('.itin-card.completed');
+        if (completedCard && e.target.tagName !== 'A') {
+            let tasks = await getVal('completedTasks') || []; tasks = tasks.filter(id => id !== completedCard.dataset.taskId);
+            await setVal('completedTasks', tasks); renderItinerary(); renderUpNext(); return;
+        }
+        const linkBtn = e.target.closest('.link-btn');
+        if (linkBtn && linkBtn.dataset.url) { window.open(linkBtn.dataset.url, '_blank'); return; }
+        const deleteDocBtn = e.target.closest('.delete-doc-btn');
+        if (deleteDocBtn) {
+            e.preventDefault(); e.stopPropagation();
+            if(confirm("Delete doc?")) {
+                let docs = await getVal('offline_docs') || []; docs = docs.filter(d => d.id !== deleteDocBtn.dataset.id);
+                await setVal('offline_docs', docs); renderWallet();
+            } return;
+        }
     });
 }
+
+window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); };
 
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); 
@@ -193,14 +249,10 @@ async function bootApp() {
 
     try { await loadAllData(); } catch(e) { console.error("Boot error:", e); }
     
-    // THE FIX: preCacheImages() is back
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
-    
     initLiveCurrency(); initWeatherPill();
-    
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
-    // THE FIX: Restored the initialization call for the Decider Wheel!
     if (document.getElementById('roulette-wheel')) initWheel();
 
     // HEARTBEAT SYNC ENGINE
@@ -230,4 +282,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.2.2');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.3.0');
