@@ -1,4 +1,4 @@
-import { state, setVal, getVal } from './store.js?v=6.1.1';
+import { state, setVal, getVal } from './store.js?v=6.1.2';
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=0&single=true&output=csv";
 const VAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=96079970&single=true&output=csv";
@@ -15,7 +15,7 @@ export async function loadAllData() {
             fetch(QUOTES_CSV_URL + '&t=' + Date.now())
         ]);
 
-        if (!itinRes.ok || !vaultRes.ok || !quotesRes.ok) throw new Error("Network error");
+        if (!itinRes.ok || !vaultRes.ok || !quotesRes.ok) throw new Error("Network response was not ok");
 
         const itinText = await itinRes.text();
         const vaultText = await vaultRes.text();
