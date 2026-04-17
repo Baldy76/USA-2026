@@ -7,14 +7,14 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=6.3.0">
+    <link rel="stylesheet" href="style.css?v=6.4.0">
 </head>
 <body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode.</div>
     <div id="ptr-spinner">↻ Syncing...</div>
 
-    <div id="urgent-alert-overlay" style="display:none; position:fixed; inset:0; background: rgba(255,59,48,0.95); z-index: 20000; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; backdrop-filter: blur(10px);">
+    <div id="urgent-alert-overlay" style="display:none; position:fixed; inset:0; background: rgba(255,59,48,0.95); z-index: 20000; color: white; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; backdrop-filter: blur(10px);">
         <div style="font-size: 80px; margin-bottom: 20px; animation: scalePulse 0.5s infinite alternate;">🚨</div>
         <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 10px;">URGENT MESSAGE</h1>
         <div id="urgent-alert-msg" style="font-size: 20px; font-weight: 700; line-height: 1.4; margin-bottom: 30px;"></div>
@@ -250,7 +250,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v6.3.0</div>
+            <div class="version-control">v6.4.0</div>
         </section>
 
         <div id="meetup-modal" class="modal-overlay">
@@ -268,7 +268,7 @@
 
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                         <button id="btn-save-meetup" class="action-btn" style="flex: 2; margin: 0; padding: 12px; font-size: 14px; background: linear-gradient(135deg, #ff2d55, #ffcc00); box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);">Post</button>
-                        <button id="btn-clear-meetup" class="action-btn" style="flex: 1; margin: 0; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text);">Clear</button>
+                        <button id="btn-clear-meetup" class="action-btn" style="flex: 1; margin: 0; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text); display: none;">Clear</button>
                     </div>
                 </div>
             </div>
@@ -398,6 +398,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=6.3.0"></script>
+    <script type="module" src="js/main.js?v=6.4.0"></script>
 </body>
 </html>
