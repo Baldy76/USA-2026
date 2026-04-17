@@ -1,6 +1,6 @@
-import { state, setVal, getVal, escapeHTML } from '../store.js?v=7.0.0';
-import { saveQuoteToSheet, deleteQuoteFromSheet } from '../api.js?v=7.0.0';
-import { triggerConfetti } from '../ui.js?v=7.0.0';
+import { state, setVal, getVal, escapeHTML } from '../store.js';
+import { saveQuoteToSheet, deleteQuoteFromSheet } from '../api.js';
+import { triggerConfetti } from '../ui.js';
 
 export async function renderMeetupBoard() {
     const board = document.getElementById('btn-open-meetup');
@@ -25,7 +25,6 @@ export async function renderMeetupBoard() {
             board.classList.add('new-alert-pulse');
             if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
             
-            // Only trigger physical feedback if you aren't the author
             if (latest[2] !== currentUser) {
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 if (Notification.permission === 'granted') {
