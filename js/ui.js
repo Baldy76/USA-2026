@@ -71,6 +71,10 @@ export function updateTimeAndCountdown() {
         const progBar = document.getElementById('trip-prog-bar');
         const cdDisplay = document.getElementById('countdown-display');
         
+        // NEW: EMOJI ICONS
+        const iconStart = document.getElementById('prog-icon-start');
+        const iconEnd = document.getElementById('prog-icon-end');
+        
         if (savedStart) {
             const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
             let tripEnd = savedEnd ? new Date(savedEnd) : new Date(tripStart.getTime() + (14 * 24 * 60 * 60 * 1000));
@@ -80,6 +84,10 @@ export function updateTimeAndCountdown() {
             const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
             if (now < tripStart) {
+                // COUNTDOWN MODE: Home to Plane
+                if(iconStart) iconStart.innerText = '🏠';
+                if(iconEnd) iconEnd.innerText = '✈️';
+                
                 const diff = tripStart - now;
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 if(progLabel) progLabel.innerText = "Countdown";
@@ -99,6 +107,10 @@ export function updateTimeAndCountdown() {
                     }
                 }
             } else if (now >= tripStart && now <= tripEnd) {
+                // ON HOLIDAY MODE: Sun to Home
+                if(iconStart) iconStart.innerText = '☀️';
+                if(iconEnd) iconEnd.innerText = '🏠';
+                
                 const totalDuration = tripEnd - tripStart;
                 const elapsed = now - tripStart;
                 let percent = (elapsed / totalDuration) * 100;
@@ -112,12 +124,18 @@ export function updateTimeAndCountdown() {
                 if(cdDisplay) cdDisplay.style.display = 'none';
                 if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
             } else {
+                // TRIP FINISHED: Plane back to Home
+                if(iconStart) iconStart.innerText = '✈️';
+                if(iconEnd) iconEnd.innerText = '🏠';
+                
                 if(progLabel) progLabel.innerText = "Trip Complete";
                 if(progVal) progVal.innerText = `Hope you had fun!`;
                 if(cdDisplay) cdDisplay.style.display = 'none';
                 if(progBar) { progBar.style.width = `100%`; progBar.style.background = '#34c759'; }
             }
         } else {
+            if(iconStart) iconStart.innerText = '🏠';
+            if(iconEnd) iconEnd.innerText = '✈️';
             if(progLabel) progLabel.innerText = "No Trip Date Set";
             if(progVal) progVal.innerText = "Go to Settings";
             if(cdDisplay) cdDisplay.style.display = 'none';
@@ -1017,7 +1035,6 @@ export async function renderMeetupBoard() {
             board.classList.add('new-alert-pulse');
             if(statusLabel) statusLabel.innerText = "NEW ANNOUNCEMENT";
             
-            // Only trigger physical feedback if you aren't the author
             if (latest[2] !== currentUser) {
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 if (Notification.permission === 'granted') {
@@ -1051,6 +1068,7 @@ export function openMeetupModal() {
     document.getElementById('new-meetup-text').value = '';
     const urgentToggle = document.getElementById('urgent-toggle');
     if(urgentToggle) urgentToggle.checked = false;
+    
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -1097,7 +1115,6 @@ export async function clearActiveMeetup() {
             await deleteQuoteFromSheet('MEETUP', latest[1], latest[2]);
             localStorage.removeItem('lastSeenMeetupId');
             renderMeetupBoard(); 
-            // Not closing modal here because this is now called from the Admin page!
             if(btn) { btn.innerText = "Clear Active Bulletin"; btn.disabled = false; }
         }
     } else { alert("No active bulletin to clear!"); }
