@@ -1,16 +1,16 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=3.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=3.0.0';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
-    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
+    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=3.0.0';
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -133,7 +133,6 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // Native Map Link fix for walking directions to car
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -159,7 +158,6 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
-        if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         if (e.target.closest('#btn-reset-tally')) {
             if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
@@ -257,25 +255,22 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
-    bindEvents(); initSwipes(); initPullToRefresh(); 
+    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
     history.replaceState({ pageId: 'home' }, '', '#home');
     try { state.gateOverrides = await getVal('gateOverrides') || {}; } catch(e) { state.gateOverrides = {}; }
     
-    // Wrap loadAllData in a try/catch so UI boots even if Google Sheets has an issue
     try {
         await loadAllData();
-    } catch(e) {
-        console.error("Critical failure during boot:", e);
-    }
+    } catch(e) { console.error(e); }
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
-    initLiveCurrency(); setInterval(updateTimeAndCountdown, 60000); updateTimeAndCountdown(); initWeatherPill();
+    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=3.0.0').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
