@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2.2.0">
+    <link rel="stylesheet" href="style.css?v=2.1.89">
 </head>
 <body class="light-mode theme-home">
 
@@ -53,11 +53,6 @@
             </div>
             <button class="action-btn tips-btn" data-city="la" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 LA Top Tips</button>
             <div id="la-home-card"></div>
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <button class="action-btn open-quote-btn" data-location="la" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
-            </div>
-
             <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div> 
             <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="la-completed-list"></div></div>
         </section>
@@ -68,11 +63,6 @@
             </div>
             <button class="action-btn tips-btn" data-city="utah" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Utah Top Tips</button>
             <div id="utah-home-card"></div>
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <button class="action-btn open-quote-btn" data-location="utah" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
-            </div>
-
             <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
         </section>
@@ -150,26 +140,26 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="position: relative;">
-                        <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 12px; width: 110px; font-size: 18px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; outline: none;">
+                        <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 12px; width: 110px; font-size: 18px; font-weight: 800; background: #1c1c1e; border-radius: 12px; border: none; color: white; outline: none;">
                         <button id="clear-usd" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.4); border: none; border-radius: 50%; width: 20px; height: 20px; color: black; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer;">✕</button>
                     </div>
                     <span style="font-weight: 900;">=</span>
-                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
+                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: #1c1c1e; color: white; padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
                 </div>
             </div>
 
             <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
                 <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🍽️ Tip & Split</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
-                    <div style="flex: 1;">
+                    <div style="flex: 0.8;">
                         <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
                         <input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
                     </div>
-                    <div style="flex: 1;">
+                    <div style="flex: 1.2;">
                         <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
                         <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px; height: 50px; display: flex;">
                             <button class="segment split-btn" data-split="1" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">1 Fam</button>
-                            <button class="segment split-btn active" data-split="2" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">2 Fams</button>
+                            <button class="segment split-btn active" data-split="2" style="display: flex; align-items: center; justify-content: center; border-radius: 8px; white-space: nowrap;">2 Fams</button>
                         </div>
                     </div>
                 </div>
@@ -203,8 +193,7 @@
                 <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
             </div>
 
-            <button id="btn-hype" class="action-btn pulse-btn" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); margin-bottom: 20px;">🔥 Activate Hype 🔥</button>
-            <button id="btn-open-admin" class="action-btn" style="background: var(--card); color: var(--text); border: 2px solid var(--ios-grey);">⚙️ Settings & Setup</button>
+            <button id="btn-open-admin" class="action-btn" style="background: #1c1c1e; color: #ffffff; border: none; margin-bottom: 20px;">⚙️ Settings & Setup</button>
         </section>
 
         <section id="vegas" class="page tab-content">
@@ -213,11 +202,6 @@
             </div>
             <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
             <div id="vegas-home-card"></div>
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <button class="action-btn open-quote-btn" data-location="vegas" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
-            </div>
-
             <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
         </section>
@@ -245,13 +229,6 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
-            
-            <div class="admin-card">
-                <h3>💬 Manage Quotes</h3>
-                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental or duplicate quotes from the vault.</div>
-                <button id="btn-manage-quotes" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Review & Delete Quotes</button>
-            </div>
-
             <div class="admin-card">
                 <h3>🔔 Smart Notifications</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
@@ -275,31 +252,8 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.2.0</div>
+            <div class="version-control">v2.1.89</div>
         </section>
-
-        <div id="quote-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column; height: 500px; max-height: 80vh;">
-                <button id="btn-close-quote" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
-                <h3 id="quote-modal-title" style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">💬 Quotes</h3>
-                
-                <div id="quote-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;"></div>
-                
-                <div style="background: var(--bg); padding: 15px; border-radius: 16px; border: 1px solid var(--ios-grey);">
-                    <input type="text" id="new-quote-author" placeholder="Who said it?" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; font-size: 14px;">
-                    <textarea id="new-quote-text" placeholder="What did they say?" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; resize: none; height: 60px; font-size: 14px;"></textarea>
-                    <button id="btn-save-quote" class="action-btn" style="margin: 10px 0 0; padding: 12px; font-size: 14px;">Add Quote</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="manage-quotes-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; max-height: 85vh; display: flex; flex-direction: column;">
-                <button id="btn-close-manage-quotes" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
-                <h3 style="margin-top:0; text-align: center;">Manage Quotes</h3>
-                <div id="admin-quotes-list" style="flex: 1; overflow-y: auto; padding-right: 5px; margin-top: 10px;"></div>
-            </div>
-        </div>
 
         <div id="gate-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px;">
@@ -412,6 +366,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.2.0"></script>
+    <script type="module" src="js/main.js?v=2.1.89"></script>
 </body>
 </html>
