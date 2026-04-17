@@ -1,5 +1,6 @@
 import { state, setVal, getVal, parseDateTime } from './store.js?v=5.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=5.0.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js?v=5.0.0';
+import { deleteQuoteFromSheet } from './api.js?v=5.0.0'; // explicit safe import
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -79,7 +80,6 @@ function startNotificationEngine() {
 }
 
 function bindEvents() {
-    
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
     document.getElementById('usd-input')?.addEventListener('input', convertCurrency);
@@ -115,7 +115,6 @@ function bindEvents() {
             }
             return;
         }
-        // -------------------------
 
         if (e.target.closest('#btn-drop-anchor')) {
             const btn = e.target.closest('#btn-drop-anchor');
@@ -139,7 +138,6 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            // THE FIX: Official Native Google Maps Walking Directions API
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
@@ -274,23 +272,17 @@ async function bootApp() {
     try {
         await loadAllData();
     } catch(e) {
-        console.error("Critical Boot Error:", e);
+        console.error("Boot error, falling back to cache:", e);
     }
     
-    populateDropdown(); 
-    renderItinerary(); 
-    renderTravelVault(); 
-    renderAccommodations(); 
-    preCacheImages(); 
-    renderWallet(); 
-    renderUpNext(); 
-    renderAnchor();
-    
+    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     initLiveCurrency(); 
+    
+    // THE FIX: Clock cycle correctly activated here
     setInterval(updateTimeAndCountdown, 60000); 
     updateTimeAndCountdown(); 
-    initWeatherPill();
     
+    initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
