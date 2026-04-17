@@ -1,16 +1,15 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=2.2.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=2.2.0';
+import { state, setVal, getVal, parseDateTime } from './store.js';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud } from './api.js';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
     initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
     renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
-    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain, triggerHype,
+    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext, renderAnchor,
-    openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=2.2.0';
+    openGateModal, closeGateModal, renderUpNext, renderAnchor
+} from './ui.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -23,6 +22,7 @@ export function openTab(pageId) {
     const isDark = document.body.classList.contains('dark-mode');
     document.body.className = `${isDark ? 'dark-mode' : 'light-mode'} theme-${pageId}`;
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
+    document.querySelectorAll('.city-hero').forEach(h => h.style.backgroundPosition = 'center 0px');
 }
 
 function initSwipes() {
@@ -51,8 +51,25 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
+function initParallax() {
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const activeHero = document.querySelector('.tab-content.active .city-hero');
+                if (activeHero) {
+                    activeHero.style.backgroundPosition = `center ${window.scrollY * 0.4}px`;
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
 function startNotificationEngine() {
     setInterval(async () => {
+        updateTimeAndCountdown(); 
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const notified = await getVal('notifiedTasks') || [];
         const now = Date.now();
@@ -68,7 +85,6 @@ function startNotificationEngine() {
                 setVal('notifiedTasks', notified);
             }
         });
-        renderUpNext();
     }, 60000); 
 }
 
@@ -88,28 +104,6 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-
-        // --- NEW QUOTE BUTTONS ---
-        const quoteBtn = e.target.closest('.open-quote-btn');
-        if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
-        if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
-        if (e.target.closest('#btn-save-quote')) { submitNewQuote(); return; }
-
-        if (e.target.closest('#btn-manage-quotes')) { openManageQuotesModal(); return; }
-        if (e.target.closest('#btn-close-manage-quotes')) { closeManageQuotesModal(); return; }
-
-        const delQuoteBtn = e.target.closest('.delete-quote-btn');
-        if (delQuoteBtn) {
-            if (confirm("Are you sure you want to permanently delete this quote?")) {
-                const loc = delQuoteBtn.dataset.loc;
-                const quote = delQuoteBtn.dataset.quote;
-                const author = delQuoteBtn.dataset.author;
-                await deleteQuoteFromSheet(loc, quote, author);
-                renderAdminQuotes();
-            }
-            return;
-        }
-        // -------------------------
 
         if (e.target.closest('#btn-drop-anchor')) {
             const btn = e.target.closest('#btn-drop-anchor');
@@ -158,7 +152,6 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
-        if (e.target.closest('#btn-hype')) { triggerHype(); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
         if (e.target.closest('#btn-reset-tally')) {
             if(confirm("Clear scoreboard?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); }
@@ -256,7 +249,7 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
 
 async function bootApp() {
-    bindEvents(); initSwipes(); initPullToRefresh(); 
+    bindEvents(); initSwipes(); initPullToRefresh(); initParallax();
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(localStorage.getItem('HolidayPlanner_Theme') !== null ? localStorage.getItem('HolidayPlanner_Theme') === 'true' : prefersDark.matches);
@@ -265,10 +258,10 @@ async function bootApp() {
     loadAllData().then(() => {
         populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
     });
-    initLiveCurrency(); setInterval(updateTimeAndCountdown, 60000); updateTimeAndCountdown(); initWeatherPill();
+    initLiveCurrency(); updateTimeAndCountdown(); initWeatherPill();
     if (document.getElementById('roulette-wheel')) initWheel();
     startNotificationEngine();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=2.2.0').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.error(e));
