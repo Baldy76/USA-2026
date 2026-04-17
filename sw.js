@@ -2,11 +2,11 @@ const CACHE_NAME = 'holiday-planner-v5.0.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './style.css?v=5.0.0',
-    './js/main.js?v=5.0.0',
-    './js/store.js?v=5.0.0',
-    './js/api.js?v=5.0.0',
-    './js/ui.js?v=5.0.0',
+    './style.css',
+    './js/main.js',
+    './js/store.js',
+    './js/api.js',
+    './js/ui.js',
     './manifest.json',
     './img/la.jpg',
     './img/utah.jpg',
@@ -31,9 +31,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Never cache API calls to Google Sheets or Weather
     if (event.request.url.includes('docs.google.com') || event.request.url.includes('openweathermap.org') || event.request.url.includes('frankfurter.dev')) return;
-    
     event.respondWith(
         fetch(event.request).then(response => {
             const rc = response.clone();
