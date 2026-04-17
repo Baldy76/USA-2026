@@ -1,17 +1,21 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.5.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.5.0';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=7.0.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=7.0.0';
 
+// CORE UI IMPORTS
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
-    convertCurrency, setTip, calculateTip, populateDropdown, clearCustomFamilies, updateFamilyFilter,
-    initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal,
-    renderItinerary, renderTravelVault, renderAccommodations, handleFileUpload, renderWallet,
-    openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
-    initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext, renderAnchor,
-    openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
-    renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup
-} from './ui.js?v=6.6.0';
+    populateDropdown, clearCustomFamilies, updateFamilyFilter, renderItinerary, renderTravelVault, 
+    renderAccommodations, handleFileUpload, renderWallet, openCompletionModal, closeCompletionModal, 
+    triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
+    openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
+} from './ui.js?v=7.0.0';
+
+// NEW: FEATURE MODULE IMPORTS!
+import { convertCurrency, setTip, calculateTip } from './features/tools.js?v=7.0.0';
+import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js?v=7.0.0';
+import { initWheel, spinRoulette, renderScoreboard } from './features/roulette.js?v=7.0.0';
+import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js?v=7.0.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -255,6 +259,7 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); initWeatherPill();
+    
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
     if (document.getElementById('roulette-wheel')) initWheel();
@@ -285,4 +290,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.6.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.0.0');
