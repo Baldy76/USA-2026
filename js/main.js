@@ -11,7 +11,7 @@ import {
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
     openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
     renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup
-} from './ui.js?v=6.5.1';
+} from './ui.js?v=6.6.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -96,8 +96,6 @@ function bindEvents() {
         }
         if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
         if (e.target.closest('#btn-save-meetup')) { submitMeetup(); return; }
-        
-        // This is now triggered from the Admin page!
         if (e.target.closest('#btn-clear-meetup')) { clearActiveMeetup(); return; }
 
         if (e.target.closest('.open-quote-btn')) { openQuoteModal(e.target.closest('.open-quote-btn').dataset.location); return; }
@@ -287,4 +285,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.5.1');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.6.0');
