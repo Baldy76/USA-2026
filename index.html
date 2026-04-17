@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=7.0.0">
+    <link rel="stylesheet" href="style.css?v=7.0.1">
 </head>
 <body class="light-mode theme-home">
 
@@ -227,16 +227,19 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
+            
             <div class="admin-card">
                 <h3>📢 Manage Announcements</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Remove the current active bulletin from the Home screen.</div>
                 <button id="btn-clear-meetup" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none;">Clear Active Bulletin</button>
             </div>
+
             <div class="admin-card">
                 <h3>💬 Manage Quotes</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental quotes permanently.</div>
                 <button id="btn-manage-quotes" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Review & Delete Quotes</button>
             </div>
+
             <div class="admin-card">
                 <h3>🔔 Smart Notifications</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted for itinerary tasks and group announcements.</div>
@@ -259,7 +262,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.0.0</div>
+            <div class="version-control">v7.0.1</div>
         </section>
 
         <div id="meetup-modal" class="modal-overlay">
@@ -404,6 +407,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=7.0.0"></script>
+    <script type="module" src="js/main.js?v=7.0.1"></script>
 </body>
 </html>
