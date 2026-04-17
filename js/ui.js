@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=2.2.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=2.2.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js';
+import { fetchWeather, syncToCloud } from './api.js';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -109,13 +109,24 @@ export function updateTimeAndCountdown() {
             if (now < tripStart) {
                 const diff = tripStart - now;
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                
                 if(progLabel) progLabel.innerText = "Countdown";
-                if(progVal) progVal.innerText = "";
                 
                 updateFlap('cd-num', days.toString());
                 if(cdDisplay) cdDisplay.style.display = 'flex';
                 
-                if(progBar) { progBar.style.width = '100%'; progBar.style.background = '#fff'; }
+                if(progBar) { 
+                    // UPDATED PROGRESS BAR: Fills up beautifully from the 100-day mark.
+                    if (days > 100) {
+                        progBar.style.width = '0%';
+                        if(progVal) progVal.innerText = "Waiting for the 100 Day mark...";
+                    } else {
+                        const progressPercent = 100 - days;
+                        progBar.style.width = `${progressPercent}%`; 
+                        progBar.style.background = '#34c759'; // Fills with satisfying green
+                        if(progVal) progVal.innerText = `100-Day Milestone: ${progressPercent}% Complete`;
+                    }
+                }
             } else if (now >= tripStart && now <= tripEnd) {
                 const totalDuration = tripEnd - tripStart;
                 const elapsed = now - tripStart;
@@ -385,12 +396,8 @@ export async function renderItinerary() {
     const todayStr = now.toDateString(); 
 
     const sortedData = [...state.itineraryData].sort((a, b) => {
-        if(!a || a.length < 4) return 1;
-        if(!b || b.length < 4) return -1;
-        const dA = (a[0] || '').trim(), tA = (a[3] || '').trim();
-        const dB = (b[0] || '').trim(), tB = (b[3] || '').trim();
-        const dtA = parseDateTime(dA, tA || '23:59') || Number.MAX_SAFE_INTEGER; 
-        const dtB = parseDateTime(dB, tB || '23:59') || Number.MAX_SAFE_INTEGER;
+        const dtA = parseDateTime(a[0], a[3] || '23:59') || Number.MAX_SAFE_INTEGER; 
+        const dtB = parseDateTime(b[0], b[3] || '23:59') || Number.MAX_SAFE_INTEGER;
         return dtA - dtB;
     });
 
@@ -405,7 +412,9 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = "https://maps.google.com/?q=" + encodeURIComponent(addr || `${act} ${loc}`);
+            const mapQuery = addr || `${act} ${loc}`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(mapQuery)}`;
+            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -433,7 +442,7 @@ export async function renderItinerary() {
                             <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">Get Directions</a></div>` : ''}
+                        ${addr ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
                     </div>
                 </div>`;
 
@@ -578,7 +587,8 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${escapeHTML("https://maps.google.com/?q="+encodeURIComponent(addr))}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(addr)}`;
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
@@ -649,22 +659,6 @@ export function triggerEmojiRain(city) {
         document.body.appendChild(em);
         setTimeout(() => em.remove(), 4000);
     }
-}
-
-export function triggerHype() {
-    if(navigator.vibrate) navigator.vibrate(40);
-    const toast = document.getElementById('hype-toast');
-    if(!toast) return;
-    const hypeQuotes = [ "Prepare the Vegas bankroll! 💸", "Only the brave conquer Utah! ⛰️", "In-N-Out Burger is calling! 🍔", "USA 2026: Epic Mode Activated 🚀", "Passports? Check. Vibes? IMMACULATE. ✨", "Ready for the road trip of a lifetime? 🚗" ];
-    toast.innerText = hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)];
-    toast.style.display = 'block';
-    toast.classList.remove('toast-exit');
-    toast.classList.add('toast-enter');
-    setTimeout(() => {
-        toast.classList.remove('toast-enter');
-        toast.classList.add('toast-exit');
-        setTimeout(() => toast.style.display = 'none', 300);
-    }, 3000);
 }
 
 export function initWheel() {
@@ -821,106 +815,6 @@ export function renderTips(category) {
     }); 
     contentDiv.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
-
-// ----------------------------------------------------
-// THE NEW QUOTE VAULT FUNCTIONS ADDED SAFELY HERE
-// ----------------------------------------------------
-export function openQuoteModal(location) {
-    document.body.classList.add('no-scroll');
-    const modal = document.getElementById('quote-modal');
-    modal.dataset.location = location;
-    
-    let displayLoc = location.toUpperCase();
-    if (location === 'la') displayLoc = 'Los Angeles';
-    else if (location === 'vegas') displayLoc = 'Las Vegas';
-    
-    document.getElementById('quote-modal-title').innerText = `💬 ${displayLoc} Quotes`;
-    document.getElementById('new-quote-author').value = '';
-    document.getElementById('new-quote-text').value = '';
-    
-    renderQuotes(location);
-    modal.style.display = 'flex'; 
-    setTimeout(() => modal.classList.add('active'), 10);
-}
-
-export function renderQuotes(location) {
-    const list = document.getElementById('quote-list');
-    const quotes = state.quotesData || [];
-    const filtered = quotes.filter(q => q[0] && q[0].toLowerCase() === location.toLowerCase());
-    
-    if (filtered.length === 0) {
-        list.innerHTML = `<div class="empty-state" style="padding: 20px;"><div class="empty-text">No quotes yet.</div></div>`;
-        return;
-    }
-    
-    list.innerHTML = filtered.map(q => `
-        <div class="admin-card" style="padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);">
-            <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 16px; line-height: 1.4; margin-bottom: 8px;">"${escapeHTML(q[1])}"</div>
-            <div style="text-align: right; font-size: 11px; font-weight: 800; opacity: 0.6; text-transform: uppercase;">— ${escapeHTML(q[2])}</div>
-        </div>
-    `).reverse().join('');
-}
-
-export async function submitNewQuote() {
-    const author = document.getElementById('new-quote-author').value.trim();
-    const text = document.getElementById('new-quote-text').value.trim();
-    const modal = document.getElementById('quote-modal');
-    const location = modal.dataset.location;
-    
-    if (!text || !author) {
-        alert("Please enter both who said it and what they said!");
-        return;
-    }
-    
-    if (navigator.vibrate) navigator.vibrate(20);
-    
-    await saveQuoteToSheet(location, text, author);
-    
-    document.getElementById('new-quote-author').value = '';
-    document.getElementById('new-quote-text').value = '';
-    
-    renderQuotes(location);
-    triggerConfetti();
-}
-
-export function closeQuoteModal() {
-    const modal = document.getElementById('quote-modal');
-    modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
-}
-
-export function openManageQuotesModal() {
-    document.body.classList.add('no-scroll');
-    const modal = document.getElementById('manage-quotes-modal');
-    renderAdminQuotes();
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
-}
-
-export function closeManageQuotesModal() {
-    const modal = document.getElementById('manage-quotes-modal');
-    modal.classList.remove('active');
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
-}
-
-export function renderAdminQuotes() {
-    const list = document.getElementById('admin-quotes-list');
-    if (!state.quotesData || state.quotesData.length === 0) {
-        list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`;
-        return;
-    }
-    
-    list.innerHTML = state.quotesData.map((q, index) => `
-        <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);">
-            <div style="flex: 1; padding-right: 10px;">
-                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div>
-                <div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div>
-            </div>
-            <button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button>
-        </div>
-    `).reverse().join('');
-}
-// ----------------------------------------------------
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     document.body.classList.add('no-scroll');
