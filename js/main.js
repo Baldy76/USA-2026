@@ -1,5 +1,5 @@
-import { state, setVal, getVal, parseDateTime } from './store.js?v=6.0.0';
-import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.0.0';
+import { state, setVal, getVal, parseDateTime } from './store.js?v=6.1.0';
+import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js?v=6.1.0';
 
 import { 
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
@@ -9,8 +9,9 @@ import {
     openCompletionModal, closeCompletionModal, triggerConfetti, triggerEmojiRain,
     initWheel, spinRoulette, renderScoreboard, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor,
-    openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js?v=6.0.3';
+    openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes,
+    renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup
+} from './ui.js?v=6.1.0';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -49,6 +50,7 @@ function initPullToRefresh() {
                     renderItinerary(); 
                     renderTravelVault(); 
                     renderAccommodations(); 
+                    renderMeetupBoard();
                     setTimeout(() => { if(spinner) spinner.classList.remove('refreshing');}, 1000); 
                 });
             }
@@ -94,6 +96,11 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
+        // --- MEETUP BOARD BUTTONS ---
+        if (e.target.closest('#btn-open-meetup')) { openMeetupModal(); return; }
+        if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
+        if (e.target.closest('#btn-save-meetup')) { submitMeetup(); return; }
+
         const quoteBtn = e.target.closest('.open-quote-btn');
         if (quoteBtn) { openQuoteModal(quoteBtn.dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
@@ -104,12 +111,13 @@ function bindEvents() {
 
         const delQuoteBtn = e.target.closest('.delete-quote-btn');
         if (delQuoteBtn) {
-            if (confirm("Are you sure you want to permanently delete this quote?")) {
+            if (confirm("Are you sure you want to permanently delete this quote/announcement?")) {
                 const loc = delQuoteBtn.dataset.loc;
                 const quote = delQuoteBtn.dataset.quote;
                 const author = delQuoteBtn.dataset.author;
                 await deleteQuoteFromSheet(loc, quote, author);
                 renderAdminQuotes();
+                renderMeetupBoard();
             }
             return;
         }
@@ -136,7 +144,7 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            window.open(`https://www.google.com/maps/search/?api=1&query=...${lat},${lon}&travelmode=walking`, '_blank');
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
@@ -196,7 +204,7 @@ function bindEvents() {
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
             btn.innerText = "⏳ Syncing..."; await loadAllData(); 
-            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor();
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderUpNext(); renderAnchor(); renderMeetupBoard();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = "☁️ Sync Data"; }, 2000); return;
         }
         if (e.target.closest('#btn-update-version')) {
@@ -255,7 +263,7 @@ function bindEvents() {
     });
 }
 
-window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); };
+window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); };
 
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); 
@@ -273,7 +281,7 @@ async function bootApp() {
         console.error("Boot error, falling back to cache:", e);
     }
     
-    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor();
+    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); 
     
     updateTimeAndCountdown(); 
@@ -285,4 +293,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootApp); } else { bootApp(); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.0.3').catch(e => console.error(e));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=6.1.0').catch(e => console.error(e));
