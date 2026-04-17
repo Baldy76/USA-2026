@@ -7,8 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    
-    <link rel="stylesheet" href="style.css?v=2.1.98">
+    <link rel="stylesheet" href="style.css?v=2.2.0">
 </head>
 <body class="light-mode theme-home">
 
@@ -54,6 +53,11 @@
             </div>
             <button class="action-btn tips-btn" data-city="la" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 LA Top Tips</button>
             <div id="la-home-card"></div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <button class="action-btn open-quote-btn" data-location="la" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
+            </div>
+
             <div id="la-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div> 
             <div id="la-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="la-completed-list"></div></div>
         </section>
@@ -64,6 +68,11 @@
             </div>
             <button class="action-btn tips-btn" data-city="utah" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Utah Top Tips</button>
             <div id="utah-home-card"></div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <button class="action-btn open-quote-btn" data-location="utah" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
+            </div>
+
             <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
         </section>
@@ -204,6 +213,11 @@
             </div>
             <button class="action-btn tips-btn" data-city="vegas" style="margin-bottom: 24px; background: var(--card); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 6px 20px var(--shadow); font-weight: 900;">💡 Vegas Top Tips</button>
             <div id="vegas-home-card"></div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <button class="action-btn open-quote-btn" data-location="vegas" style="width: auto; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; background: var(--ios-grey); color: var(--text); box-shadow: none; border: 1px solid rgba(0,0,0,0.1);">💬 Funny Quotes</button>
+            </div>
+
             <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
         </section>
@@ -231,6 +245,13 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
+            
+            <div class="admin-card">
+                <h3>💬 Manage Quotes</h3>
+                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental or duplicate quotes from the vault.</div>
+                <button id="btn-manage-quotes" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Review & Delete Quotes</button>
+            </div>
+
             <div class="admin-card">
                 <h3>🔔 Smart Notifications</h3>
                 <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Get alerted 30 minutes before any scheduled activity.</div>
@@ -254,8 +275,31 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v2.1.88</div>
+            <div class="version-control">v2.2.0</div>
         </section>
+
+        <div id="quote-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column; height: 500px; max-height: 80vh;">
+                <button id="btn-close-quote" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
+                <h3 id="quote-modal-title" style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">💬 Quotes</h3>
+                
+                <div id="quote-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;"></div>
+                
+                <div style="background: var(--bg); padding: 15px; border-radius: 16px; border: 1px solid var(--ios-grey);">
+                    <input type="text" id="new-quote-author" placeholder="Who said it?" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; font-size: 14px;">
+                    <textarea id="new-quote-text" placeholder="What did they say?" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ios-grey); background: var(--card); color: var(--text); outline: none; resize: none; height: 60px; font-size: 14px;"></textarea>
+                    <button id="btn-save-quote" class="action-btn" style="margin: 10px 0 0; padding: 12px; font-size: 14px;">Add Quote</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="manage-quotes-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 24px; max-height: 85vh; display: flex; flex-direction: column;">
+                <button id="btn-close-manage-quotes" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
+                <h3 style="margin-top:0; text-align: center;">Manage Quotes</h3>
+                <div id="admin-quotes-list" style="flex: 1; overflow-y: auto; padding-right: 5px; margin-top: 10px;"></div>
+            </div>
+        </div>
 
         <div id="gate-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px;">
@@ -368,6 +412,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=2.1.98"></script>
+    <script type="module" src="js/main.js?v=2.2.0"></script>
 </body>
 </html>
