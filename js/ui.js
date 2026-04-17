@@ -1,5 +1,5 @@
-import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.0';
-import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.0';
+import { state, setVal, getVal, escapeHTML, parseDateTime } from './store.js?v=6.1.1';
+import { fetchWeather, syncToCloud, saveQuoteToSheet } from './api.js?v=6.1.1';
 
 export function applyTheme(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
@@ -80,7 +80,8 @@ export function updateTimeAndCountdown() {
             const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
             if (now < tripStart) {
-                const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+                const diff = tripStart - now;
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 if(progLabel) progLabel.innerText = "Countdown";
                 
                 updateFlap('cd-num', days.toString());
@@ -307,6 +308,7 @@ export async function setWeatherCity(target) {
                 return;
             }
             locName = "Local (Default LA)";
+            tz = 'America/Los_Angeles';
         }
         const data = await fetchWeather(lat, lon);
         renderWeatherDOM(data, locName, tz);
@@ -321,6 +323,7 @@ export function openWeatherModal() {
     setTimeout(() => document.getElementById('weather-modal').classList.add('active'), 10);
     setWeatherCity('la');
 }
+
 export function closeWeatherModal() { 
     document.getElementById('weather-modal').classList.remove('active'); 
     setTimeout(() => { document.getElementById('weather-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
@@ -333,7 +336,6 @@ function renderWeatherDOM(data, fallbackName, tz) {
         return `<div class="WTH-card" style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--ios-grey); align-items: center;"><span style="font-weight: 800; opacity: 0.7;">${dayName}</span><span style="font-size: 24px;">${getWeatherIcon(day.weather[0].icon)}</span><span style="font-weight: 900; font-size: 16px;">${Math.round(day.main.temp)}°C</span></div>`; 
     }).join('');
 
-    // --- DAYLIGHT TRACKER MAGIC ---
     const timeOpts = tz ? {hour: '2-digit', minute:'2-digit', timeZone: tz} : {hour: '2-digit', minute:'2-digit'};
     const sunriseStr = new Date(d.sys.sunrise * 1000).toLocaleTimeString([], timeOpts);
     const sunsetStr = new Date(d.sys.sunset * 1000).toLocaleTimeString([], timeOpts);
@@ -410,7 +412,9 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapLink = `https://www.google.com/maps/...${encodeURIComponent(addr || `${act} ${loc}`)}`;
+            const mapQuery = addr || `${act} ${loc}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -583,7 +587,7 @@ export function renderAccommodations() {
         
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const mapLink = `https://www.google.com/maps/...${encodeURIComponent(addr)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
             const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
@@ -983,7 +987,6 @@ export function renderAnchor() {
     }
 }
 
-// --- NEW MEETUP FUNCTIONS ---
 export function renderMeetupBoard() {
     const boardText = document.getElementById('meetup-text');
     const boardAuthor = document.getElementById('meetup-author');
