@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=6.5.0">
+    <link rel="stylesheet" href="style.css?v=6.5.1">
 </head>
 <body class="light-mode theme-home">
 
@@ -86,15 +86,15 @@
                 </div>
             </div>
 
-            <div class="admin-card" id="btn-open-meetup" style="background: linear-gradient(135deg, #ff2d55, #ffcc00); color: white; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.4); cursor: pointer; border: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div class="admin-card" id="btn-open-meetup" style="background: var(--card); color: var(--text); padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(175, 82, 222, 0.2); border: 2px solid #af52de; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: rgba(175, 82, 222, 0.1); color: #af52de; padding: 4px 10px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
                         📢 <span id="meetup-status-label">Live Bulletin</span>
                     </div>
-                    <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">Tap to post ↗</div>
+                    <div style="font-size: 11px; font-weight: 800; opacity: 0.5;">Tap to post ↗</div>
                 </div>
-                <div id="meetup-text" style="font-size: 18px; font-weight: 900; line-height: 1.4; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Loading announcements...</div>
-                <div id="meetup-author" style="font-size: 12px; font-weight: 800; opacity: 0.9; margin-top: 10px; text-align: right;"></div>
+                <div id="meetup-text" style="font-size: 18px; font-weight: 900; line-height: 1.4;">Loading announcements...</div>
+                <div id="meetup-author" style="font-size: 12px; font-weight: 800; opacity: 0.6; margin-top: 10px; text-align: right;"></div>
             </div>
             
             <div id="time-engine" style="margin-bottom: 20px;">
@@ -221,10 +221,16 @@
                     <button id="btnLight" class="segment active">☀️ Light</button><button id="btnDark" class="segment">🌙 Dark</button>
                 </div>
             </div>
+
+            <div class="admin-card">
+                <h3>📢 Manage Announcements</h3>
+                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Remove the current active bulletin from the Home screen.</div>
+                <button id="btn-clear-meetup" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none;">Clear Active Bulletin</button>
+            </div>
             
             <div class="admin-card">
                 <h3>💬 Manage Quotes</h3>
-                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental quotes or announcements.</div>
+                <div style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">Delete accidental quotes or announcements permanently.</div>
                 <button id="btn-manage-quotes" class="action-btn" style="background-color: var(--ios-grey); color: var(--text); box-shadow: none; transition: all 0.3s ease;">Review & Delete Quotes</button>
             </div>
 
@@ -250,7 +256,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v6.5.0</div>
+            <div class="version-control">v6.5.1</div>
         </section>
 
         <div id="meetup-modal" class="modal-overlay">
@@ -266,10 +272,7 @@
                         <span style="font-size: 14px; font-weight: 800; color: #ff3b30;">🚨 URGENT ALERT?</span>
                     </label>
 
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button id="btn-save-meetup" class="action-btn" style="flex: 2; margin: 0; padding: 12px; font-size: 14px; background: linear-gradient(135deg, #ff2d55, #ffcc00); box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);">Post</button>
-                        <button id="btn-clear-meetup" class="action-btn" style="flex: 1; margin: 0; padding: 12px; font-size: 14px; background: var(--ios-grey); color: var(--text); display: none;">Clear</button>
-                    </div>
+                    <button id="btn-save-meetup" class="action-btn" style="margin: 15px 0 0; padding: 12px; font-size: 14px; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 4px 15px rgba(175, 82, 222, 0.4);">Post Announcement</button>
                 </div>
             </div>
         </div>
@@ -398,6 +401,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=6.5.0"></script>
+    <script type="module" src="js/main.js?v=6.5.1"></script>
 </body>
 </html>
