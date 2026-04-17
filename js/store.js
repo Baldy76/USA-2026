@@ -27,11 +27,11 @@ export async function setVal(key, val) {
 export function escapeHTML(str) {
     if (!str) return '';
     return String(str)
-        .replace(/&/g, '&')
-        .replace(/</g, '<')
-        .replace(/>/g, '>')
-        .replace(/"/g, '"')
-        .replace(/'/g, ''');
+        .replace(/&/g, '\u0026')
+        .replace(/</g, '\u003C')
+        .replace(/>/g, '\u003E')
+        .replace(/"/g, '\u0022')
+        .replace(/'/g, '\u0027');
 }
 
 export function parseDateTime(dateStr, timeStr) {
