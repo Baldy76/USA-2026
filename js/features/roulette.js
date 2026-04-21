@@ -1,5 +1,6 @@
-import { escapeHTML } from '../store.js';
+import { escapeHTML, state } from '../store.js';
 import { triggerConfetti } from '../ui.js';
+import { saveQuoteToSheet } from '../api.js';
 
 export function initWheel() {
     const mode = document.getElementById('roulette-mode')?.value || 'bill';
@@ -42,15 +43,37 @@ export function renderScoreboard() {
     const board = document.getElementById('roulette-scoreboard');
     if (!board) return;
     
-    let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
-    let currentTallies = tallies[mode] || {};
+    let tallies = {};
+    let lastReset = 0;
+    const quotes = state.quotesData || [];
+    
+    // Find the timestamp of the last reset for this mode
+    quotes.forEach(q => {
+        if (q[0] === 'ROULETTE_RESET' && q[1] === mode) {
+            const ts = parseInt(q[2]);
+            if (ts > lastReset) lastReset = ts;
+        }
+    });
+    
+    // Calculate live scores from the cloud!
+    quotes.forEach(q => {
+        if (q[0] === 'ROULETTE' && q[1] === mode) {
+            const parts = (q[2] || '').split('|');
+            const winner = parts[0];
+            const ts = parseInt(parts[1] || '0');
+            if (ts >= lastReset && winner) {
+                tallies[winner] = (tallies[winner] || 0) + 1;
+            }
+        }
+    });
     
     let html = '';
-    for (const [name, count] of Object.entries(currentTallies)) {
+    for (const [name, count] of Object.entries(tallies)) {
         if (count > 0) {
             html += `<div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">${escapeHTML(name)} <span style="background: var(--card); color: var(--accent); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${count}</span></div>`;
         }
     }
+    
     if (html === '') {
         html = `<div style="font-size: 11px; opacity: 0.6; font-weight: 700; width: 100%;">No spins yet. Let's play!</div>`;
     }
@@ -95,6 +118,7 @@ export function spinRoulette() {
         clearInterval(tickInterval);
         if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
         btn.disabled = false; btn.style.opacity = '1';
+        
         if(resText) {
             resText.innerText = `${winner} Wins!`;
             resText.style.color = "#ffd60a"; 
@@ -102,12 +126,19 @@ export function spinRoulette() {
             setTimeout(() => resText.style.transform = 'scale(1)', 200);
         }
         
-        let tallies = JSON.parse(localStorage.getItem('rouletteTallies') || '{"bill":{},"driving":{}}');
-        if (!tallies[mode]) tallies[mode] = {};
-        tallies[mode][winner] = (tallies[mode][winner] || 0) + 1;
-        localStorage.setItem('rouletteTallies', JSON.stringify(tallies));
-        renderScoreboard();
+        // Save to Google Sheets silently!
+        saveQuoteToSheet('ROULETTE', mode, `${winner}|${Date.now()}`, true);
         
+        renderScoreboard();
         triggerConfetti();
     }, 4500);
+}
+
+export function resetRouletteScores() {
+    const mode = document.getElementById('roulette-mode')?.value || 'bill';
+    if(confirm("Clear scores for everyone?")) {
+        // Send a reset timestamp to the cloud!
+        saveQuoteToSheet('ROULETTE_RESET', mode, Date.now().toString(), true);
+        renderScoreboard();
+    }
 }
