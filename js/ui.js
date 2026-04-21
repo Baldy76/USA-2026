@@ -172,7 +172,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$?q=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -253,8 +253,8 @@ export function renderTravelVault() {
 
 export function renderAccommodations() { 
     if (!state.vaultAndStaysData) return;
-    const filter = localStorage.getItem('appUser') || 'All'; 
     let htmlLA = '', htmlUtah = '', htmlVegas = '';
+    const filter = localStorage.getItem('appUser') || 'All'; 
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
     
     state.vaultAndStaysData.forEach(cols => {
@@ -273,7 +273,8 @@ export function renderAccommodations() {
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
     });
-    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
+    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; 
+    const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
     const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
 }
 
@@ -390,13 +391,27 @@ export async function submitNewQuote() {
 }
 
 export function closeQuoteModal() { document.getElementById('quote-modal').classList.remove('active'); setTimeout(() => { document.getElementById('quote-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
-export function openManageQuotesModal() { document.body.classList.add('no-scroll'); renderAdminQuotes(); document.getElementById('manage-quotes-modal').style.display = 'flex'; setTimeout(() => document.getElementById('manage-quotes-modal').classList.add('active'), 10); }
+
+export function openManageQuotesModal() { 
+    document.body.classList.add('no-scroll'); 
+    renderAdminQuotes(); 
+    document.getElementById('manage-quotes-modal').style.display = 'flex'; 
+    setTimeout(() => document.getElementById('manage-quotes-modal').classList.add('active'), 10); 
+}
+
 export function closeManageQuotesModal() { document.getElementById('manage-quotes-modal').classList.remove('active'); setTimeout(() => { document.getElementById('manage-quotes-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 
 export function renderAdminQuotes() {
     const list = document.getElementById('admin-quotes-list');
-    if (!state.quotesData || state.quotesData.length === 0) { list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`; return; }
-    list.innerHTML = state.quotesData.map((q, index) => `<div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);"><div style="flex: 1; padding-right: 10px;"><div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div><div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div></div><button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button></div>`).reverse().join('');
+    
+    // FIX: Filter out internal Roulette logs and active meetups from the Quote manager!
+    const validQuotes = (state.quotesData || []).filter(q => {
+        const loc = (q[0] || '').toUpperCase();
+        return loc !== 'MEETUP' && loc !== 'ROULETTE' && loc !== 'ROULETTE_RESET';
+    });
+
+    if (validQuotes.length === 0) { list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`; return; }
+    list.innerHTML = validQuotes.map((q, index) => `<div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);"><div style="flex: 1; padding-right: 10px;"><div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div><div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div></div><button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button></div>`).reverse().join('');
 }
 
 export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
@@ -412,7 +427,9 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
 }
 
 export function closeStayModal() { document.getElementById('stay-modal').classList.remove('active'); setTimeout(() => { document.getElementById('stay-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+
 export function openGateModal(flightId) { document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(20); const modal = document.getElementById('gate-modal'); modal.dataset.flightid = flightId; document.getElementById('gate-input-term').value = ''; document.getElementById('gate-input-gate').value = ''; modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); setTimeout(() => document.getElementById('gate-input-term').focus(), 300); }
+
 export function closeGateModal() { document.getElementById('gate-modal').classList.remove('active'); setTimeout(() => { document.getElementById('gate-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 
 export function renderAnchor() {
