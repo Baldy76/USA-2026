@@ -8,7 +8,7 @@ import {
     triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
-} from './ui.js';
+} from './ui.js?v=7.1.1';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
 import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js';
@@ -72,7 +72,6 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-
         if (e.target.closest('#btn-close-urgent')) {
             document.getElementById('urgent-alert-overlay').style.display = 'none';
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
@@ -124,7 +123,7 @@ function bindEvents() {
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
             const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=$?q=${lat},${lon}&travelmode=walking`, '_blank');
             return;
         }
 
@@ -265,4 +264,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.1.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.1.1');
