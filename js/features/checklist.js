@@ -72,7 +72,6 @@ export async function toggleChecklistItem(id) {
         completed.push(id);
         if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
         
-        // Count total items for this user to see if we trigger confetti
         const filter = localStorage.getItem('appUser') || 'All';
         const leech = ['graeme', 'dawn', 'grace', 'leech'];
         const murray = ['david', 'sarah', 'bexs', 'murray'];
@@ -110,4 +109,13 @@ export function closeChecklistModal() {
     const modal = document.getElementById('checklist-modal');
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
+
+// NEW: Clear the checklist memory
+export async function resetChecklist() {
+    if(confirm("Uncheck all items and start over?")) {
+        await setVal('packedItems', []);
+        renderChecklist();
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
 }
