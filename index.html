@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=7.1.1">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-mode theme-home">
 
@@ -185,8 +185,9 @@
                 <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px; transition: transform 0.2s ease;">Tap to Spin!</div>
                 <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px;">Spin the Wheel</button>
                 <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; min-height: 26px;"></div>
-                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
             </div>
+
+            <button id="btn-open-checklist" class="action-btn" style="background: var(--card); color: var(--text); border: 2px solid var(--ios-grey); margin-bottom: 20px; font-weight: 900;">📋 Trip Checklist</button>
 
             <button id="btn-open-admin" class="action-btn" style="background: #1c1c1e; color: #ffffff; border: none; margin-bottom: 20px;">⚙️ Settings & Setup</button>
         </section>
@@ -259,8 +260,16 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.1.1</div>
+            <div class="version-control">v7.3.0</div>
         </section>
+
+        <div id="checklist-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column; height: 80vh;">
+                <button id="btn-close-checklist" class="mac-close-btn" style="position:absolute; top:-10px; right:-10px;">✕</button>
+                <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">📋 Trip Checklist</h3>
+                <div id="checklist-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
+            </div>
+        </div>
 
         <div id="meetup-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column;">
@@ -404,6 +413,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=7.2.0"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
