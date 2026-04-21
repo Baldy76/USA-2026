@@ -125,6 +125,20 @@ export function updateTimeAndCountdown() {
         const ukMatch = ukTimeStr.match(/(\d{1,2})[^\d](\d{2})/); if(ukMatch) { updateFlap('uk-hr', ukMatch[1].padStart(2, '0')); updateFlap('uk-min', ukMatch[2]); }
         const locMatch = localTimeStr.match(/(\d{1,2})[^\d](\d{2})/); if(locMatch) { updateFlap('loc-hr', locMatch[1].padStart(2, '0')); updateFlap('loc-min', locMatch[2]); }
         const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
+
+        // FEATURE 1: The "Safe to Call Home" Dot Indicator!
+        const ukHour = parseInt(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' }).format(now));
+        const dot = document.getElementById('uk-status-dot');
+        if (dot) {
+            // Between 8:00 AM and 9:59 PM in the UK, show Green!
+            if (ukHour >= 8 && ukHour < 22) {
+                dot.style.background = '#34c759'; 
+                dot.style.boxShadow = '0 0 6px #34c759';
+            } else {
+                dot.style.background = '#ff3b30'; 
+                dot.style.boxShadow = '0 0 6px #ff3b30';
+            }
+        }
     } catch(e) {}
     renderUpNext();
 }
@@ -199,7 +213,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `http://googleusercontent.com/maps.google.com/5{encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -440,7 +454,11 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     const modal = document.getElementById('stay-modal');
     document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl && imgUrl !== "undefined" && imgUrl !== "" ? `url('${imgUrl}')` : `none`;
     if(!imgUrl || imgUrl === "undefined" || imgUrl === "") document.getElementById('stay-modal-hero').style.backgroundColor = `var(--accent)`;
-    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`;
+    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; 
+    
+    // FEATURE 3: The Tap-To-Copy Address Badge!
+    document.getElementById('stay-modal-addr').innerHTML = `<div id="copy-addr-btn" data-addr="${escapeHTML(addr)}" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(0,0,0,0.05); border:1px solid var(--ios-grey); border-radius:8px; font-size:14px; font-weight:700; transition:all 0.2s;">📍 ${escapeHTML(addr)} <span style="opacity:0.5;">📋</span></div>`;
+    
     let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
