@@ -23,7 +23,7 @@ export function updateMetaThemeColor(pageId, isDark = document.body.classList.co
     const meta = document.getElementById('theme-meta'); if (meta) meta.content = metaColor;
 }
 
-function updateFlap(id, newVal) {
+export function updateFlap(id, newVal) {
     const el = document.getElementById(id); if (!el || el.innerText === newVal) return;
     el.classList.remove('flipping'); void el.offsetWidth; el.classList.add('flipping'); setTimeout(() => { el.innerText = newVal; }, 200);
 }
@@ -147,7 +147,7 @@ export function populateDropdown() {
 }
 
 export function updateFamilyFilter() { localStorage.setItem('appUser', document.getElementById('family-selector').value); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderUpNext(); }
-export function clearCustomFamilies() { if(confirm("Clear memory?")) { localStorage.removeItem('appUser'); window.location.reload(); } }
+export function clearCustomFamilies() { if(confirm("Remove all old saved names?")) { localStorage.removeItem('appUser'); window.location.reload(); } }
 
 export async function renderItinerary() {
     if (!state.itineraryData) return;
@@ -172,7 +172,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/...?q=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/dir/?api=1&destination=$?q=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -220,71 +220,148 @@ export async function renderItinerary() {
 
 export function renderTravelVault() { 
     if (!state.vaultAndStaysData) return;
-    const display = document.getElementById('flights-vault-display');
-    let html = ''; const sortedData = [...state.vaultAndStaysData].sort((a,b) => parseDateTime(a[2]||'', null) - parseDateTime(b[2]||'', null));
+    const display = document.getElementById('flights-vault-display'); const emptyState = document.getElementById('empty-vault-state');
+    if(!display) return; let html = ''; let hasData = false; 
+    
+    const sortedData = [...state.vaultAndStaysData].sort((a,b) => (parseDateTime(a[2]||'', null) || Number.MAX_SAFE_INTEGER) - (parseDateTime(b[2]||'', null) || Number.MAX_SAFE_INTEGER));
+    const filter = localStorage.getItem('appUser') || 'All'; const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    
     sortedData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
-        const type = (cols[1] || '').trim().toLowerCase(); 
-        if (type === 'flight' || type === 'car') {
-            const date = escapeHTML(cols[2]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || '');
-            const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); 
-            const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : escapeHTML(cols[8]?.trim() || '');
-            html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding:20px; border-radius:24px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">✈️ ${type.toUpperCase()} • ${date}</div><strong style="font-size: 22px; display:block; margin: 10px 0;">${escapeHTML(cols[3])} → ${escapeHTML(cols[4])}</strong><div style="font-weight: 800; opacity:0.8;">${airline} ${fnum}</div></div><div class="flip-back" style="padding:20px;"><div style="font-size: 11px; font-weight: 800; opacity: 0.5;">TERMINAL / GATE</div><div style="font-size: 20px; font-weight: 900; color: #ffd60a; margin: 10px 0;">${activeTerm || 'Check Board'}</div><button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="font-size:11px; padding:8px;">✏️ Edit Gate</button></div></div></div>`;
+        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        
+        if (isMatch) {
+            if (type === 'flight') {
+                hasData = true; const date = escapeHTML(cols[2]?.trim() || ''); const dep = escapeHTML(cols[3]?.trim() || ''); const arr = escapeHTML(cols[4]?.trim() || ''); const airline = escapeHTML(cols[5]?.trim().toUpperCase() || ''); const fnum = escapeHTML(cols[6]?.trim() || ''); const ftime = escapeHTML(cols[7]?.trim() || ''); 
+                const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
+                const flLink = `https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}`;
+
+                html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none;"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ Flight • ${date}</div><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div></div><div style="display: flex; justify-content: space-between; align-items: flex-end;"><strong style="font-size: 22px; font-weight: 900;">${dep} → ${arr}</strong><div style="text-align: right;"><div style="color: #bae6fd; font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ftime}</div></div></div><div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Boarding Pass ⤵</div></div><div class="flip-back"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;"><span>Terminal / Gate</span><span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;"><div id="gate-text-${flightId}" style="font-size: 18px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div><button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">✏️ Edit</button></div><div style="font-size: 12px; font-weight: 700; margin-bottom: 15px;"><a href="${flLink}" target="_blank" style="color: white; text-decoration: underline;">Track Flight ↗</a></div><div class="barcode" style="background: repeating-linear-gradient(90deg, white, white 2px, transparent 2px, transparent 4px, white 4px, white 6px, transparent 6px, transparent 10px); height: 30px; opacity: 0.8; border-radius: 4px;"></div></div></div></div>`;
+            } else if (type === 'car') {
+                hasData = true; const pdate = escapeHTML(cols[2]?.trim()||''); const company = escapeHTML(cols[4]?.trim()||''); const ploc = escapeHTML(cols[5]?.trim()||'');
+                html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #34c759, #28a745); color: white; border: none;"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🚗 Car Rental • ${pdate}</div><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div></div><div style="display: flex; justify-content: space-between; align-items: flex-end;"><strong style="font-size: 22px; font-weight: 900;">${company}</strong><div style="text-align: right;"><div style="color: #bbf7d0; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ploc}</div></div></div><div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Details ⤵</div></div><div class="flip-back car-back" style="background: linear-gradient(135deg, #34c759, #28a745);"><div style="font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; justify-content: space-between;"><span>Booking Details</span><span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span></div><div style="margin-bottom: 10px;"><div style="font-size: 11px; opacity: 0.8; font-weight: 700;">PICK-UP</div><div style="font-size: 14px; font-weight: 900;">${ploc}</div><div style="font-size: 12px; opacity: 0.9;">${pdate} @ ${escapeHTML(cols[6]?.trim() || '')}</div></div><div><div style="font-size: 11px; opacity: 0.8; font-weight: 700;">DROP-OFF</div><div style="font-size: 14px; font-weight: 900;">${escapeHTML(cols[8]?.trim())||ploc}</div><div style="font-size: 12px; opacity: 0.9;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</div></div></div></div></div>`;
+            }
         }
-    }); display.innerHTML = html; 
+    }); display.innerHTML = html; if(emptyState) emptyState.style.display = hasData ? 'none' : 'flex';
 }
 
 export function renderAccommodations() { 
     if (!state.vaultAndStaysData) return;
+    const filter = localStorage.getItem('appUser') || 'All'; 
     let htmlLA = '', htmlUtah = '', htmlVegas = '';
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    
     state.vaultAndStaysData.forEach(cols => {
         if(!cols || cols.length < 2) return; const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
-        if (type === 'stay') {
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+        
+        if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="https://www.google.com/maps/...?q=${encodeURIComponent(addr)}" data-link="${escapeHTML(cols[6]||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
     });
-    document.getElementById('la-home-card').innerHTML = htmlLA; document.getElementById('utah-home-card').innerHTML = htmlUtah; document.getElementById('vegas-home-card').innerHTML = htmlVegas;
+    const laCard = document.getElementById('la-home-card'); if(laCard) laCard.innerHTML = htmlLA; const utahCard = document.getElementById('utah-home-card'); if(utahCard) utahCard.innerHTML = htmlUtah;
+    const vegasCard = document.getElementById('vegas-home-card'); if(vegasCard) vegasCard.innerHTML = htmlVegas;
+}
+
+export async function handleFileUpload(event) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader(); reader.onload = async (e) => {
+        let docs = await getVal('offline_docs') || []; docs.push({ id: Date.now().toString(), name: file.name, type: file.type, data: e.target.result });
+        await setVal('offline_docs', docs); renderWallet();
+    }; reader.readAsDataURL(file);
 }
 
 export async function renderWallet() {
     const docs = await getVal('offline_docs') || []; const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
-    let html = docs.map(doc => `<div class="wallet-item" style="background: ${doc.type.startsWith('image/')?`url(${doc.data})`:'var(--ios-grey)'}; background-size:cover;"><button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0;"></a></div>`).join('');
-    gallery.innerHTML = html || '<div style="grid-column: span 2; opacity:0.5; text-align:center;">No docs.</div>';
+    if(docs.length === 0) { gallery.innerHTML = '<div style="grid-column: span 2; opacity:0.5; text-align:center;">No docs yet.</div>'; return; }
+    gallery.innerHTML = docs.map(doc => `<div class="wallet-item" style="background: ${doc.type.startsWith('image/') ? `url(${doc.data})` : 'var(--ios-grey)'}; background-size: cover;">${doc.type.startsWith('image/') ? '' : '📄'}<button class="delete-doc-btn" data-id="${doc.id}">×</button><a href="${doc.data}" download="${doc.name}" style="position:absolute; inset:0; z-index:1;"></a></div>`).join('');
 }
 
-export function openCompletionModal(taskId, taskName) { document.body.classList.add('no-scroll'); document.getElementById('modal-task-name').innerText = taskName; document.getElementById('completion-modal').dataset.activeTaskId = taskId; document.getElementById('completion-modal').style.display = 'flex'; setTimeout(() => document.getElementById('completion-modal').classList.add('active'), 10); }
-export function closeCompletionModal() { document.getElementById('completion-modal').classList.remove('active'); setTimeout(() => { document.getElementById('completion-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+export function openCompletionModal(taskId, taskName) {
+    document.body.classList.add('no-scroll');
+    document.getElementById('modal-task-name').innerText = taskName; document.getElementById('modal-checkbox').checked = false;
+    document.getElementById('btn-confirm-modal').style.opacity = '0.5'; document.getElementById('btn-confirm-modal').style.pointerEvents = 'none';
+    const modal = document.getElementById('completion-modal'); modal.dataset.activeTaskId = taskId;
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
+}
+export function closeCompletionModal() {
+    const modal = document.getElementById('completion-modal'); modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
 
-export function triggerConfetti() { if(navigator.vibrate) navigator.vibrate([50, 50, 50]); const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a']; for(let i=0; i<60; i++) { const conf = document.createElement('div'); conf.className = 'particle confetti'; conf.style.background = colors[Math.floor(Math.random() * colors.length)]; conf.style.left = Math.random() * 100 + 'vw'; document.body.appendChild(conf); setTimeout(() => conf.remove(), 4000); } }
+export function triggerConfetti() {
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    const colors = ['#007aff', '#ff9500', '#ff3b30', '#af52de', '#34c759', '#ffd60a'];
+    for(let i=0; i<60; i++) {
+        const conf = document.createElement('div'); conf.className = 'particle confetti';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.left = Math.random() * 100 + 'vw'; conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        conf.style.animationDelay = (Math.random() * 0.5) + 's'; document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
+    }
+}
 
-export function triggerEmojiRain(city) { if(navigator.vibrate) navigator.vibrate([30, 30]); const emojis = { 'la': ['🌴', '☀️', '🎬'], 'utah': ['⛰️', '🤠', '🏜️'], 'vegas': ['🎲', '🎰', '💸'] }; const set = emojis[city] || ['✨']; for(let i=0; i<30; i++) { const em = document.createElement('div'); em.className = 'particle emoji-drop'; em.innerText = set[Math.floor(Math.random() * set.length)]; em.style.left = Math.random() * 100 + 'vw'; document.body.appendChild(em); setTimeout(() => em.remove(), 4000); } }
+export function triggerEmojiRain(city) {
+    if(navigator.vibrate) navigator.vibrate([30, 30]);
+    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
+    const set = emojis[city] || ['✨'];
+    for(let i=0; i<30; i++) {
+        const em = document.createElement('div'); em.className = 'particle emoji-drop';
+        em.innerText = set[Math.floor(Math.random() * set.length)]; em.style.left = Math.random() * 100 + 'vw';
+        em.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(em);
+        setTimeout(() => em.remove(), 4000);
+    }
+}
 
 export function openTipsModal(city) {
-    document.body.classList.add('no-scroll');
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
     const titles = { 'la': 'Los Angeles', 'utah': 'Utah', 'vegas': 'Las Vegas' };
-    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[city] || city} Tips`;
-    const modal = document.getElementById('tips-modal');
-    modal.dataset.city = city;
-    renderTips('eating');
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    document.getElementById('tips-modal-title').innerHTML = `💡 ${titles[city.toLowerCase()]} Tips`;
+    document.querySelectorAll('.tips-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'eating'); });
+    const modal = document.getElementById('tips-modal'); modal.dataset.city = city.toLowerCase();
+    renderTips('eating'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 export function closeTipsModal() { document.getElementById('tips-modal').classList.remove('active'); setTimeout(() => { document.getElementById('tips-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 
 export function renderTips(category) {
-    const city = document.getElementById('tips-modal').dataset.city;
-    const filtered = (state.vaultAndStaysData || []).filter(row => row[1]?.toLowerCase() === 'tip' && row[2]?.toLowerCase().includes(city) && row[3]?.toLowerCase() === category);
-    
-    // NEW: TWEAKED FONT WEIGHT AND WHITE-SPACE PRE-WRAP SO LINE BREAKS SHOW UP!
-    document.getElementById('tips-content').innerHTML = filtered.map(row => `
-        <div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
-            <div style="font-size: 15px; font-weight: 500; line-height: 1.6; white-space: pre-wrap; color: var(--text);">${escapeHTML(row[4])}</div>
-            <div style="font-size: 11px; font-weight: 800; opacity:0.6; margin-top: 10px;">👤 ${escapeHTML(row[0])}</div>
-        </div>
-    `).join('') || '<div class="empty-state">No tips yet.</div>';
+    if (!state.vaultAndStaysData) return;
+    const currentTipsCity = document.getElementById('tips-modal').dataset.city;
+    const filter = localStorage.getItem('appUser') || 'All';
+    const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+
+    let html = '';
+    state.vaultAndStaysData.forEach(cols => {
+        if(!cols || cols.length < 5) return; 
+        const fam = (cols[0] || '').trim(); const type = (cols[1] || '').trim().toLowerCase(); 
+        const city = (cols[2] || '').trim().toLowerCase(); const cat = (cols[3] || '').trim().toLowerCase(); const details = (cols[4] || '').trim();
+        
+        let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
+        if (filter === 'All' || famL === 'everyone') isMatch = true; 
+        else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true; 
+        else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true; 
+        else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
+
+        if (type === 'tip' && city.includes(currentTipsCity) && cat === category && isMatch) {
+            const badge = fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px; font-weight: 800; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(fam)}</span>` : '';
+            html += `<div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);"><div style="font-size: 15px; font-weight: 500; line-height: 1.6; white-space: pre-wrap; color: var(--text);">${escapeHTML(details)}</div><div style="font-size: 11px; font-weight: 800; opacity:0.6; margin-top: 10px;">👤 ${escapeHTML(fam)}</div></div>`;
+        }
+    }); 
+    document.getElementById('tips-content').innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
 
 export function openQuoteModal(location) {
@@ -296,31 +373,55 @@ export function openQuoteModal(location) {
 }
 
 export function renderQuotes(location) {
+    const list = document.getElementById('quote-list');
     const filtered = (state.quotesData || []).filter(q => q[0] && q[0].toLowerCase() === location.toLowerCase());
-    
-    // NEW: ADDED WHITE SPACE PRE-WRAP TO QUOTES AS WELL!
-    document.getElementById('quote-list').innerHTML = filtered.map(q => `
-        <div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);">
-            <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 16px; line-height: 1.6; margin-bottom: 12px; white-space: pre-wrap; color: var(--text);">"${escapeHTML(q[1])}"</div>
-            <div style="text-align: right; font-size: 11px; font-weight: 800; opacity: 0.6; text-transform: uppercase;">— ${escapeHTML(q[2])}</div>
-        </div>
-    `).reverse().join('') || '<div class="empty-state">No quotes yet.</div>';
+    if (filtered.length === 0) { list.innerHTML = `<div class="empty-state" style="padding: 20px;"><div class="empty-text">No quotes yet.</div></div>`; return; }
+    list.innerHTML = filtered.map(q => `<div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--ios-grey);"><div style="font-family: 'Georgia', serif; font-style: italic; font-size: 16px; line-height: 1.6; margin-bottom: 12px; white-space: pre-wrap; color: var(--text);">"${escapeHTML(q[1])}"</div><div style="text-align: right; font-size: 11px; font-weight: 800; opacity: 0.6; text-transform: uppercase;">— ${escapeHTML(q[2])}</div></div>`).reverse().join('');
 }
 
 export async function submitNewQuote() {
     const author = document.getElementById('new-quote-author').value.trim(); const text = document.getElementById('new-quote-text').value.trim();
     const loc = document.getElementById('quote-modal').dataset.location;
-    if (!text || !author) { alert("Fill all fields!"); return; }
+    if (!text || !author) { alert("Please enter both who said it and what they said!"); return; }
+    if (navigator.vibrate) navigator.vibrate(20);
     await saveQuoteToSheet(loc, text, author);
-    document.getElementById('new-quote-text').value = ''; renderQuotes(loc); triggerConfetti();
+    document.getElementById('new-quote-author').value = ''; document.getElementById('new-quote-text').value = '';
+    renderQuotes(loc); triggerConfetti();
 }
 
 export function closeQuoteModal() { document.getElementById('quote-modal').classList.remove('active'); setTimeout(() => { document.getElementById('quote-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
-export function openManageQuotesModal() { document.body.classList.add('no-scroll'); document.getElementById('manage-quotes-modal').style.display = 'flex'; renderAdminQuotes(); setTimeout(() => document.getElementById('manage-quotes-modal').classList.add('active'), 10); }
-export function renderAdminQuotes() { document.getElementById('admin-quotes-list').innerHTML = (state.quotesData || []).map(q => `<div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);"><div style="flex: 1;"><div style="font-size: 14px; font-weight: 700;">"${escapeHTML(q[1])}"</div><div style="font-size: 11px; opacity: 0.6;">— ${escapeHTML(q[2])} (${escapeHTML(q[0])})</div></div><button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px;">🗑️</button></div>`).reverse().join('') || 'No quotes.'; }
+export function openManageQuotesModal() { document.body.classList.add('no-scroll'); renderAdminQuotes(); document.getElementById('manage-quotes-modal').style.display = 'flex'; setTimeout(() => document.getElementById('manage-quotes-modal').classList.add('active'), 10); }
 export function closeManageQuotesModal() { document.getElementById('manage-quotes-modal').classList.remove('active'); setTimeout(() => { document.getElementById('manage-quotes-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 
-export function openStayModal(fam, addr, mapLink, listLink, imgUrl) { document.body.classList.add('no-scroll'); const modal = document.getElementById('stay-modal'); document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl ? `url('${imgUrl}')` : `none`; document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`; document.getElementById('stay-modal-buttons').innerHTML = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1;">🚗 Drive</button>${listLink?`<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`:''}`; modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+export function renderAdminQuotes() {
+    const list = document.getElementById('admin-quotes-list');
+    if (!state.quotesData || state.quotesData.length === 0) { list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`; return; }
+    list.innerHTML = state.quotesData.map((q, index) => `<div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);"><div style="flex: 1; padding-right: 10px;"><div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div><div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div></div><button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button></div>`).reverse().join('');
+}
+
+export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('stay-modal');
+    document.getElementById('stay-modal-hero').style.backgroundImage = imgUrl && imgUrl !== "undefined" && imgUrl !== "" ? `url('${imgUrl}')` : `none`;
+    if(!imgUrl || imgUrl === "undefined" || imgUrl === "") document.getElementById('stay-modal-hero').style.backgroundColor = `var(--accent)`;
+    document.getElementById('stay-modal-title').innerText = `🏡 ${fam} Stay`; document.getElementById('stay-modal-addr').innerText = `📍 ${addr}`;
+    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
+    document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+}
+
 export function closeStayModal() { document.getElementById('stay-modal').classList.remove('active'); setTimeout(() => { document.getElementById('stay-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
-export function openGateModal(flightId) { document.body.classList.add('no-scroll'); const modal = document.getElementById('gate-modal'); modal.dataset.flightid = flightId; modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+export function openGateModal(flightId) { document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(20); const modal = document.getElementById('gate-modal'); modal.dataset.flightid = flightId; document.getElementById('gate-input-term').value = ''; document.getElementById('gate-input-gate').value = ''; modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); setTimeout(() => document.getElementById('gate-input-term').focus(), 300); }
 export function closeGateModal() { document.getElementById('gate-modal').classList.remove('active'); setTimeout(() => { document.getElementById('gate-modal').style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+
+export function renderAnchor() {
+    const container = document.getElementById('anchor-container'); if (!container) return;
+    const saved = localStorage.getItem('carAnchor');
+    if (saved) {
+        const data = JSON.parse(saved);
+        container.innerHTML = `<div class="admin-card pulse-btn" style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #34c759, #28a745); border:none; box-shadow: 0 8px 24px rgba(52, 199, 89, 0.4); display: flex; align-items: center; justify-content: space-between; border-radius: 50px;"><div id="btn-find-car" data-lat="${data.lat}" data-lon="${data.lon}" style="cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1;"><span style="font-size: 20px;">🧭</span><span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: 0.5px;">Dude where's my car?</span></div><button id="btn-clear-anchor" style="background: #ff3b30; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3); z-index: 10; margin-left: 10px;">Found it</button></div>`;
+    } else {
+        container.innerHTML = `<div class="admin-card" style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #0ea5e9, #2563eb); border:none; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3); text-align: center; border-radius: 50px;"><div id="btn-drop-anchor" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;"><span style="font-size: 20px;">⚓🚗</span><span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: 0.5px;">Drop Car Anchor</span></div></div>`;
+    }
+}
