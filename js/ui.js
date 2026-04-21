@@ -53,7 +53,10 @@ export function updateTimeAndCountdown() {
 
     const savedStart = localStorage.getItem('tripStartDate'); const savedEnd = localStorage.getItem('tripEndDate');
     const progLabel = document.getElementById('trip-prog-label'); const progVal = document.getElementById('trip-prog-val'); const progBar = document.getElementById('trip-prog-bar');
-    const cdDisplay = document.getElementById('countdown-display'); const iconStart = document.getElementById('prog-icon-start'); const iconEnd = document.getElementById('prog-icon-end');
+    const cdDisplay = document.getElementById('countdown-display'); 
+    const iconStart = document.getElementById('prog-icon-start'); 
+    const iconEnd = document.getElementById('prog-icon-end');
+    const flyingPlane = document.getElementById('flying-plane');
     
     if (savedStart) {
         const tripStart = new Date(savedStart); tripStart.setHours(0,0,0,0);
@@ -62,28 +65,53 @@ export function updateTimeAndCountdown() {
         const inputEnd = document.getElementById('trip-end-date'); if(inputEnd) inputEnd.value = savedEnd || '';
 
         if (now < tripStart) {
-            if(iconStart) iconStart.innerText = '🏠'; if(iconEnd) iconEnd.innerText = '✈️';
-            const days = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+            if(iconStart) iconStart.innerText = '🏠'; 
+            if(iconEnd) iconEnd.innerText = '🇺🇸';
+            if(flyingPlane) { flyingPlane.innerText = '✈️'; flyingPlane.style.transform = 'scaleX(1)'; flyingPlane.style.display = 'block'; }
+            
+            const diff = tripStart - now;
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
             if(progLabel) progLabel.innerText = "Countdown";
+            
             updateFlap('cd-num', days.toString()); if(cdDisplay) cdDisplay.style.display = 'flex';
+            
+            // THE MILESTONE CONFETTI LOGIC
+            const msKey = `milestone_${days}`;
+            if ([100, 50, 30, 10, 5, 1].includes(days) && !localStorage.getItem(msKey)) {
+                localStorage.setItem(msKey, 'true');
+                setTimeout(triggerConfetti, 1500);
+            }
+
             if(progBar) { 
-                if (days > 100) { progBar.style.width = '0%'; if(progVal) progVal.innerText = "Waiting for 100 Day mark..."; } 
-                else { const percent = 100 - days; progBar.style.width = `${percent}%`; progBar.style.background = '#34c759'; if(progVal) progVal.innerText = `100-Day Milestone: ${percent}% Complete`; }
+                if (days > 100) { 
+                    progBar.style.width = '0%'; if(progVal) progVal.innerText = "Waiting for 100 Day mark..."; 
+                } else { 
+                    const percent = 100 - days; progBar.style.width = `${percent}%`; progBar.style.background = '#34c759'; 
+                    if(progVal) progVal.innerText = `100-Day Milestone: ${percent}% Complete`; 
+                }
             }
         } else if (now >= tripStart && now <= tripEnd) {
-            if(iconStart) iconStart.innerText = '☀️'; if(iconEnd) iconEnd.innerText = '🏠';
+            if(iconStart) iconStart.innerText = '🇺🇸'; 
+            if(iconEnd) iconEnd.innerText = '🏠';
+            if(flyingPlane) { flyingPlane.innerText = '✈️'; flyingPlane.style.transform = 'scaleX(-1)'; flyingPlane.style.display = 'block'; }
+            
             const totalDuration = tripEnd - tripStart; const elapsed = now - tripStart;
             let percent = (elapsed / totalDuration) * 100; if(percent > 100) percent = 100;
             const dayNum = Math.floor(elapsed / (1000 * 60 * 60 * 24)) + 1; const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
+            
             if(progLabel) progLabel.innerText = "Trip Progress"; if(progVal) progVal.innerText = `Day ${dayNum} of ${totalDays}`;
             if(cdDisplay) cdDisplay.style.display = 'none'; if(progBar) { progBar.style.width = `${percent}%`; progBar.style.background = '#ffd60a'; }
         } else {
-            if(iconStart) iconStart.innerText = '✈️'; if(iconEnd) iconEnd.innerText = '🏠';
+            if(iconStart) iconStart.innerText = '🏠'; 
+            if(iconEnd) iconEnd.innerText = '🇺🇸';
+            if(flyingPlane) flyingPlane.style.display = 'none';
             if(progLabel) progLabel.innerText = "Trip Complete"; if(progVal) progVal.innerText = `Hope you had fun!`;
             if(cdDisplay) cdDisplay.style.display = 'none'; if(progBar) { progBar.style.width = `100%`; progBar.style.background = '#34c759'; }
         }
     } else {
-        if(iconStart) iconStart.innerText = '🏠'; if(iconEnd) iconEnd.innerText = '✈️';
+        if(iconStart) iconStart.innerText = '🏠'; 
+        if(iconEnd) iconEnd.innerText = '✈️';
+        if(flyingPlane) flyingPlane.style.display = 'none';
         if(progLabel) progLabel.innerText = "No Trip Date Set"; if(progVal) progVal.innerText = "Go to Settings";
         if(cdDisplay) cdDisplay.style.display = 'none'; if(progBar) progBar.style.width = '0%';
     }
@@ -172,7 +200,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/...?q=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -403,13 +431,7 @@ export function closeManageQuotesModal() { document.getElementById('manage-quote
 
 export function renderAdminQuotes() {
     const list = document.getElementById('admin-quotes-list');
-    
-    // FIX: Filter out internal Roulette logs and active meetups from the Quote manager!
-    const validQuotes = (state.quotesData || []).filter(q => {
-        const loc = (q[0] || '').toUpperCase();
-        return loc !== 'MEETUP' && loc !== 'ROULETTE' && loc !== 'ROULETTE_RESET';
-    });
-
+    const validQuotes = (state.quotesData || []).filter(q => { const loc = (q[0] || '').toUpperCase(); return loc !== 'MEETUP' && loc !== 'ROULETTE' && loc !== 'ROULETTE_RESET'; });
     if (validQuotes.length === 0) { list.innerHTML = `<div class="empty-state" style="padding: 20px;">No quotes to manage.</div>`; return; }
     list.innerHTML = validQuotes.map((q, index) => `<div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--ios-grey);"><div style="flex: 1; padding-right: 10px;"><div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">"${escapeHTML(q[1])}"</div><div style="font-size: 11px; opacity: 0.6; color: var(--text);">— ${escapeHTML(q[2])} (${escapeHTML(q[0]).toUpperCase()})</div></div><button class="delete-quote-btn" data-loc="${escapeHTML(q[0])}" data-quote="${escapeHTML(q[1])}" data-author="${escapeHTML(q[2])}" style="background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 10px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);">🗑️</button></div>`).reverse().join('');
 }
