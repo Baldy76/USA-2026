@@ -14,14 +14,24 @@ import { convertCurrency, setTip, calculateTip } from './features/tools.js';
 import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js';
 import { initWheel, spinRoulette, renderScoreboard, resetRouletteScores } from './features/roulette.js';
 import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js';
-
-// UPDATE: Imported resetChecklist
 import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChecklist } from './features/checklist.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
 export function openTab(pageId) {
     if (navigator.vibrate) navigator.vibrate(40); 
+    
+    // NEW FIX: The Modal Sweep! Close any open popups when changing tabs.
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        if (modal.style.display === 'flex' || modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            setTimeout(() => { 
+                modal.style.display = 'none'; 
+                document.body.classList.remove('no-scroll'); 
+            }, 300);
+        }
+    });
+
     document.querySelectorAll('.tab-content').forEach(tab => { tab.className = 'page tab-content'; });
     const targetPage = document.getElementById(pageId); if(targetPage) targetPage.classList.add('active', 'fade-pop');
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -76,9 +86,7 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        // NEW: Reset Checklist Event
         if (e.target.closest('#btn-reset-checklist')) { resetChecklist(); return; }
-        
         if (e.target.closest('#btn-open-checklist')) { openChecklistModal(); return; }
         if (e.target.closest('#btn-close-checklist')) { closeChecklistModal(); return; }
         if (e.target.closest('.checklist-item')) { toggleChecklistItem(e.target.closest('.checklist-item').dataset.id); return; }
@@ -278,4 +286,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.3.2');
