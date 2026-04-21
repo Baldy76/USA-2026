@@ -15,6 +15,9 @@ import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } 
 import { initWheel, spinRoulette, renderScoreboard, resetRouletteScores } from './features/roulette.js';
 import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js';
 
+// NEW: IMPORT CHECKLIST
+import { openChecklistModal, closeChecklistModal, toggleChecklistItem } from './features/checklist.js';
+
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
 export function openTab(pageId) {
@@ -73,6 +76,10 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+        // NEW: CHECKLIST EVENTS
+        if (e.target.closest('#btn-open-checklist')) { openChecklistModal(); return; }
+        if (e.target.closest('#btn-close-checklist')) { closeChecklistModal(); return; }
+        if (e.target.closest('.checklist-item')) { toggleChecklistItem(e.target.closest('.checklist-item').dataset.id); return; }
 
         if (e.target.closest('#btn-close-urgent')) {
             document.getElementById('urgent-alert-overlay').style.display = 'none';
@@ -269,4 +276,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.2.0');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
