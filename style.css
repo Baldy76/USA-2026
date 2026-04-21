@@ -37,16 +37,16 @@ body {
 body.theme-home { background: var(--bg); }
 
 /* Sunshine Yellow for LA */
-body.theme-la { background: linear-gradient(to bottom, #ffe066 0%, #fff4cc 40%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-la { background: linear-gradient(to bottom, #7a6a00 0%, #332c00 40%, #000000 100%); background-attachment: fixed; }
+body.theme-la { background: linear-gradient(to bottom, #ffe066 0%, #fff4cc 60%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-la { background: linear-gradient(to bottom, #7a6a00 0%, #332c00 60%, #000000 100%); background-attachment: fixed; }
 
 /* Red Rock Orange for Utah */
-body.theme-utah { background: linear-gradient(to bottom, #ffaa80 0%, #ffebd9 40%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-utah { background: linear-gradient(to bottom, #873e23 0%, #3a1608 40%, #000000 100%); background-attachment: fixed; }
+body.theme-utah { background: linear-gradient(to bottom, #ffaa80 0%, #ffebd9 60%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-utah { background: linear-gradient(to bottom, #873e23 0%, #3a1608 60%, #000000 100%); background-attachment: fixed; }
 
 /* Neon Purple for Vegas */
-body.theme-vegas { background: linear-gradient(to bottom, #d8b3ff 0%, #f2e6ff 40%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-vegas { background: linear-gradient(to bottom, #4a148c 0%, #1a0033 40%, #000000 100%); background-attachment: fixed; }
+body.theme-vegas { background: linear-gradient(to bottom, #d8b3ff 0%, #f2e6ff 60%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-vegas { background: linear-gradient(to bottom, #4a148c 0%, #1a0033 60%, #000000 100%); background-attachment: fixed; }
 
 /* --- LAYOUT --- */
 main#content { 
