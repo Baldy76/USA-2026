@@ -71,10 +71,18 @@ export async function syncToCloud(action, payload) {
     try { fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, payload }) }); } catch (e) {}
 }
 
-export async function saveQuoteToSheet(location, quote, author) {
-    if (!state.quotesData) state.quotesData = []; state.quotesData.push([location, quote, author]); await setVal('offlineQuotes', state.quotesData);
-    if (!navigator.onLine || !APPS_SCRIPT_URL) { alert("Offline: Saved locally only."); return; }
-    try { fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'addQuote', payload: { location, quote, author } }) }); } catch (e) {}
+export async function saveQuoteToSheet(location, quote, author, silent = false) {
+    if (!state.quotesData) state.quotesData = []; 
+    state.quotesData.push([location, quote, author]); 
+    await setVal('offlineQuotes', state.quotesData);
+    
+    if (!navigator.onLine || !APPS_SCRIPT_URL) { 
+        if(!silent) alert("Offline: Saved locally only."); 
+        return; 
+    }
+    try { 
+        fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'addQuote', payload: { location, quote, author } }) }); 
+    } catch (e) {}
 }
 
 export async function deleteQuoteFromSheet(location, quote, author) {
