@@ -21,7 +21,6 @@ const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 export function openTab(pageId) {
     if (navigator.vibrate) navigator.vibrate(40); 
     
-    // NEW FIX: The Modal Sweep! Close any open popups when changing tabs.
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         if (modal.style.display === 'flex' || modal.classList.contains('active')) {
             modal.classList.remove('active');
@@ -86,6 +85,32 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+        
+        // FEATURE 3: The Tap-To-Copy action listener!
+        if (e.target.closest('#copy-addr-btn')) {
+            const btn = e.target.closest('#copy-addr-btn');
+            const addr = btn.dataset.addr;
+            if(navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(addr);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = addr;
+                document.body.appendChild(textArea);
+                textArea.focus(); textArea.select();
+                try { document.execCommand('copy'); } catch(err) {}
+                document.body.removeChild(textArea);
+            }
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `✅ Copied!`;
+            btn.style.background = '#34c759'; btn.style.color = 'white'; btn.style.borderColor = '#34c759';
+            if(navigator.vibrate) navigator.vibrate(20);
+            setTimeout(() => { 
+                btn.innerHTML = originalHtml; 
+                btn.style.background = 'rgba(0,0,0,0.05)'; btn.style.color = 'var(--text)'; btn.style.borderColor = 'var(--ios-grey)';
+            }, 2000);
+            return;
+        }
+
         if (e.target.closest('#btn-reset-checklist')) { resetChecklist(); return; }
         if (e.target.closest('#btn-open-checklist')) { openChecklistModal(); return; }
         if (e.target.closest('#btn-close-checklist')) { closeChecklistModal(); return; }
@@ -286,4 +311,4 @@ async function bootApp() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=7.3.2');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
