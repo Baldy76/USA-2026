@@ -75,7 +75,6 @@ export function updateTimeAndCountdown() {
             
             updateFlap('cd-num', days.toString()); if(cdDisplay) cdDisplay.style.display = 'flex';
             
-            // THE MILESTONE CONFETTI LOGIC
             const msKey = `milestone_${days}`;
             if ([100, 50, 30, 10, 5, 1].includes(days) && !localStorage.getItem(msKey)) {
                 localStorage.setItem(msKey, 'true');
@@ -200,7 +199,7 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/...?q=${encodeURIComponent(mapQuery)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
