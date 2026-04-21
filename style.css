@@ -37,16 +37,16 @@ body {
 body.theme-home { background: var(--bg); }
 
 /* Sunshine Yellow for LA */
-body.theme-la { background: linear-gradient(to bottom, #ffe066 0%, #fff4cc 60%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-la { background: linear-gradient(to bottom, #7a6a00 0%, #332c00 60%, #000000 100%); background-attachment: fixed; }
+body.theme-la { background: linear-gradient(to bottom, #ffe066 0%, #fff4cc 40%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-la { background: linear-gradient(to bottom, #7a6a00 0%, #332c00 40%, #000000 100%); background-attachment: fixed; }
 
 /* Red Rock Orange for Utah */
-body.theme-utah { background: linear-gradient(to bottom, #ffaa80 0%, #ffebd9 60%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-utah { background: linear-gradient(to bottom, #873e23 0%, #3a1608 60%, #000000 100%); background-attachment: fixed; }
+body.theme-utah { background: linear-gradient(to bottom, #ffaa80 0%, #ffebd9 40%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-utah { background: linear-gradient(to bottom, #873e23 0%, #3a1608 40%, #000000 100%); background-attachment: fixed; }
 
 /* Neon Purple for Vegas */
-body.theme-vegas { background: linear-gradient(to bottom, #d8b3ff 0%, #f2e6ff 60%, var(--bg) 100%); background-attachment: fixed; }
-body.dark-mode.theme-vegas { background: linear-gradient(to bottom, #4a148c 0%, #1a0033 60%, #000000 100%); background-attachment: fixed; }
+body.theme-vegas { background: linear-gradient(to bottom, #d8b3ff 0%, #f2e6ff 40%, var(--bg) 100%); background-attachment: fixed; }
+body.dark-mode.theme-vegas { background: linear-gradient(to bottom, #4a148c 0%, #1a0033 40%, #000000 100%); background-attachment: fixed; }
 
 /* --- LAYOUT --- */
 main#content { 
@@ -177,7 +177,7 @@ body.dark-mode .itin-card { background: rgba(28, 28, 30, 0.75); }
     padding: 4px 16px;
     border-radius: 8px;
     letter-spacing: 6px;
-    pointer-events: none; /* Allows you to click the card beneath the stamp */
+    pointer-events: none;
     z-index: 10;
 }
 body.dark-mode .itin-card.completed::after {
@@ -186,10 +186,39 @@ body.dark-mode .itin-card.completed::after {
 }
 
 .day-group { margin-bottom: 20px; }
-.date-divider { display: flex; align-items: center; font-size: 16px; font-weight: 800; margin: 20px 0 10px -10px; cursor: pointer; list-style: none; }
+
+/* REVISED: Centered and spaced Date Divider */
+.date-divider { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 16px; 
+    font-weight: 800; 
+    margin: 30px 0 20px 0; 
+    cursor: pointer; 
+    list-style: none; 
+}
 .date-divider::-webkit-details-marker { display: none; }
-.sticky-date { background: var(--bg); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--ios-grey); display: inline-flex; align-items: center; gap: 10px; }
-.item-count { font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 10px; }
+
+/* REVISED: Sticky Date Base Style */
+.sticky-date { 
+    padding: 6px 16px; 
+    border-radius: 20px; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-size: 14px; 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px var(--shadow);
+}
+
+/* REVISED: Location Specific Deep Colors for Dates */
+#la .sticky-date { background: #ffcc00; color: #000; border: none; }
+#utah .sticky-date { background: #ff3b30; color: #fff; border: none; }
+#vegas .sticky-date { background: #af52de; color: #fff; border: none; }
+
+.item-count { font-size: 10px; background: rgba(0,0,0,0.2); color: inherit; padding: 2px 6px; border-radius: 10px; }
 .completed-divider { text-align: center; margin: 30px 0 20px; position: relative; z-index: 1; }
 .completed-divider::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--ios-grey); z-index: -1; }
 .completed-divider span { background: var(--bg); padding: 0 10px; font-size: 12px; font-weight: 800; color: #8e8e93; text-transform: uppercase; letter-spacing: 1px; }
