@@ -7,7 +7,8 @@ import {
     renderAccommodations, handleFileUpload, renderWallet, openCompletionModal, closeCompletionModal, 
     triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
-    openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes
+    openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
+    openLightbox, closeLightbox // FEATURE 2: Imported Lightbox Functions
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -27,6 +28,9 @@ export function openTab(pageId) {
             setTimeout(() => { 
                 modal.style.display = 'none'; 
                 document.body.classList.remove('no-scroll'); 
+                // Ensure lightbox image is cleared when sweeping modals
+                const lbImg = document.getElementById('lightbox-img');
+                if(lbImg) lbImg.src = '';
             }, 300);
         }
     });
@@ -86,7 +90,18 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
         
-        // FEATURE 3: The Tap-To-Copy action listener!
+        // FEATURE 2: Lightbox Click Events!
+        if (e.target.closest('.wallet-doc-link')) { 
+            e.preventDefault(); 
+            openLightbox(e.target.closest('.wallet-doc-link').dataset.src); 
+            return; 
+        }
+        // Close if they click the X OR anywhere on the black background
+        if (e.target.closest('#btn-close-lightbox') || e.target.id === 'lightbox-modal') { 
+            closeLightbox(); 
+            return; 
+        }
+
         if (e.target.closest('#copy-addr-btn')) {
             const btn = e.target.closest('#copy-addr-btn');
             const addr = btn.dataset.addr;
