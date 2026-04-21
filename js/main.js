@@ -12,7 +12,7 @@ import {
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
 import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js';
-import { initWheel, spinRoulette, renderScoreboard } from './features/roulette.js';
+import { initWheel, spinRoulette, renderScoreboard, resetRouletteScores } from './features/roulette.js';
 import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
@@ -48,7 +48,8 @@ function initPullToRefresh() {
             if (e.changedTouches[0].clientY - pStart > 150) {
                 if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
                 loadAllData().then(() => { 
-                    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderMeetupBoard();
+                    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); 
+                    renderMeetupBoard(); renderScoreboard();
                     setTimeout(() => { if(spinner) spinner.classList.remove('refreshing');}, 1000); 
                 });
             }
@@ -108,7 +109,7 @@ function bindEvents() {
             const btn = e.target.closest('.delete-quote-btn');
             if (confirm("Permanently delete?")) {
                 await deleteQuoteFromSheet(btn.dataset.loc, btn.dataset.quote, btn.dataset.author);
-                renderAdminQuotes(); renderMeetupBoard();
+                renderAdminQuotes(); renderMeetupBoard(); renderScoreboard();
             } return;
         }
 
@@ -141,7 +142,7 @@ function bindEvents() {
         if (e.target.closest('#btn-close-tips')) { closeTipsModal(); return; }
         if (e.target.closest('#btn-open-admin')) { openTab('admin'); return; }
         if (e.target.closest('#btn-spin-roulette')) { spinRoulette(); return; }
-        if (e.target.closest('#btn-reset-tally')) { if(confirm("Clear scores?")) { localStorage.removeItem('rouletteTallies'); renderScoreboard(); } return; }
+        if (e.target.closest('#btn-reset-tally')) { resetRouletteScores(); return; }
         
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
@@ -168,7 +169,7 @@ function bindEvents() {
             const btn = e.target.closest('#btn-force-sync');
             const originalText = btn.innerText; btn.innerText = "⏳ Syncing...";
             await loadAllData(); 
-            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard();
+            populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard(); renderScoreboard();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = originalText; }, 2000); 
             return;
         }
@@ -221,7 +222,7 @@ function bindEvents() {
     });
 }
 
-window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); };
+window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); renderScoreboard(); };
 
 async function bootApp() {
     bindEvents(); initSwipes(); initPullToRefresh(); 
@@ -237,7 +238,6 @@ async function bootApp() {
     
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); initWeatherPill();
-    
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
     if (document.getElementById('roulette-wheel')) initWheel();
@@ -259,7 +259,11 @@ async function bootApp() {
                 });
             }
         }
-        if(navigator.onLine) { await loadAllData(); renderMeetupBoard(); }
+        if(navigator.onLine) { 
+            await loadAllData(); 
+            renderMeetupBoard(); 
+            renderScoreboard(); 
+        }
         renderUpNext();
     }, 60000);
 }
