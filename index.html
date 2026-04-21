@@ -265,8 +265,13 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.6.1</div>
+            <div class="version-control">v7.7.0</div>
         </section>
+
+        <div id="lightbox-modal" class="modal-overlay" style="z-index: 3000; background: rgba(0,0,0,0.95); align-items: center;">
+            <button id="btn-close-lightbox" class="mac-close-btn" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; box-shadow: none;">✕</button>
+            <img id="lightbox-img" src="" style="max-width: 95%; max-height: 90vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onload="this.style.transform='scale(1)'">
+        </div>
 
         <div id="checklist-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
