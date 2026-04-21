@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f2f2f7" id="theme-meta">
     <link rel="apple-touch-icon" href="img/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=7.4.3">
+    <link rel="stylesheet" href="style.css?v=7.4.4">
 </head>
 <body class="light-mode theme-home">
 
@@ -72,6 +72,7 @@
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;"><span id="trip-prog-label">Countdown</span></div>
                         <div id="countdown-display" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0;"><div class="flap-board"><span class="flap" id="cd-num">--</span></div><span style="font-size: 24px; font-weight: 900;">Days!</span></div>
+                        
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span id="prog-icon-start" style="font-size: 16px;">🏠</span>
                             <div style="flex: 1; height: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); position: relative;">
@@ -81,6 +82,7 @@
                             </div>
                             <span id="prog-icon-end" style="font-size: 16px;">✈️</span>
                         </div>
+
                         <div id="trip-prog-val" style="text-align: center; font-size: 11px; font-weight: 700; margin-top: 8px; opacity: 0.8;">--</div>
                     </div>
                     <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-top: 5px;">
@@ -263,11 +265,11 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.4.3</div>
+            <div class="version-control">v7.4.4</div>
         </section>
 
         <div id="checklist-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column; height: 80vh;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
                 <button id="btn-close-checklist" class="mac-close-btn">✕</button>
                 <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">📋 Trip Checklist</h3>
                 <div id="checklist-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
@@ -276,7 +278,7 @@
         </div>
 
         <div id="meetup-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column;">
                 <button id="btn-close-meetup" class="mac-close-btn">✕</button>
                 <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">📢 Post Announcement</h3>
                 <div style="background: var(--bg); padding: 15px; border-radius: 16px; border: 1px solid var(--ios-grey);">
@@ -294,7 +296,7 @@
         </div>
 
         <div id="quote-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; display: flex; flex-direction: column; height: 500px; max-height: 80vh;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
                 <button id="btn-close-quote" class="mac-close-btn">✕</button>
                 <h3 id="quote-modal-title" style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">💬 Quotes</h3>
                 <div id="quote-list" style="flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;"></div>
@@ -307,7 +309,7 @@
         </div>
 
         <div id="manage-quotes-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
                 <button id="btn-close-manage-quotes" class="mac-close-btn">✕</button>
                 <h3 style="margin-top:0; text-align: center;">Manage Quotes</h3>
                 <div id="admin-quotes-list" style="flex: 1; overflow-y: auto; padding-right: 5px; margin-top: 10px;"></div>
@@ -315,7 +317,7 @@
         </div>
 
         <div id="gate-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 24px;">
+            <div class="modal-content admin-card">
                 <button id="btn-close-gate" class="mac-close-btn">✕</button>
                 <h3 style="margin: 0 0 20px; font-size: 20px; font-weight: 900; text-align: center;">Update Gate</h3>
                 <div style="display: flex; align-items: center; background: var(--bg); border: 2px solid var(--ios-grey); border-radius: 16px; padding: 10px; margin-bottom: 20px;">
@@ -338,7 +340,7 @@
         </div>
 
         <div id="tips-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; height: 500px; max-height: 80vh;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
                 <button id="btn-close-tips" class="mac-close-btn">✕</button>
                 <h3 id="tips-modal-title" style="margin-top: 0;">💡 Tips</h3>
                 <div class="theme-segmented-control" style="margin-bottom: 15px;">
@@ -359,7 +361,7 @@
         </div>
 
         <div id="weather-modal" class="modal-overlay">
-            <div class="modal-content admin-card" style="padding: 20px; display: flex; flex-direction: column; height: 600px; max-height: 85vh;">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
                 <button id="btn-close-weather" class="mac-close-btn">✕</button>
                 <h3 id="weather-modal-title" style="margin-top: 0;">🌤️ Weather</h3>
                 <div class="theme-segmented-control" style="margin-bottom: 20px;">
@@ -417,6 +419,6 @@
         });
     </script>
 
-    <script type="module" src="js/main.js?v=7.4.3"></script>
+    <script type="module" src="js/main.js?v=7.4.4"></script>
 </body>
 </html>
