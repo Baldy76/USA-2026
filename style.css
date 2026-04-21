@@ -21,7 +21,7 @@ body.dark-mode {
     --nav-bg: rgba(28, 28, 30, 0.8);
 }
 
-/* --- GLOBAL STYLES & NEW VIBE THEMES --- */
+/* --- GLOBAL STYLES & VIBE THEMES --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
@@ -206,12 +206,28 @@ body.dark-mode .itin-card { background: rgba(28, 28, 30, 0.75); }
     width: 0; height: 0; border-left: 15px solid transparent;
     border-right: 15px solid transparent; border-top: 30px solid #ffd60a;
 }
+
+/* FIX: The mathematically perfect geometry for the wheel labels */
 .roulette-label {
-    position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
-    transform-origin: 0% 100%; display: flex; align-items: center; font-size: 11px; font-weight: 900; color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 80px; /* Wide enough for names */
+    height: 50%; /* Reaches exactly from the top rim to the center */
+    transform-origin: 50% 100%; /* Pivot is strictly at the bottom-center point */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Keeps the text pinned to the outer rim */
+    padding-top: 15px; /* Slight padding away from the border */
+    font-size: 13px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    z-index: 2;
 }
-.roulette-label span { transform: translateX(20px); white-space: nowrap; }
+.roulette-label span {
+    white-space: nowrap;
+}
 
 /* --- SEGMENTED CONTROLS --- */
 .theme-segmented-control { display: flex; background: var(--ios-grey); border-radius: 12px; padding: 4px; }
