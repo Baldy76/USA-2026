@@ -15,8 +15,8 @@ import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } 
 import { initWheel, spinRoulette, renderScoreboard, resetRouletteScores } from './features/roulette.js';
 import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, clearActiveMeetup } from './features/meetup.js';
 
-// NEW: IMPORT CHECKLIST
-import { openChecklistModal, closeChecklistModal, toggleChecklistItem } from './features/checklist.js';
+// UPDATE: Imported resetChecklist
+import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChecklist } from './features/checklist.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 
@@ -76,7 +76,9 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
-        // NEW: CHECKLIST EVENTS
+        // NEW: Reset Checklist Event
+        if (e.target.closest('#btn-reset-checklist')) { resetChecklist(); return; }
+        
         if (e.target.closest('#btn-open-checklist')) { openChecklistModal(); return; }
         if (e.target.closest('#btn-close-checklist')) { closeChecklistModal(); return; }
         if (e.target.closest('.checklist-item')) { toggleChecklistItem(e.target.closest('.checklist-item').dataset.id); return; }
