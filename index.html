@@ -201,10 +201,13 @@
             <div id="hero-vegas" class="city-hero" style="background-image: url('img/vegas.jpg'); cursor: pointer;">
                 <h2>Las Vegas<span id="time-vegas" style="display:block; font-size:16px; font-weight:800; opacity:0.9; margin-top:4px; text-transform: uppercase; letter-spacing: 1px;">🕒 --:--</span></h2>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                 <button class="action-btn tips-btn" data-city="vegas" style="flex: 1; margin: 0; background: var(--card); color: var(--accent); border: 2px solid var(--accent); font-weight: 900; font-size: 13px;">💡 Vegas Tips</button>
                 <button class="action-btn open-quote-btn" data-location="vegas" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 Vegas Quote Vault</button>
             </div>
+            
+            <button id="btn-vegas-food" class="action-btn pulse-btn" style="margin-bottom: 24px; background: linear-gradient(135deg, #ff9500, #ff3b30); box-shadow: 0 4px 15px rgba(255, 149, 0, 0.4); font-size: 14px;">🍔 Ultimate Vegas Food Guide</button>
+
             <div id="vegas-home-card"></div>
             <div id="vegas-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="vegas-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed Tasks</span></div><div id="vegas-completed-list"></div></div>
@@ -265,8 +268,24 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.7.0</div>
+            <div class="version-control">v7.8.0</div>
         </section>
+
+        <div id="vegas-food-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
+                <button id="btn-close-vegas-food" class="mac-close-btn">✕</button>
+                <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 20px;">🍔 Vegas Food Guide</h3>
+                
+                <div class="theme-segmented-control" style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: transparent;">
+                    <button class="segment vegas-food-tab-btn active" data-cat="Nice" style="background: var(--ios-grey);">Nice</button>
+                    <button class="segment vegas-food-tab-btn" data-cat="Relaxed 1" style="background: var(--ios-grey);">Relaxed 1</button>
+                    <button class="segment vegas-food-tab-btn" data-cat="Relaxed 2" style="background: var(--ios-grey);">Relaxed 2</button>
+                    <button class="segment vegas-food-tab-btn" data-cat="Off Strip" style="background: var(--ios-grey);">Off Strip</button>
+                </div>
+                
+                <div id="vegas-food-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
+            </div>
+        </div>
 
         <div id="lightbox-modal" class="modal-overlay" style="z-index: 3000; background: rgba(0,0,0,0.95); align-items: center;">
             <button id="btn-close-lightbox" class="mac-close-btn" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; box-shadow: none;">✕</button>
