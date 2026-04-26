@@ -325,7 +325,6 @@ export async function handleFileUpload(event) {
     }; reader.readAsDataURL(file);
 }
 
-// FEATURE 2: Render Wallet now supports Lightbox interactions!
 export async function renderWallet() {
     const docs = await getVal('offline_docs') || []; 
     const gallery = document.getElementById('wallet-gallery'); if(!gallery) return;
@@ -341,15 +340,12 @@ export async function renderWallet() {
     }).join('');
 }
 
-// FEATURE 2: The actual Lightbox triggers
 export function openLightbox(src) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('lightbox-modal');
     const img = document.getElementById('lightbox-img');
-    img.style.transform = 'scale(0.95)';
-    img.src = src;
-    modal.style.display = 'flex'; 
-    setTimeout(() => { modal.classList.add('active'); img.style.transform = 'scale(1)'; }, 10);
+    img.style.transform = 'scale(0.95)'; img.src = src;
+    modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('active'); img.style.transform = 'scale(1)'; }, 10);
 }
 
 export function closeLightbox() {
@@ -357,7 +353,6 @@ export function closeLightbox() {
     modal.classList.remove('active'); 
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); document.getElementById('lightbox-img').src = ''; }, 300);
 }
-
 
 export function openCompletionModal(taskId, taskName) {
     document.body.classList.add('no-scroll');
@@ -431,6 +426,50 @@ export function renderTips(category) {
     }); 
     document.getElementById('tips-content').innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
 }
+
+// FEATURE: The Vegas Food Guide Functions
+export function openVegasFoodModal() {
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('vegas-food-modal');
+    document.querySelectorAll('.vegas-food-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'Nice'); });
+    renderVegasFoodList('Nice');
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeVegasFoodModal() { 
+    const modal = document.getElementById('vegas-food-modal');
+    modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
+}
+
+export function renderVegasFoodList(category) {
+    const content = document.getElementById('vegas-food-content');
+    if (!state.vaultAndStaysData) {
+        content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🍽️</span><div class="empty-text" style="font-size: 16px;">No data loaded yet!</div></div>`;
+        return;
+    }
+    
+    let html = '';
+    state.vaultAndStaysData.forEach(cols => {
+        if(!cols || cols.length < 6) return; 
+        const type = (cols[1] || '').trim().toLowerCase(); 
+        const cat = (cols[2] || '').trim().toLowerCase(); 
+        
+        if (type === 'vegasfood' && cat === category.toLowerCase()) {
+            const name = escapeHTML(cols[3] || '');
+            const vibe = escapeHTML(cols[4] || '');
+            const reasoning = escapeHTML(cols[5] || '');
+            
+            html += `<div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
+                <div style="font-size: 18px; font-weight: 900; margin-bottom: 6px; color: var(--text);">${name}</div>
+                ${vibe ? `<div style="font-size: 11px; font-weight: 800; background: linear-gradient(135deg, #ff9500, #ff3b30); color: white; display: inline-block; padding: 4px 10px; border-radius: 12px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">✨ ${vibe}</div>` : ''}
+                <div style="font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--text); opacity: 0.9;">${reasoning}</div>
+            </div>`;
+        }
+    }); 
+    content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🍽️</span><div class="empty-text" style="font-size: 16px; margin-bottom: 10px;">Add data to Google Sheets!</div><div style="font-size:11px; opacity:0.7;">Make sure Type is "<b>vegasfood</b>" and Category is "<b>${escapeHTML(category)}</b>"</div></div>`;
+}
+
 
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
