@@ -8,7 +8,8 @@ import {
     triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
-    openLightbox, closeLightbox // FEATURE 2: Imported Lightbox Functions
+    openLightbox, closeLightbox,
+    openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList // FEATURE: Imported the Vegas Food functions
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -28,7 +29,6 @@ export function openTab(pageId) {
             setTimeout(() => { 
                 modal.style.display = 'none'; 
                 document.body.classList.remove('no-scroll'); 
-                // Ensure lightbox image is cleared when sweeping modals
                 const lbImg = document.getElementById('lightbox-img');
                 if(lbImg) lbImg.src = '';
             }, 300);
@@ -90,13 +90,22 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
         
-        // FEATURE 2: Lightbox Click Events!
+        // FEATURE: Vegas Food Listeners
+        if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
+        if (e.target.closest('#btn-close-vegas-food')) { closeVegasFoodModal(); return; }
+        const vfBtn = e.target.closest('.vegas-food-tab-btn');
+        if (vfBtn) { 
+            document.querySelectorAll('.vegas-food-tab-btn').forEach(b => b.classList.remove('active')); 
+            vfBtn.classList.add('active'); 
+            renderVegasFoodList(vfBtn.dataset.cat); 
+            return; 
+        }
+
         if (e.target.closest('.wallet-doc-link')) { 
             e.preventDefault(); 
             openLightbox(e.target.closest('.wallet-doc-link').dataset.src); 
             return; 
         }
-        // Close if they click the X OR anywhere on the black background
         if (e.target.closest('#btn-close-lightbox') || e.target.id === 'lightbox-modal') { 
             closeLightbox(); 
             return; 
