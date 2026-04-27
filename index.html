@@ -268,8 +268,28 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.8.0</div>
+            <div class="version-control">v7.9.0</div>
         </section>
+
+        <div id="briefing-modal" class="modal-overlay" style="z-index: 4000; background: rgba(0,0,0,0.85);">
+            <div class="modal-content admin-card" style="height: 85vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #FFF3E0, var(--bg));">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 50px; margin-bottom: 10px;">☕</div>
+                    <h2 id="briefing-title" style="margin: 0; font-size: 28px; font-weight: 900; color: #1c1c1e;">Good Morning!</h2>
+                    <div style="font-size: 14px; font-weight: 700; color: #1c1c1e; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;" id="briefing-date">Today</div>
+                </div>
+                
+                <div style="flex: 1; overflow-y: auto; padding-right: 5px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; color: #1c1c1e;">📅 Today's Plan</h3>
+                    <div id="briefing-itin" style="margin-bottom: 20px;"></div>
+                    
+                    <h3 style="font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; color: #1c1c1e;">💬 Thought of the Day</h3>
+                    <div id="briefing-quote" style="margin-bottom: 20px;"></div>
+                </div>
+                
+                <button id="btn-close-briefing" class="action-btn pulse-btn" style="margin-top: 15px; background: linear-gradient(135deg, #34c759, #28a745); color: white; font-size: 18px; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);">Let's Do This! 🚀</button>
+            </div>
+        </div>
 
         <div id="vegas-food-modal" class="modal-overlay">
             <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
@@ -438,7 +458,11 @@
             splashGoBtn.addEventListener('click', () => {
                 splash.style.pointerEvents = 'none';
                 splash.style.opacity = '0';
-                setTimeout(() => { splash.classList.remove('active'); splash.style.display = 'none'; }, 300);
+                setTimeout(() => { 
+                    splash.classList.remove('active'); 
+                    splash.style.display = 'none'; 
+                    if (window.appCheckMorningBriefing) window.appCheckMorningBriefing();
+                }, 300);
             });
         });
     </script>
