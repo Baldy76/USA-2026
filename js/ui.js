@@ -248,7 +248,8 @@ export async function renderItinerary() {
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
             let isOpen = (!isNaN(new Date(date)) && new Date(date).toDateString() === todayStr) ? 'open' : '';
-            html += `<details class="day-group" ${isOpen}><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)}</span></summary><div class="day-content timeline">${cards.join('')}</div></details>`;
+            // THE FIX: ADDED BACK THE <span class="item-count"> BADGE!
+            html += `<details class="day-group" ${isOpen}><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)} <span class="item-count">${cards.length}</span></span></summary><div class="day-content timeline">${cards.join('')}</div></details>`;
         } return html;
     };
     document.getElementById('la-itinerary').innerHTML = buildSec(grouped['la']); document.getElementById('la-completed-list').innerHTML = cLA ? `<div class="timeline">${cLA}</div>` : '';
