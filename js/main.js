@@ -10,7 +10,7 @@ import {
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
     openLightbox, closeLightbox,
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
-    checkMorningBriefing, closeMorningBriefing
+    checkMorningBriefing, closeMorningBriefing, openMorningBriefing
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -92,6 +92,9 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+        
+        // NEW: Manual Morning Briefing Trigger
+        if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
         
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
 
