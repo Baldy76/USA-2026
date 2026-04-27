@@ -9,7 +9,8 @@ import {
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
     openLightbox, closeLightbox,
-    openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList // FEATURE: Imported the Vegas Food functions
+    openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
+    checkMorningBriefing, closeMorningBriefing
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -19,6 +20,8 @@ import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, cle
 import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChecklist } from './features/checklist.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
+
+window.appCheckMorningBriefing = checkMorningBriefing;
 
 export function openTab(pageId) {
     if (navigator.vibrate) navigator.vibrate(40); 
@@ -90,7 +93,8 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
         
-        // FEATURE: Vegas Food Listeners
+        if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
+
         if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
         if (e.target.closest('#btn-close-vegas-food')) { closeVegasFoodModal(); return; }
         const vfBtn = e.target.closest('.vegas-food-tab-btn');
