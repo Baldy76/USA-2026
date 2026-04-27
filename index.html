@@ -108,17 +108,19 @@
             </div>
             
             <div id="time-engine" style="margin-bottom: 20px;">
-                <div id="dual-clocks" style="display: block; background: var(--card); border-radius: 24px; padding: 24px 20px; box-shadow: 0 8px 24px var(--shadow);">
-                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 15px;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 800; opacity: 0.5; margin-bottom: 5px;">🇬🇧 UK <span id="uk-status-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#34c759; margin-left:4px; box-shadow:0 0 6px #34c759; transition: background 0.3s, box-shadow 0.3s;"></span></div>
-                            <div class="flap-board"><span class="flap" id="uk-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 4px;">:</span><span class="flap" id="uk-min">--</span></div>
+                <div id="dual-clocks" style="display: block; background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 8px 24px var(--shadow);">
+                    <div style="display: flex; gap: 12px; text-align: center; margin-bottom: 15px;">
+                        
+                        <div style="flex: 1; background: rgba(0, 122, 255, 0.08); border: 1px solid rgba(0, 122, 255, 0.2); border-radius: 16px; padding: 15px 5px;">
+                            <div style="font-size: 12px; font-weight: 900; color: #007aff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">🇬🇧 UK <span id="uk-status-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#34c759; margin-left:4px; box-shadow:0 0 6px #34c759; transition: background 0.3s, box-shadow 0.3s;"></span></div>
+                            <div class="flap-board"><span class="flap" id="uk-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 2px;">:</span><span class="flap" id="uk-min">--</span></div>
                         </div>
-                        <div style="width: 2px; background: var(--ios-grey);"></div>
-                        <div>
-                            <div id="local-tz-label" style="font-size: 12px; font-weight: 800; opacity: 0.5; margin-bottom: 5px;">🇺🇸 LOCAL</div>
-                            <div class="flap-board"><span class="flap" id="loc-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 4px;">:</span><span class="flap" id="loc-min">--</span></div>
+
+                        <div style="flex: 1; background: rgba(255, 149, 0, 0.08); border: 1px solid rgba(255, 149, 0, 0.2); border-radius: 16px; padding: 15px 5px;">
+                            <div id="local-tz-label" style="font-size: 12px; font-weight: 900; color: #ff9500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">🇺🇸 LOCAL</div>
+                            <div class="flap-board"><span class="flap" id="loc-hr">--</span><span style="font-size: 24px; font-weight: 900; align-self: center; margin: 0 2px;">:</span><span class="flap" id="loc-min">--</span></div>
                         </div>
+
                     </div>
                     <div id="clock-date" style="text-align: center; font-size: 13px; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">...</div>
                 </div>
@@ -268,7 +270,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v7.9.0</div>
+            <div class="version-control">v7.9.2</div>
         </section>
 
         <div id="briefing-modal" class="modal-overlay" style="z-index: 4000; background: rgba(0,0,0,0.85);">
