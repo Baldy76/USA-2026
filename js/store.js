@@ -1,4 +1,3 @@
-// js/store.js
 export const state = {
     itineraryData: null,
     vaultAndStaysData: null,
