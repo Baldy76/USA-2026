@@ -47,6 +47,6 @@ export async function deleteQuoteFromSheet(loc, text, author) {
     return fetch(url, { mode: 'no-cors' });
 }
 
-export function syncToCloud(type, data) { console.log("Syncing:", type, data); }
-export function initLiveCurrency() { console.log("Currency Engine Init"); }
-export function preCacheImages() { console.log("Images Cached"); }
+export function syncToCloud(type, data) { console.log("Cloud Sync:", type); }
+export function initLiveCurrency() { console.log("Currency Active"); }
+export function preCacheImages() { console.log("Pre-caching images..."); }
