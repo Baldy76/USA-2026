@@ -5,7 +5,7 @@ import {
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     populateDropdown, clearCustomFamilies, updateFamilyFilter, renderItinerary, renderTravelVault, 
     renderAccommodations, handleFileUpload, renderWallet, openCompletionModal, closeCompletionModal, 
-    triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    triggerConfetti, triggerEmojiRain, triggerJackpotMode, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
     openLightbox, closeLightbox,
@@ -21,8 +21,10 @@ import { renderMeetupBoard, openMeetupModal, closeMeetupModal, submitMeetup, cle
 import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChecklist } from './features/checklist.js';
 
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
-
 window.appCheckMorningBriefing = checkMorningBriefing;
+
+// FEATURE: The Cheeky Micro-Copy
+const cheekyMessages = ["Bribing the pit boss...", "Fueling the jet...", "Locating Dave's wallet...", "Checking trail maps...", "Mixing the margaritas...", "Packing the bags...", "Hiding from the paparazzi..."];
 
 export function openTab(pageId) {
     if (navigator.vibrate) navigator.vibrate(40); 
@@ -54,6 +56,9 @@ function initPullToRefresh() {
     document.addEventListener('touchend', e => {
         if (window.scrollY === 0 && pStart > 0) {
             if (e.changedTouches[0].clientY - pStart > 150) {
+                // FEATURE: Injecting the cheeky text
+                document.getElementById('sync-text').innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
+                
                 if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
                 loadAllData().then(() => { 
                     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); 
@@ -80,20 +85,30 @@ function bindEvents() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
+    let clockClicks = 0;
+    let clockTimer = null;
+
     document.body.addEventListener('click', async (e) => {
 
-        if (e.target.closest('.disney-app-btn')) {
-            window.location.href = 'https://disneyland.disney.go.com/';
-            return;
+        // FEATURE: The Hidden Konami Easter Egg!
+        if (e.target.closest('#dual-clocks')) {
+            clockClicks++;
+            clearTimeout(clockTimer);
+            if (clockClicks >= 5) {
+                clockClicks = 0;
+                triggerJackpotMode();
+            } else {
+                clockTimer = setTimeout(() => clockClicks = 0, 1000);
+            }
         }
+
+        if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
 
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
 
         if (e.target.closest('.nav-trigger-btn')) {
             const btn = e.target.closest('.nav-trigger-btn');
-            const q = btn.dataset.query;
-            const loc = btn.dataset.loc || ''; 
-            openNavChoiceModal(q, null, null, loc);
+            openNavChoiceModal(btn.dataset.query, null, null, btn.dataset.loc || '');
             return;
         }
 
@@ -103,15 +118,11 @@ function bindEvents() {
             return;
         }
 
-        // FEATURE: Lyft logic completely removed
         if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
-            const q = modal.dataset.query;
-            const lat = modal.dataset.lat;
-            const lon = modal.dataset.lon;
+            const q = modal.dataset.query; const lat = modal.dataset.lat; const lon = modal.dataset.lon;
             let url = '';
-            
             const encodedQ = encodeURIComponent(q || '');
 
             if (btnId === 'btn-nav-waze') {
@@ -132,10 +143,7 @@ function bindEvents() {
         }
 
         const linkBtn = e.target.closest('.link-btn');
-        if (linkBtn && linkBtn.dataset.url) { 
-            window.location.href = linkBtn.dataset.url; 
-            return; 
-        }
+        if (linkBtn && linkBtn.dataset.url) { window.location.href = linkBtn.dataset.url; return; }
         
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
@@ -145,42 +153,21 @@ function bindEvents() {
         const vfBtn = e.target.closest('.vegas-food-tab-btn');
         if (vfBtn) { 
             document.querySelectorAll('.vegas-food-tab-btn').forEach(b => b.classList.remove('active')); 
-            vfBtn.classList.add('active'); 
-            renderVegasFoodList(vfBtn.dataset.cat); 
-            return; 
+            vfBtn.classList.add('active'); renderVegasFoodList(vfBtn.dataset.cat); return; 
         }
 
-        if (e.target.closest('.wallet-doc-link')) { 
-            e.preventDefault(); 
-            openLightbox(e.target.closest('.wallet-doc-link').dataset.src); 
-            return; 
-        }
-        if (e.target.closest('#btn-close-lightbox') || e.target.id === 'lightbox-modal') { 
-            closeLightbox(); 
-            return; 
-        }
+        if (e.target.closest('.wallet-doc-link')) { e.preventDefault(); openLightbox(e.target.closest('.wallet-doc-link').dataset.src); return; }
+        if (e.target.closest('#btn-close-lightbox') || e.target.id === 'lightbox-modal') { closeLightbox(); return; }
 
         if (e.target.closest('#copy-addr-btn')) {
-            const btn = e.target.closest('#copy-addr-btn');
-            const addr = btn.dataset.addr;
-            if(navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(addr);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = addr;
-                document.body.appendChild(textArea);
-                textArea.focus(); textArea.select();
-                try { document.execCommand('copy'); } catch(err) {}
-                document.body.removeChild(textArea);
+            const btn = e.target.closest('#copy-addr-btn'); const addr = btn.dataset.addr;
+            if(navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(addr); } else {
+                const textArea = document.createElement("textarea"); textArea.value = addr; document.body.appendChild(textArea); textArea.focus(); textArea.select();
+                try { document.execCommand('copy'); } catch(err) {} document.body.removeChild(textArea);
             }
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = `✅ Copied!`;
-            btn.style.background = '#34c759'; btn.style.color = 'white'; btn.style.borderColor = '#34c759';
+            const originalHtml = btn.innerHTML; btn.innerHTML = `✅ Copied!`; btn.style.background = '#34c759'; btn.style.color = 'white'; btn.style.borderColor = '#34c759';
             if(navigator.vibrate) navigator.vibrate(20);
-            setTimeout(() => { 
-                btn.innerHTML = originalHtml; 
-                btn.style.background = 'rgba(0,0,0,0.05)'; btn.style.color = 'var(--text)'; btn.style.borderColor = 'var(--ios-grey)';
-            }, 2000);
+            setTimeout(() => { btn.innerHTML = originalHtml; btn.style.background = 'rgba(0,0,0,0.05)'; btn.style.color = 'var(--text)'; btn.style.borderColor = 'var(--ios-grey)'; }, 2000);
             return;
         }
 
@@ -192,21 +179,13 @@ function bindEvents() {
         if (e.target.closest('#btn-close-urgent')) {
             document.getElementById('urgent-alert-overlay').style.display = 'none';
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
-            if (meetups.length > 0) {
-                const latest = meetups[meetups.length - 1];
-                const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
-                await setVal('lastSeenMeetupId', messageId);
-            }
+            if (meetups.length > 0) { const latest = meetups[meetups.length - 1]; await setVal('lastSeenMeetupId', btoa(latest[1] + latest[2]).substring(0, 12)); }
             renderMeetupBoard(); return;
         }
 
         if (e.target.closest('#btn-open-meetup')) { 
             const meetups = (state.quotesData || []).filter(q => q[0] === 'MEETUP');
-            if (meetups.length > 0) {
-                const latest = meetups[meetups.length - 1];
-                const messageId = btoa(latest[1] + latest[2]).substring(0, 12);
-                await setVal('lastSeenMeetupId', messageId);
-            }
+            if (meetups.length > 0) { const latest = meetups[meetups.length - 1]; await setVal('lastSeenMeetupId', btoa(latest[1] + latest[2]).substring(0, 12)); }
             renderMeetupBoard(); openMeetupModal(); return; 
         }
         if (e.target.closest('#btn-close-meetup')) { closeMeetupModal(); return; }
@@ -237,9 +216,7 @@ function bindEvents() {
             } return;
         }
 
-        if (e.target.closest('#btn-clear-anchor')) {
-            if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return;
-        }
+        if (e.target.closest('#btn-clear-anchor')) { if(confirm("Car found! Clear the saved location?")) { localStorage.removeItem('carAnchor'); renderAnchor(); } return; }
         
         const wBtn = e.target.closest('.weather-btn'); if (wBtn) { setWeatherCity(wBtn.id.replace('btn-w-', '')); return; }
         if (e.target.closest('#home-weather-pill')) { openWeatherModal(); return; }
@@ -255,12 +232,9 @@ function bindEvents() {
         if (e.target.closest('#btn-enable-notifs')) {
             const btn = e.target.closest('#btn-enable-notifs');
             if ('Notification' in window) {
-                if (Notification.permission === 'granted') {
-                    btn.innerHTML = '✅ Already Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; return;
-                }
+                if (Notification.permission === 'granted') { btn.innerHTML = '✅ Already Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; return; }
                 Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') { btn.innerHTML = '✅ Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; } 
-                    else { alert('Notifications denied in device settings.'); }
+                    if (perm === 'granted') { btn.innerHTML = '✅ Enabled'; btn.style.backgroundColor = '#34c759'; btn.style.color = 'white'; } else { alert('Notifications denied in device settings.'); }
                 });
             } else { alert('Push notifications are not supported on this device.'); }
             return;
@@ -275,7 +249,9 @@ function bindEvents() {
 
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
-            const originalText = btn.innerText; btn.innerText = "⏳ Syncing...";
+            const originalText = btn.innerText; 
+            // FEATURE: Cheeky Sync Messages
+            btn.innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
             await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard(); renderScoreboard();
             btn.innerText = "✅ Synced!"; setTimeout(() => { btn.innerText = originalText; }, 2000); 
@@ -288,9 +264,12 @@ function bindEvents() {
             setTimeout(() => { window.location.reload(true); }, 500); return;
         }
 
+        // FEATURE: Flights Hero Emoji trigger added!
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
+        if (e.target.closest('#hero-flights')) { triggerEmojiRain('flights'); return; }
+
         if (e.target.closest('#btn-close-stay')) { closeStayModal(); return; }
         if (e.target.closest('#btn-close-completion-x') || e.target.closest('#btn-cancel-modal')) { closeCompletionModal(); return; }
         if (e.target.closest('#btn-confirm-modal')) {
@@ -331,7 +310,8 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); renderScoreboard(); };
 
 async function bootApp() {
-    bindEvents(); initPullToRefresh(); 
+    bindEvents(); 
+    // SWIPE LOGIC HAS BEEN REMOVED FOR STABILITY
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
