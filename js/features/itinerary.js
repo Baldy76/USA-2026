@@ -2,7 +2,7 @@
 import { state, setVal, getVal, escapeHTML, parseDateTime } from '../store.js';
 import { syncToCloud } from '../api.js';
 import { triggerConfetti } from '../core/animations.js';
-import { renderUpNext } from '../core/time.js';
+import { renderUpNext } from '../core/clock.js';
 
 export async function renderItinerary() {
     if (!state.itineraryData) return;
