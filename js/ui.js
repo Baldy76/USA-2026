@@ -224,6 +224,12 @@ export async function renderItinerary() {
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
 
+            // FEATURE: Disneyland App Smart Trigger
+            let disneyBtn = '';
+            if (act.toLowerCase().includes('disney')) {
+                disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
+            }
+
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -233,7 +239,10 @@ export async function renderItinerary() {
                             <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" style="font-size: 13px; font-weight: 800; opacity: 0.9; margin-top: 10px; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
+                        <div style="margin-top: 10px; display: flex; align-items: center;">
+                            ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" style="font-size: 13px; font-weight: 800; opacity: 0.9; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
+                            ${disneyBtn}
+                        </div>
                     </div>
                 </div>`;
 
@@ -281,13 +290,11 @@ export function renderTravelVault() {
                 const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
                 const flLink = `https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}`;
 
-                // FEATURE 4: 24-Hour Check-In Check!
                 const flightTimeObj = parseDateTime(cols[2]?.trim(), cols[7]?.trim());
                 let checkInHtml = ''; let glowStyle = '';
                 
                 if (flightTimeObj) {
                     const timeDiff = flightTimeObj - nowMs;
-                    // If flight is in the future AND less than 24 hours away (86,400,000 ms)
                     if (timeDiff > 0 && timeDiff <= 86400000) {
                         const checkInUrl = `https://www.google.com/search?q=${encodeURIComponent(airline + ' web check in')}`;
                         glowStyle = 'box-shadow: 0 0 20px rgba(52, 199, 89, 0.8); border: 2px solid #34c759;';
@@ -482,6 +489,7 @@ export function renderVegasFoodList(category) {
     }); 
     content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🍽️</span><div class="empty-text" style="font-size: 16px; margin-bottom: 10px;">Add data to Google Sheets!</div><div style="font-size:11px; opacity:0.7;">Make sure Type is "<b>vegasfood</b>" and Category is "<b>${escapeHTML(category)}</b>"</div></div>`;
 }
+
 
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
