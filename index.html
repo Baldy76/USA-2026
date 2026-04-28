@@ -273,15 +273,21 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v8.0.0</div>
+            <div class="version-control">v8.1.0</div>
         </section>
 
         <div id="nav-choice-modal" class="modal-overlay" style="z-index: 4000;">
             <div class="modal-content admin-card" style="padding: 30px 20px; text-align: center;">
                 <button id="btn-close-nav-choice" class="mac-close-btn" style="top: 15px; right: 15px;">✕</button>
-                <h3 style="margin-top: 0; font-size: 22px; font-weight: 900; margin-bottom: 25px;">Choose Navigation</h3>
-                <button id="btn-nav-google" class="action-btn" style="background: #4285F4; margin-bottom: 15px; font-size: 18px; padding: 20px;">🗺️ Google Maps</button>
-                <button id="btn-nav-waze" class="action-btn" style="background: #33ccff; margin-bottom: 0; font-size: 18px; padding: 20px; color: #000;">🚗 Waze</button>
+                <h3 style="margin-top: 0; font-size: 22px; font-weight: 900; margin-bottom: 25px;">Choose App</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <button id="btn-nav-google" class="action-btn" style="background: #4285F4; margin: 0; font-size: 16px; padding: 15px; box-shadow: 0 4px 10px rgba(66, 133, 244, 0.4);">🗺️ Maps</button>
+                    <button id="btn-nav-waze" class="action-btn" style="background: #33ccff; margin: 0; font-size: 16px; padding: 15px; color: #000; box-shadow: 0 4px 10px rgba(51, 204, 255, 0.4);">🚗 Waze</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button id="btn-nav-uber" class="action-btn" style="background: #000000; margin: 0; font-size: 16px; padding: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);">🚕 Uber</button>
+                    <button id="btn-nav-lyft" class="action-btn" style="background: #ff00bf; margin: 0; font-size: 16px; padding: 15px; box-shadow: 0 4px 10px rgba(255, 0, 191, 0.4);">🚙 Lyft</button>
+                </div>
             </div>
         </div>
 
