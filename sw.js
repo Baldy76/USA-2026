@@ -1,15 +1,8 @@
-const CACHE_NAME = 'planner-v9-4';
+const CACHE_NAME = 'planner-v9-5';
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
-  './manifest.json',
-  './img/icon-192.png',
-  './img/icon-512.png',
-  './img/la.jpg',
-  './img/utah.jpg',
-  './img/vegas.jpg',
-  './img/flights.jpg',
   './js/main.js',
   './js/store.js',
   './js/api.js',
@@ -31,30 +24,13 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+  event.respondWith(caches.match(event.request).then(res => res || fetch(event.request)));
 });
