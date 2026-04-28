@@ -2,7 +2,7 @@ import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
 import { applyTheme, setThemeMode, updateMetaThemeColor } from './core/theme.js';
-import { updateTimeAndCountdown, updateGreeting, renderUpNext } from './core/time.js';
+import { updateTimeAndCountdown, updateGreeting, renderUpNext } from './core/clock.js';
 import { triggerConfetti, triggerEmojiRain, triggerJackpotMode } from './core/animations.js';
 
 import { populateDropdown, clearCustomFamilies, updateFamilyFilter, saveTripSettings } from './ui.js';
