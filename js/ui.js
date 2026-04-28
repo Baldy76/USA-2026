@@ -229,7 +229,6 @@ export async function renderItinerary() {
                 disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
             }
 
-            // FEATURE: Added data-loc to pass the specific location state to the nav modal!
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -657,7 +656,6 @@ export function closeMorningBriefing() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-// FEATURE: Localized AllTrails Logic
 export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('nav-choice-modal');
@@ -665,11 +663,11 @@ export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
     modal.dataset.lat = lat || '';
     modal.dataset.lon = lon || '';
     
-    // Check if the location is Utah, or if the name/location includes Death Valley
     const qLower = (query || '').toLowerCase();
     const cLower = (contextLoc || '').toLowerCase();
-    const showTrails = cLower.includes('utah') || qLower.includes('death valley') || cLower.includes('death valley');
     
+    // FEATURE: AllTrails Logic
+    const showTrails = cLower.includes('utah') || qLower.includes('death valley') || cLower.includes('death valley');
     const trailsBtn = document.getElementById('btn-nav-alltrails');
     const topRow = document.getElementById('nav-top-row');
     
@@ -680,6 +678,18 @@ export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
         } else {
             trailsBtn.style.display = 'none';
             topRow.style.gridTemplateColumns = '1fr 1fr';
+        }
+    }
+
+    // FEATURE: Uber Logic (Vegas only)
+    const showUber = cLower.includes('vegas') || qLower.includes('vegas');
+    const uberBtn = document.getElementById('btn-nav-uber');
+    
+    if (uberBtn) {
+        if (showUber) {
+            uberBtn.style.display = 'block';
+        } else {
+            uberBtn.style.display = 'none';
         }
     }
 
