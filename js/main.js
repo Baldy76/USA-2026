@@ -82,7 +82,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // FEATURE: Disneyland App deep link
         if (e.target.closest('.disney-app-btn')) {
             window.location.href = 'https://disneyland.disney.go.com/';
             return;
@@ -90,19 +89,21 @@ function bindEvents() {
 
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
 
+        // FEATURE: Send the location to the modal!
         if (e.target.closest('.nav-trigger-btn')) {
-            const q = e.target.closest('.nav-trigger-btn').dataset.query;
-            openNavChoiceModal(q, null, null);
+            const btn = e.target.closest('.nav-trigger-btn');
+            const q = btn.dataset.query;
+            const loc = btn.dataset.loc || ''; 
+            openNavChoiceModal(q, null, null, loc);
             return;
         }
 
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon);
+            openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon, '');
             return;
         }
 
-        // FEATURE: AllTrails added to the nav choice router
         if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
