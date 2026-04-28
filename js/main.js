@@ -108,7 +108,7 @@ function bindEvents() {
             return;
         }
 
-        // FEATURE 3: The Uber & Lyft link generators!
+        // THE FIX: Smart deep links using window.location.href to avoid ghost blank pages
         if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
@@ -123,7 +123,7 @@ function bindEvents() {
                 if (lat && lon) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
                 else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`;
             } else if (btnId === 'btn-nav-google') {
-                if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
+                if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
                 else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`;
             } else if (btnId === 'btn-nav-uber') {
                 url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`;
@@ -131,9 +131,16 @@ function bindEvents() {
                 url = `https://lyft.com/ride?id=lyft&destination[address]=${encodedQ}`;
             }
 
-            if (url) window.open(url, '_blank');
+            if (url) window.location.href = url; // No blank page!
             closeNavChoiceModal();
             return;
+        }
+
+        // THE FIX: Also applied to the Airbnb Listing button
+        const linkBtn = e.target.closest('.link-btn');
+        if (linkBtn && linkBtn.dataset.url) { 
+            window.location.href = linkBtn.dataset.url; 
+            return; 
         }
         
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
@@ -316,8 +323,6 @@ function bindEvents() {
             let done = await getVal('completedTasks') || []; done = done.filter(id => id !== e.target.closest('.itin-card').dataset.taskId);
             await setVal('completedTasks', done); renderItinerary(); renderUpNext(); return;
         }
-        const linkBtn = e.target.closest('.link-btn');
-        if (linkBtn && linkBtn.dataset.url) { window.open(e.target.closest('.link-btn').dataset.url, '_blank'); return; }
         const deleteDocBtn = e.target.closest('.delete-doc-btn');
         if (deleteDocBtn) {
             e.preventDefault(); e.stopPropagation();
