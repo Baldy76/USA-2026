@@ -1,19 +1,23 @@
 import { state, setVal, getVal, parseDateTime } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages, syncToCloud, deleteQuoteFromSheet } from './api.js';
 
-import { 
-    applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
-    populateDropdown, clearCustomFamilies, updateFamilyFilter, renderItinerary, renderTravelVault, 
-    renderAccommodations, handleFileUpload, renderWallet, openCompletionModal, closeCompletionModal, 
-    triggerConfetti, triggerEmojiRain, triggerJackpotMode, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
-    openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
-    openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
-    openLightbox, closeLightbox,
-    openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
-    checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
-    openNavChoiceModal, closeNavChoiceModal
-} from './ui.js';
+// --- CORE ENGINES ---
+import { applyTheme, setThemeMode, updateMetaThemeColor } from './core/theme.js';
+import { updateTimeAndCountdown, updateGreeting, renderUpNext } from './core/time.js';
+import { triggerConfetti, triggerEmojiRain, triggerJackpotMode } from './core/animations.js';
 
+// --- GENERAL UI & SETTINGS ---
+import { populateDropdown, clearCustomFamilies, updateFamilyFilter, saveTripSettings } from './ui.js';
+
+// --- MODULAR FEATURES ---
+import { renderItinerary, openCompletionModal, closeCompletionModal } from './features/itinerary.js';
+import { renderTravelVault, renderAccommodations, openStayModal, closeStayModal, openGateModal, closeGateModal, renderAnchor } from './features/travel.js';
+import { openTipsModal, closeTipsModal, renderTips, openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList, openNavChoiceModal, closeNavChoiceModal } from './features/guides.js';
+import { openQuoteModal, closeQuoteModal, submitNewQuote, openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes } from './features/quotes.js';
+import { handleFileUpload, renderWallet, openLightbox, closeLightbox } from './features/wallet.js';
+import { checkMorningBriefing, closeMorningBriefing, openMorningBriefing } from './features/briefing.js';
+
+// --- WIDGETS ---
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
 import { initWeatherPill, setWeatherCity, openWeatherModal, closeWeatherModal } from './features/weather.js';
 import { initWheel, spinRoulette, renderScoreboard, resetRouletteScores } from './features/roulette.js';
@@ -23,7 +27,6 @@ import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChec
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 window.appCheckMorningBriefing = checkMorningBriefing;
 
-// FEATURE: The Cheeky Micro-Copy
 const cheekyMessages = ["Bribing the pit boss...", "Fueling the jet...", "Locating Dave's wallet...", "Checking trail maps...", "Mixing the margaritas...", "Packing the bags...", "Hiding from the paparazzi..."];
 
 export function openTab(pageId) {
@@ -56,9 +59,7 @@ function initPullToRefresh() {
     document.addEventListener('touchend', e => {
         if (window.scrollY === 0 && pStart > 0) {
             if (e.changedTouches[0].clientY - pStart > 150) {
-                // FEATURE: Injecting the cheeky text
                 document.getElementById('sync-text').innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
-                
                 if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
                 loadAllData().then(() => { 
                     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); 
@@ -90,7 +91,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // FEATURE: The Hidden Konami Easter Egg!
         if (e.target.closest('#dual-clocks')) {
             clockClicks++;
             clearTimeout(clockTimer);
@@ -250,7 +250,6 @@ function bindEvents() {
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
             const originalText = btn.innerText; 
-            // FEATURE: Cheeky Sync Messages
             btn.innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
             await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard(); renderScoreboard();
@@ -264,7 +263,6 @@ function bindEvents() {
             setTimeout(() => { window.location.reload(true); }, 500); return;
         }
 
-        // FEATURE: Flights Hero Emoji trigger added!
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
@@ -311,7 +309,6 @@ window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTra
 
 async function bootApp() {
     bindEvents(); 
-    // SWIPE LOGIC HAS BEEN REMOVED FOR STABILITY
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
