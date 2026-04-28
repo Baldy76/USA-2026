@@ -48,18 +48,6 @@ export function openTab(pageId) {
     updateMetaThemeColor(pageId); updateTimeAndCountdown(); window.scrollTo(0,0);
 }
 
-function initSwipes() {
-    let touchstartX = 0; let touchendX = 0; const mainContent = document.getElementById('content'); if (!mainContent) return;
-    mainContent.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, { passive: true });
-    mainContent.addEventListener('touchend', e => { 
-        touchendX = e.changedTouches[0].screenX; const dist = touchendX - touchstartX; if (Math.abs(dist) < 60) return; 
-        const activeTab = document.querySelector('.tab-content.active'); if (!activeTab || !tabOrder.includes(activeTab.id)) return; 
-        const currentIndex = tabOrder.indexOf(activeTab.id);
-        if (dist < 0 && currentIndex < tabOrder.length - 1) openTab(tabOrder[currentIndex + 1]); 
-        else if (dist > 0 && currentIndex > 0) openTab(tabOrder[currentIndex - 1]); 
-    }, { passive: true });
-}
-
 function initPullToRefresh() {
     let pStart = 0; const spinner = document.getElementById('ptr-spinner');
     document.addEventListener('touchstart', e => { if (window.scrollY === 0) pStart = e.touches[0].clientY; }, {passive: true});
@@ -108,7 +96,6 @@ function bindEvents() {
             return;
         }
 
-        // THE FIX: Smart deep links using window.location.href to avoid ghost blank pages
         if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
@@ -131,12 +118,11 @@ function bindEvents() {
                 url = `https://lyft.com/ride?id=lyft&destination[address]=${encodedQ}`;
             }
 
-            if (url) window.location.href = url; // No blank page!
+            if (url) window.location.href = url;
             closeNavChoiceModal();
             return;
         }
 
-        // THE FIX: Also applied to the Airbnb Listing button
         const linkBtn = e.target.closest('.link-btn');
         if (linkBtn && linkBtn.dataset.url) { 
             window.location.href = linkBtn.dataset.url; 
@@ -337,7 +323,7 @@ function bindEvents() {
 window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); updateGreeting(); renderAnchor(); renderMeetupBoard(); renderScoreboard(); };
 
 async function bootApp() {
-    bindEvents(); initSwipes(); initPullToRefresh(); 
+    bindEvents(); initPullToRefresh(); 
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
