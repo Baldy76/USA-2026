@@ -1,12 +1,34 @@
 export const state = {
-    itineraryData: null, vaultAndStaysData: null, quotesData: null,
-    gateOverrides: {}, sheetFamilies: []
+    itineraryData: null,
+    vaultAndStaysData: null,
+    quotesData: null,
+    gateOverrides: {},
+    sheetFamilies: []
 };
-export function setVal(k, v) { return window.localforage.setItem(k, v); }
-export function getVal(k) { return window.localforage.getItem(k); }
-export function escapeHTML(s) { if(!s) return ""; const p = document.createElement('p'); p.textContent = s; return p.innerHTML; }
-export function parseDateTime(d, t) {
-    if(!d) return null;
-    const combined = d + (t && t.toLowerCase() !== 'tbd' ? ' ' + t : ' 23:59');
-    const res = new Date(combined); return isNaN(res.getTime()) ? null : res.getTime();
+
+export function setVal(key, val) { 
+    return window.localforage.setItem(key, val); 
+}
+
+export function getVal(key) { 
+    return window.localforage.getItem(key); 
+}
+
+export function escapeHTML(str) {
+    if (!str) return "";
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
+export function parseDateTime(dateStr, timeStr) {
+    if (!dateStr) return null;
+    let combined = dateStr;
+    if (timeStr && timeStr.toLowerCase() !== 'tbd') {
+        combined += ' ' + timeStr;
+    } else {
+        combined += ' 23:59';
+    }
+    const d = new Date(combined);
+    return isNaN(d.getTime()) ? null : d.getTime();
 }
