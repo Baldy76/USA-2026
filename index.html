@@ -12,7 +12,11 @@
 <body class="light-mode theme-home">
 
     <div id="offline-banner">✈️ Offline Mode.</div>
-    <div id="ptr-spinner">↻ Syncing...</div>
+    
+    <div id="ptr-spinner">
+        <div class="sync-plane">✈️</div>
+        <div id="sync-text">Syncing...</div>
+    </div>
 
     <div id="urgent-alert-overlay" style="display:none; position:fixed; inset:0; background: rgba(255,59,48,0.95); z-index: 20000; color: white; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; backdrop-filter: blur(10px);">
         <div style="font-size: 80px; margin-bottom: 20px; animation: scalePulse 0.5s infinite alternate;">🚨</div>
@@ -219,7 +223,7 @@
         </section>
 
         <section id="flights" class="page tab-content">
-            <div class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px;">
+            <div id="hero-flights" class="city-hero" style="background-image: url('img/flights.jpg'); margin-bottom: 30px; cursor: pointer;">
                 <h2>Travel Details</h2>
             </div>
             <div id="flights-vault-display"></div>
@@ -273,7 +277,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v8.6.0</div>
+            <div class="version-control">v9.0.0</div>
         </section>
 
         <div id="nav-choice-modal" class="modal-overlay" style="z-index: 4000;">
