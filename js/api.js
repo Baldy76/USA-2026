@@ -38,23 +38,15 @@ export async function loadAllData() {
 }
 
 export async function saveQuoteToSheet(loc, text, author) {
-    const url = `https://script.google.com/macros/s/AKfycbz_K9pM6R8Zf7PZ6Z6Z6Z6Z6Z6Z6Z6Z6Z/exec?action=addQuote&location=${encodeURIComponent(loc)}&quote=${encodeURIComponent(text)}&author=${encodeURIComponent(author)}`;
+    const url = `https://script.google.com/macros/s/AKfycbxeK98Y_Iu7fG7S6V6X-E9_mG-x_tW1G8K_N0J3F_O1N7_T_U/exec?action=addQuote&location=${encodeURIComponent(loc)}&quote=${encodeURIComponent(text)}&author=${encodeURIComponent(author)}`;
     return fetch(url, { mode: 'no-cors' });
 }
 
 export async function deleteQuoteFromSheet(loc, text, author) {
-    const url = `https://script.google.com/macros/s/AKfycbz_K9pM6R8Zf7PZ6Z6Z6Z6Z6Z6Z6Z6Z6Z/exec?action=deleteQuote&location=${encodeURIComponent(loc)}&quote=${encodeURIComponent(text)}&author=${encodeURIComponent(author)}`;
+    const url = `https://script.google.com/macros/s/AKfycbxeK98Y_Iu7fG7S6V6X-E9_mG-x_tW1G8K_N0J3F_O1N7_T_U/exec?action=deleteQuote&location=${encodeURIComponent(loc)}&quote=${encodeURIComponent(text)}&author=${encodeURIComponent(author)}`;
     return fetch(url, { mode: 'no-cors' });
 }
 
-export function syncToCloud(type, data) {
-    console.log("Syncing:", type, data);
-}
-
-export function initLiveCurrency() {
-    console.log("Currency Loaded");
-}
-
-export function preCacheImages() {
-    console.log("Images Cached");
-}
+export function syncToCloud(type, data) { console.log("Syncing:", type, data); }
+export function initLiveCurrency() { console.log("Currency Engine Init"); }
+export function preCacheImages() { console.log("Images Cached"); }
