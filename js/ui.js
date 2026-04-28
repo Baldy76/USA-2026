@@ -1,7 +1,4 @@
 import { state } from './store.js';
-import { renderItinerary } from './features/itinerary.js';
-import { renderTravelVault, renderAccommodations } from './features/travel.js';
-import { updateGreeting, updateTimeAndCountdown, renderUpNext } from './core/time.js';
 
 export function populateDropdown() {
     const sel = document.getElementById('family-selector'); if(!sel) return;
@@ -12,22 +9,8 @@ export function populateDropdown() {
 
 export function updateFamilyFilter() { 
     localStorage.setItem('appUser', document.getElementById('family-selector').value); 
-    renderItinerary(); 
-    renderTravelVault(); 
-    renderAccommodations(); 
-    updateGreeting(); 
-    renderUpNext(); 
+    window.location.reload(); // Temporary heavy hammer to ensure everything refreshes
 }
 
-export function clearCustomFamilies() { 
-    if(confirm("Remove all old saved names?")) { 
-        localStorage.removeItem('appUser'); 
-        window.location.reload(); 
-    } 
-}
-
-export function saveTripSettings() { 
-    localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); 
-    localStorage.setItem('tripEndDate', document.getElementById('trip-end-date').value); 
-    updateTimeAndCountdown(); 
-}
+export function clearCustomFamilies() { if(confirm("Remove saved names?")) { localStorage.removeItem('appUser'); window.location.reload(); } }
+export function saveTripSettings() { localStorage.setItem('tripStartDate', document.getElementById('trip-start-date').value); localStorage.setItem('tripEndDate', document.getElementById('trip-end-date').value); window.location.reload(); }
