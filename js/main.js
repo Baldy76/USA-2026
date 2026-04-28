@@ -82,6 +82,12 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
+        // FEATURE: Disneyland App deep link
+        if (e.target.closest('.disney-app-btn')) {
+            window.location.href = 'https://disneyland.disney.go.com/';
+            return;
+        }
+
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
 
         if (e.target.closest('.nav-trigger-btn')) {
@@ -96,7 +102,8 @@ function bindEvents() {
             return;
         }
 
-        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft')) {
+        // FEATURE: AllTrails added to the nav choice router
+        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query;
@@ -116,6 +123,8 @@ function bindEvents() {
                 url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`;
             } else if (btnId === 'btn-nav-lyft') {
                 url = `https://lyft.com/ride?id=lyft&destination[address]=${encodedQ}`;
+            } else if (btnId === 'btn-nav-alltrails') {
+                url = `https://www.alltrails.com/search?q=${encodedQ}`;
             }
 
             if (url) window.location.href = url;
