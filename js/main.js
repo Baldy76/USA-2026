@@ -10,7 +10,8 @@ import {
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
     openLightbox, closeLightbox,
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
-    checkMorningBriefing, closeMorningBriefing, openMorningBriefing
+    checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
+    openNavChoiceModal, closeNavChoiceModal // FEATURE: Imported the new Navigation Choice functions
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -92,10 +93,45 @@ function bindEvents() {
     });
 
     document.body.addEventListener('click', async (e) => {
+
+        // FEATURE: Navigation Choice Modal Handlers
+        if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
+
+        if (e.target.closest('.nav-trigger-btn')) {
+            const q = e.target.closest('.nav-trigger-btn').dataset.query;
+            openNavChoiceModal(q, null, null);
+            return;
+        }
+
+        if (e.target.closest('#btn-find-car')) {
+            const btn = e.target.closest('#btn-find-car');
+            openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon);
+            return;
+        }
+
+        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze')) {
+            const isWaze = !!e.target.closest('#btn-nav-waze');
+            const modal = document.getElementById('nav-choice-modal');
+            const q = modal.dataset.query;
+            const lat = modal.dataset.lat;
+            const lon = modal.dataset.lon;
+            let url = '';
+
+            if (lat && lon) {
+                // If it's the car anchor, Google Maps should default to walking, Waze defaults to driving
+                if (isWaze) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+                else url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
+            } else if (q) {
+                if (isWaze) url = `https://waze.com/ul?q=${encodeURIComponent(q)}&navigate=yes`;
+                else url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
+            }
+
+            if (url) window.open(url, '_blank');
+            closeNavChoiceModal();
+            return;
+        }
         
-        // NEW: Manual Morning Briefing Trigger
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
-        
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
 
         if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
@@ -193,13 +229,6 @@ function bindEvents() {
                     triggerConfetti(); renderAnchor();
                 }, err => alert("GPS Error"), { enableHighAccuracy: true });
             } return;
-        }
-
-        if (e.target.closest('#btn-find-car')) {
-            const btn = e.target.closest('#btn-find-car');
-            const lat = btn.dataset.lat; const lon = btn.dataset.lon;
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`, '_blank');
-            return;
         }
 
         if (e.target.closest('#btn-clear-anchor')) {
