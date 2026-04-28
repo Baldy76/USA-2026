@@ -211,7 +211,6 @@ export async function renderItinerary() {
 
         if (isMatch) {
             const mapQuery = addr || `${act} ${loc}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
             
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
@@ -225,6 +224,7 @@ export async function renderItinerary() {
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
 
+            // FEATURE: Nav Choice Trigger replacing direct Google Maps link
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -234,7 +234,7 @@ export async function renderItinerary() {
                             <strong style="font-size: 15px; font-weight: 800;">${escapeHTML(time)}</strong>${badgeHtml}
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
-                        ${addr || act ? `<div style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-top: 10px;"><a href="${mapLink}" target="_blank" style="color: var(--accent); text-decoration: none;">📍 Get Directions</a></div>` : ''}
+                        ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" style="font-size: 13px; font-weight: 800; opacity: 0.9; margin-top: 10px; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
                     </div>
                 </div>`;
 
@@ -248,7 +248,6 @@ export async function renderItinerary() {
     const buildSec = (cityObj) => {
         let html = ''; for (const [date, cards] of Object.entries(cityObj)) {
             let isOpen = (!isNaN(new Date(date)) && new Date(date).toDateString() === todayStr) ? 'open' : '';
-            // THE FIX: ADDED BACK THE <span class="item-count"> BADGE!
             html += `<details class="day-group" ${isOpen}><summary class="date-divider"><span class="sticky-date">${escapeHTML(date)} <span class="item-count">${cards.length}</span></span></summary><div class="day-content timeline">${cards.join('')}</div></details>`;
         } return html;
     };
@@ -470,7 +469,6 @@ export function renderVegasFoodList(category) {
     content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🍽️</span><div class="empty-text" style="font-size: 16px; margin-bottom: 10px;">Add data to Google Sheets!</div><div style="font-size:11px; opacity:0.7;">Make sure Type is "<b>vegasfood</b>" and Category is "<b>${escapeHTML(category)}</b>"</div></div>`;
 }
 
-
 export function openQuoteModal(location) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('quote-modal'); modal.dataset.location = location;
@@ -523,7 +521,8 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     
     document.getElementById('stay-modal-addr').innerHTML = `<div id="copy-addr-btn" data-addr="${escapeHTML(addr)}" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(0,0,0,0.05); border:1px solid var(--ios-grey); border-radius:8px; font-size:14px; font-weight:700; transition:all 0.2s;">📍 ${escapeHTML(addr)} <span style="opacity:0.5;">📋</span></div>`;
     
-    let btnHtml = `<button class="action-btn link-btn" data-url="${mapLink}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    // FEATURE: Nav Choice Trigger replacing direct Google Maps link
+    let btnHtml = `<button class="action-btn nav-trigger-btn" data-query="${escapeHTML(addr)}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
@@ -634,5 +633,21 @@ export function openMorningBriefing() {
 export function closeMorningBriefing() {
     const modal = document.getElementById('briefing-modal');
     modal.classList.remove('active'); 
+    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+}
+
+// FEATURE: Nav Choice Logic
+export function openNavChoiceModal(query, lat, lon) {
+    document.body.classList.add('no-scroll');
+    const modal = document.getElementById('nav-choice-modal');
+    modal.dataset.query = query || '';
+    modal.dataset.lat = lat || '';
+    modal.dataset.lon = lon || '';
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+}
+
+export function closeNavChoiceModal() {
+    const modal = document.getElementById('nav-choice-modal');
+    modal.classList.remove('active');
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
