@@ -89,7 +89,6 @@ function bindEvents() {
 
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
 
-        // FEATURE: Send the location to the modal!
         if (e.target.closest('.nav-trigger-btn')) {
             const btn = e.target.closest('.nav-trigger-btn');
             const q = btn.dataset.query;
@@ -104,7 +103,8 @@ function bindEvents() {
             return;
         }
 
-        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft') || e.target.closest('#btn-nav-alltrails')) {
+        // FEATURE: Lyft logic completely removed
+        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query;
@@ -122,8 +122,6 @@ function bindEvents() {
                 else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`;
             } else if (btnId === 'btn-nav-uber') {
                 url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`;
-            } else if (btnId === 'btn-nav-lyft') {
-                url = `https://lyft.com/ride?id=lyft&destination[address]=${encodedQ}`;
             } else if (btnId === 'btn-nav-alltrails') {
                 url = `https://www.alltrails.com/search?q=${encodedQ}`;
             }
