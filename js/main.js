@@ -11,7 +11,7 @@ import {
     openLightbox, closeLightbox,
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
     checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
-    openNavChoiceModal, closeNavChoiceModal // FEATURE: Imported the new Navigation Choice functions
+    openNavChoiceModal, closeNavChoiceModal
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -94,7 +94,6 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // FEATURE: Navigation Choice Modal Handlers
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
 
         if (e.target.closest('.nav-trigger-btn')) {
@@ -109,21 +108,27 @@ function bindEvents() {
             return;
         }
 
-        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze')) {
-            const isWaze = !!e.target.closest('#btn-nav-waze');
+        // FEATURE 3: The Uber & Lyft link generators!
+        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-lyft')) {
+            const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query;
             const lat = modal.dataset.lat;
             const lon = modal.dataset.lon;
             let url = '';
+            
+            const encodedQ = encodeURIComponent(q || '');
 
-            if (lat && lon) {
-                // If it's the car anchor, Google Maps should default to walking, Waze defaults to driving
-                if (isWaze) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
-                else url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
-            } else if (q) {
-                if (isWaze) url = `https://waze.com/ul?q=${encodeURIComponent(q)}&navigate=yes`;
-                else url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
+            if (btnId === 'btn-nav-waze') {
+                if (lat && lon) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+                else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`;
+            } else if (btnId === 'btn-nav-google') {
+                if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
+                else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`;
+            } else if (btnId === 'btn-nav-uber') {
+                url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`;
+            } else if (btnId === 'btn-nav-lyft') {
+                url = `https://lyft.com/ride?id=lyft&destination[address]=${encodedQ}`;
             }
 
             if (url) window.open(url, '_blank');
