@@ -224,12 +224,12 @@ export async function renderItinerary() {
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
 
-            // FEATURE: Disneyland App Smart Trigger
             let disneyBtn = '';
             if (act.toLowerCase().includes('disney')) {
                 disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
             }
 
+            // FEATURE: Added data-loc to pass the specific location state to the nav modal!
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -240,7 +240,7 @@ export async function renderItinerary() {
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
                         <div style="margin-top: 10px; display: flex; align-items: center;">
-                            ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" style="font-size: 13px; font-weight: 800; opacity: 0.9; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
+                            ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" data-loc="${escapeHTML(loc.toLowerCase())}" style="font-size: 13px; font-weight: 800; opacity: 0.9; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
                             ${disneyBtn}
                         </div>
                     </div>
@@ -543,7 +543,7 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     
     document.getElementById('stay-modal-addr').innerHTML = `<div id="copy-addr-btn" data-addr="${escapeHTML(addr)}" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(0,0,0,0.05); border:1px solid var(--ios-grey); border-radius:8px; font-size:14px; font-weight:700; transition:all 0.2s;">📍 ${escapeHTML(addr)} <span style="opacity:0.5;">📋</span></div>`;
     
-    let btnHtml = `<button class="action-btn nav-trigger-btn" data-query="${escapeHTML(addr)}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
+    let btnHtml = `<button class="action-btn nav-trigger-btn" data-query="${escapeHTML(addr)}" data-loc="${escapeHTML(addr.toLowerCase())}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
@@ -657,12 +657,32 @@ export function closeMorningBriefing() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-export function openNavChoiceModal(query, lat, lon) {
+// FEATURE: Localized AllTrails Logic
+export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('nav-choice-modal');
     modal.dataset.query = query || '';
     modal.dataset.lat = lat || '';
     modal.dataset.lon = lon || '';
+    
+    // Check if the location is Utah, or if the name/location includes Death Valley
+    const qLower = (query || '').toLowerCase();
+    const cLower = (contextLoc || '').toLowerCase();
+    const showTrails = cLower.includes('utah') || qLower.includes('death valley') || cLower.includes('death valley');
+    
+    const trailsBtn = document.getElementById('btn-nav-alltrails');
+    const topRow = document.getElementById('nav-top-row');
+    
+    if (trailsBtn && topRow) {
+        if (showTrails) {
+            trailsBtn.style.display = 'block';
+            topRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+        } else {
+            trailsBtn.style.display = 'none';
+            topRow.style.gridTemplateColumns = '1fr 1fr';
+        }
+    }
+
     modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
