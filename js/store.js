@@ -6,8 +6,8 @@ export const state = {
     sheetFamilies: []
 };
 
-export function setVal(key, val) { return localforage.setItem(key, val); }
-export function getVal(key) { return localforage.getItem(key); }
+export function setVal(key, val) { return window.localforage.setItem(key, val); }
+export function getVal(key) { return window.localforage.getItem(key); }
 
 export function escapeHTML(str) {
     if (!str) return "";
