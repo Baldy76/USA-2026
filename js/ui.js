@@ -218,8 +218,8 @@ export async function renderItinerary() {
             let isHappening = false; const taskDateObj = parseDateTime(d, time);
             if (taskDateObj && !isCompleted && nowTime >= taskDateObj && nowTime < taskDateObj + (90 * 60000)) isHappening = true;
             
-            let cardClass = isCompleted ? 'admin-card itin-card completed' : 'admin-card itin-card';
-            if (isHappening) cardClass += ' happening-now pulse-btn';
+            let cardClass = isCompleted ? 'itin-card completed' : 'itin-card';
+            if (isHappening) cardClass += ' happening-now';
             
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
@@ -327,7 +327,13 @@ export function renderAccommodations() {
         if (type === 'stay' && isMatch) {
             const addr = cols[4]?.trim() || ''; const img = cols[7]?.trim() || '';
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-            const ui = `<div class="admin-card stay-card" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="padding: 0; overflow: hidden; margin-bottom: 24px; cursor: pointer;"><div style="height: 100px; background: ${img?`url('${img}') center/cover`:`var(--accent)`}; display: flex; align-items: flex-end; padding: 20px;"><h3 style="margin: 0; color: white; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 900;">🏡 ${escapeHTML(fam)} Stay</h3></div></div>`;
+            // FEATURE: The Polaroid Style!
+            const ui = `
+            <div class="stay-card polaroid-effect" data-fam="${escapeHTML(fam)}" data-addr="${escapeHTML(addr)}" data-map="${mapLink}" data-link="${escapeHTML(cols[6]?.trim()||'')}" data-img="${escapeHTML(img)}" style="cursor: pointer;">
+                <div style="height: 160px; background: ${img?`url('${img}') center/cover`:`var(--ios-grey)`}; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);"></div>
+                <h3 style="margin: 15px 0 0 0; color: #1c1c1e; font-family: 'Caveat', 'Marker Felt', 'Comic Sans MS', cursive; font-size: 32px; text-align: center; font-weight: 700; letter-spacing: 1px;">🏡 ${escapeHTML(fam)}</h3>
+                <div style="text-align: center; font-size: 11px; font-weight: 800; color: #8e8e93; margin-top: 5px; text-transform: uppercase;">Tap for details ↗</div>
+            </div>`;
             const city = cols[3] || '';
             if(city.toLowerCase().includes('la')) htmlLA += ui; else if(city.toLowerCase().includes('utah')) htmlUtah += ui; else if(city.toLowerCase().includes('vegas')) htmlVegas += ui;
         }
@@ -398,16 +404,41 @@ export function triggerConfetti() {
     }
 }
 
+// FEATURE: Doubled Emoji Amount & Flights Added!
 export function triggerEmojiRain(city) {
     if(navigator.vibrate) navigator.vibrate([30, 30]);
-    const emojis = { 'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'] };
+    const emojis = { 
+        'la': ['🌴', '☀️', '🎬', '⭐', '🏄'], 
+        'utah': ['⛰️', '🤠', '🏜️', '🥾', '🔥'], 
+        'vegas': ['🎲', '🎰', '💸', '🃏', '🍸'],
+        'flights': ['✈️', '🛫', '🛬', '☁️', '🌍']
+    };
     const set = emojis[city] || ['✨'];
-    for(let i=0; i<30; i++) {
+    for(let i=0; i<60; i++) { 
         const em = document.createElement('div'); em.className = 'particle emoji-drop';
         em.innerText = set[Math.floor(Math.random() * set.length)]; em.style.left = Math.random() * 100 + 'vw';
         em.style.animationDuration = (Math.random() * 2 + 2) + 's'; document.body.appendChild(em);
         setTimeout(() => em.remove(), 4000);
     }
+}
+
+// FEATURE: The Hidden Konami Code Jackpot!
+export function triggerJackpotMode() {
+    if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0,0,0,0.9)'; overlay.style.zIndex = '99999';
+    overlay.style.display = 'flex'; overlay.style.alignItems = 'center'; overlay.style.justifyContent = 'center';
+    overlay.style.flexDirection = 'column';
+    overlay.innerHTML = `<div style="font-size: 100px; animation: scalePulse 0.3s infinite alternate;">🎰</div><h1 style="color: #ffd60a; font-size: 50px; text-transform: uppercase; margin-top: 20px; font-weight: 900; text-shadow: 0 0 30px #ffd60a;">JACKPOT!</h1>`;
+    document.body.appendChild(overlay);
+    triggerConfetti(); 
+    setTimeout(triggerConfetti, 500);
+    setTimeout(triggerConfetti, 1000);
+    setTimeout(() => {
+        overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => overlay.remove(), 500);
+    }, 3500);
 }
 
 export function openTipsModal(city) {
@@ -666,7 +697,6 @@ export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
     const qLower = (query || '').toLowerCase();
     const cLower = (contextLoc || '').toLowerCase();
     
-    // FEATURE: AllTrails Logic
     const showTrails = cLower.includes('utah') || qLower.includes('death valley') || cLower.includes('death valley');
     const trailsBtn = document.getElementById('btn-nav-alltrails');
     const topRow = document.getElementById('nav-top-row');
@@ -681,7 +711,6 @@ export function openNavChoiceModal(query, lat, lon, contextLoc = '') {
         }
     }
 
-    // FEATURE: Uber Logic (Vegas only)
     const showUber = cLower.includes('vegas') || qLower.includes('vegas');
     const uberBtn = document.getElementById('btn-nav-uber');
     
