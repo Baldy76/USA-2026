@@ -224,7 +224,6 @@ export async function renderItinerary() {
             let badgeHtml = isCompleted ? `<span style="background: #34c759; padding: 4px 12px; border-radius: 20px; color: white; font-size: 11px; font-weight: 900;">✅ DONE</span>` : `<span style="background: var(--ios-grey); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">${escapeHTML(who)}</span>`;
             let extraLabel = isHappening ? `<div style="color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🚀 Happening Now</div>` : '';
 
-            // FEATURE: Nav Choice Trigger replacing direct Google Maps link
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -264,6 +263,7 @@ export function renderTravelVault() {
     
     const sortedData = [...state.vaultAndStaysData].sort((a,b) => (parseDateTime(a[2]||'', null) || Number.MAX_SAFE_INTEGER) - (parseDateTime(b[2]||'', null) || Number.MAX_SAFE_INTEGER));
     const filter = localStorage.getItem('appUser') || 'All'; const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
+    const nowMs = new Date().getTime();
     
     sortedData.forEach(cols => {
         if(!cols || cols.length < 2) return; 
@@ -281,7 +281,21 @@ export function renderTravelVault() {
                 const flightId = btoa(encodeURIComponent(`${date}-${airline}-${fnum}`)).replace(/=/g, ''); const baseTerm = escapeHTML(cols[8]?.trim() || ''); const activeTerm = (state.gateOverrides && state.gateOverrides[flightId]) ? state.gateOverrides[flightId] : baseTerm;
                 const flLink = `https://flightaware.com/live/flight/${(airline+fnum).replace(/\s+/g,'')}`;
 
-                html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none;"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ Flight • ${date}</div><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div></div><div style="display: flex; justify-content: space-between; align-items: flex-end;"><strong style="font-size: 22px; font-weight: 900;">${dep} → ${arr}</strong><div style="text-align: right;"><div style="color: #bae6fd; font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ftime}</div></div></div><div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Boarding Pass ⤵</div></div><div class="flip-back"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;"><span>Terminal / Gate</span><span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;"><div id="gate-text-${flightId}" style="font-size: 18px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div><button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">✏️ Edit</button></div><div style="font-size: 12px; font-weight: 700; margin-bottom: 15px;"><a href="${flLink}" target="_blank" style="color: white; text-decoration: underline;">Track Flight ↗</a></div><div class="barcode" style="background: repeating-linear-gradient(90deg, white, white 2px, transparent 2px, transparent 4px, white 4px, white 6px, transparent 6px, transparent 10px); height: 30px; opacity: 0.8; border-radius: 4px;"></div></div></div></div>`;
+                // FEATURE 4: 24-Hour Check-In Check!
+                const flightTimeObj = parseDateTime(cols[2]?.trim(), cols[7]?.trim());
+                let checkInHtml = ''; let glowStyle = '';
+                
+                if (flightTimeObj) {
+                    const timeDiff = flightTimeObj - nowMs;
+                    // If flight is in the future AND less than 24 hours away (86,400,000 ms)
+                    if (timeDiff > 0 && timeDiff <= 86400000) {
+                        const checkInUrl = `https://www.google.com/search?q=${encodeURIComponent(airline + ' web check in')}`;
+                        glowStyle = 'box-shadow: 0 0 20px rgba(52, 199, 89, 0.8); border: 2px solid #34c759;';
+                        checkInHtml = `<button class="action-btn pulse-btn" onclick="window.open('${checkInUrl}', '_blank'); event.stopPropagation();" style="background: #34c759; margin-top: 15px; font-size: 14px; padding: 12px; font-weight: 900;">🚨 CHECK-IN OPEN</button>`;
+                    }
+                }
+
+                html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; ${glowStyle}"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">✈️ Flight • ${date}</div><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div></div><div style="display: flex; justify-content: space-between; align-items: flex-end;"><strong style="font-size: 22px; font-weight: 900;">${dep} → ${arr}</strong><div style="text-align: right;"><div style="color: #bae6fd; font-weight: 800;">${airline} ${fnum}</div><div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ftime}</div></div></div>${checkInHtml}<div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Boarding Pass ⤵</div></div><div class="flip-back"><div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;"><span>Terminal / Gate</span><span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;"><div id="gate-text-${flightId}" style="font-size: 18px; font-weight: 900; color: #ffd60a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${activeTerm || 'Check Board'}</div><button class="edit-gate-btn action-btn" data-flightid="${flightId}" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">✏️ Edit</button></div><div style="font-size: 12px; font-weight: 700; margin-bottom: 15px;"><a href="${flLink}" target="_blank" style="color: white; text-decoration: underline;">Track Flight ↗</a></div><div class="barcode" style="background: repeating-linear-gradient(90deg, white, white 2px, transparent 2px, transparent 4px, white 4px, white 6px, transparent 6px, transparent 10px); height: 30px; opacity: 0.8; border-radius: 4px;"></div></div></div></div>`;
             } else if (type === 'car') {
                 hasData = true; const pdate = escapeHTML(cols[2]?.trim()||''); const company = escapeHTML(cols[4]?.trim()||''); const ploc = escapeHTML(cols[5]?.trim()||'');
                 html += `<div class="flip-container travel-card"><div class="flip-card-inner"><div class="flip-front" style="background: linear-gradient(135deg, #34c759, #28a745); color: white; border: none;"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="font-size: 11px; font-weight: 900; opacity: 0.7; text-transform: uppercase;">🚗 Car Rental • ${pdate}</div><div style="font-size: 11px; font-weight: 900; opacity: 0.7;">${escapeHTML(fam)}</div></div><div style="display: flex; justify-content: space-between; align-items: flex-end;"><strong style="font-size: 22px; font-weight: 900;">${company}</strong><div style="text-align: right;"><div style="color: #bbf7d0; font-weight: 800;">Pick-up</div><div style="font-size: 12px; opacity: 0.8; font-weight: 700;">${ploc}</div></div></div><div style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); text-align: center; margin-top: 15px;">Tap for Details ⤵</div></div><div class="flip-back car-back" style="background: linear-gradient(135deg, #34c759, #28a745);"><div style="font-size: 12px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; justify-content: space-between;"><span>Booking Details</span><span>Ref: ${escapeHTML(cols[9]?.trim() || 'N/A')}</span></div><div style="margin-bottom: 10px;"><div style="font-size: 11px; opacity: 0.8; font-weight: 700;">PICK-UP</div><div style="font-size: 14px; font-weight: 900;">${ploc}</div><div style="font-size: 12px; opacity: 0.9;">${pdate} @ ${escapeHTML(cols[6]?.trim() || '')}</div></div><div><div style="font-size: 11px; opacity: 0.8; font-weight: 700;">DROP-OFF</div><div style="font-size: 14px; font-weight: 900;">${escapeHTML(cols[8]?.trim())||ploc}</div><div style="font-size: 12px; opacity: 0.9;">${escapeHTML(cols[3]?.trim() || '')} @ ${escapeHTML(cols[7]?.trim() || '')}</div></div></div></div></div>`;
@@ -521,7 +535,6 @@ export function openStayModal(fam, addr, mapLink, listLink, imgUrl) {
     
     document.getElementById('stay-modal-addr').innerHTML = `<div id="copy-addr-btn" data-addr="${escapeHTML(addr)}" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(0,0,0,0.05); border:1px solid var(--ios-grey); border-radius:8px; font-size:14px; font-weight:700; transition:all 0.2s;">📍 ${escapeHTML(addr)} <span style="opacity:0.5;">📋</span></div>`;
     
-    // FEATURE: Nav Choice Trigger replacing direct Google Maps link
     let btnHtml = `<button class="action-btn nav-trigger-btn" data-query="${escapeHTML(addr)}" style="flex: 1; padding: 16px; font-size: 16px;">🚗 Drive</button>`;
     if (listLink && listLink !== "undefined" && listLink !== "") { btnHtml += `<button class="action-btn link-btn" data-url="${listLink}" style="flex: 1; padding: 16px; font-size: 16px; background: var(--ios-grey); color: var(--text);">🌐 Listing</button>`; }
     document.getElementById('stay-modal-buttons').innerHTML = btnHtml;
@@ -636,7 +649,6 @@ export function closeMorningBriefing() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-// FEATURE: Nav Choice Logic
 export function openNavChoiceModal(query, lat, lon) {
     document.body.classList.add('no-scroll');
     const modal = document.getElementById('nav-choice-modal');
