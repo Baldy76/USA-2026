@@ -5,7 +5,7 @@ import {
     applyTheme, setThemeMode, updateMetaThemeColor, updateTimeAndCountdown, updateGreeting, saveTripSettings,
     populateDropdown, clearCustomFamilies, updateFamilyFilter, renderItinerary, renderTravelVault, 
     renderAccommodations, handleFileUpload, renderWallet, openCompletionModal, closeCompletionModal, 
-    triggerConfetti, triggerEmojiRain, triggerJackpotMode, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
+    triggerConfetti, triggerEmojiRain, openTipsModal, closeTipsModal, renderTips, openStayModal, closeStayModal,
     openGateModal, closeGateModal, renderUpNext, renderAnchor, openQuoteModal, closeQuoteModal, submitNewQuote, 
     openManageQuotesModal, closeManageQuotesModal, renderAdminQuotes, 
     openLightbox, closeLightbox,
@@ -250,7 +250,6 @@ function bindEvents() {
         if (e.target.closest('#btn-force-sync')) {
             const btn = e.target.closest('#btn-force-sync');
             const originalText = btn.innerText; 
-            // FEATURE: Cheeky Sync Messages
             btn.innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
             await loadAllData(); 
             populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); renderUpNext(); renderAnchor(); renderMeetupBoard(); renderScoreboard();
@@ -264,7 +263,6 @@ function bindEvents() {
             setTimeout(() => { window.location.reload(true); }, 500); return;
         }
 
-        // FEATURE: Flights Hero Emoji trigger added!
         if (e.target.closest('#hero-la')) { triggerEmojiRain('la'); return; }
         if (e.target.closest('#hero-utah')) { triggerEmojiRain('utah'); return; }
         if (e.target.closest('#hero-vegas')) { triggerEmojiRain('vegas'); return; }
@@ -311,7 +309,6 @@ window.forceAppUpdate = () => { populateDropdown(); renderItinerary(); renderTra
 
 async function bootApp() {
     bindEvents(); 
-    // SWIPE LOGIC HAS BEEN REMOVED FOR STABILITY
     if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -352,6 +349,87 @@ async function bootApp() {
         }
         renderUpNext();
     }, 60000);
+}
+
+// 🎰 EPIC JACKPOT ENGINE 🎰
+function triggerJackpotMode() {
+    const overlay = document.createElement('div');
+    overlay.id = 'jackpot-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
+    overlay.style.zIndex = '20000';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.color = '#ffd60a';
+    overlay.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    
+    overlay.innerHTML = `
+        <div style="font-size: 80px; margin-bottom: 20px; animation: scalePulse 0.5s infinite alternate;">🎰</div>
+        <h1 style="font-size: 40px; font-weight: 900; margin: 0; text-transform: uppercase; text-shadow: 0 0 20px #ffd60a;">JACKPOT!</h1>
+        <div style="font-size: 20px; font-weight: 700; margin-top: 10px; color: white;">VEGAS MODE UNLOCKED</div>
+        <button id="close-jackpot" style="margin-top: 40px; padding: 15px 30px; font-size: 18px; font-weight: 900; background: #ff3b30; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);">COLLECT WINNINGS</button>
+    `;
+    
+    document.body.appendChild(overlay);
+
+    document.getElementById('close-jackpot').addEventListener('click', () => {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => overlay.remove(), 300);
+    });
+
+    if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
+    }
+
+    dropEpicJackpotConfetti();
+}
+
+function dropEpicJackpotConfetti() {
+    if (!document.getElementById('epic-confetti-style')) {
+        const style = document.createElement('style');
+        style.id = 'epic-confetti-style';
+        style.innerHTML = `
+            @keyframes epicConfettiFall {
+                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const emojis = ['✈️', '🎲', '🎰', '⛰️', '🌴', '💵', '🍹'];
+    const colors = ['#ff3b30', '#34c759', '#007aff', '#ffcc00', '#af52de', '#ff9500'];
+    
+    for (let i = 0; i < 200; i++) {
+        const el = document.createElement('div');
+        
+        if (Math.random() > 0.5) {
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.fontSize = Math.random() * 20 + 15 + 'px'; 
+            el.style.background = 'transparent';
+        } else {
+            el.style.background = colors[Math.floor(Math.random() * colors.length)];
+            el.style.width = Math.random() * 10 + 8 + 'px';
+            el.style.height = Math.random() * 20 + 10 + 'px';
+            el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0px'; 
+        }
+        
+        el.style.position = 'fixed';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.top = '-10vh'; 
+        el.style.zIndex = '21000'; // Higher than the overlay z-index
+        el.style.pointerEvents = 'none'; 
+        
+        el.style.animation = `epicConfettiFall ${Math.random() * 3 + 2}s linear forwards`;
+        el.style.animationDelay = Math.random() * 1.5 + 's';
+        
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 6000);
+    }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
