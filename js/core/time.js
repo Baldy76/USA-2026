@@ -97,23 +97,16 @@ export function updateTimeAndCountdown() {
         const activeTab = document.querySelector('.tab-content.active')?.id || 'home';
         let localTz = 'America/Los_Angeles'; let localTzLabel = '🇺🇸 LOCAL (PT)';
         if (activeTab === 'utah') { localTz = 'America/Denver'; localTzLabel = '🇺🇸 LOCAL (MT)'; }
-        
         const ukTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: 'Europe/London' }).format(now);
         const localTimeStr = new Intl.DateTimeFormat('en-GB', { ...timeOpts, timeZone: localTz }).format(now);
         const ukMatch = ukTimeStr.match(/(\d{1,2})[^\d](\d{2})/); if(ukMatch) { updateFlap('uk-hr', ukMatch[1].padStart(2, '0')); updateFlap('uk-min', ukMatch[2]); }
         const locMatch = localTimeStr.match(/(\d{1,2})[^\d](\d{2})/); if(locMatch) { updateFlap('loc-hr', locMatch[1].padStart(2, '0')); updateFlap('loc-min', locMatch[2]); }
         const tzEl = document.getElementById('local-tz-label'); if(tzEl) tzEl.innerText = localTzLabel;
-
         const ukHour = parseInt(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' }).format(now));
         const dot = document.getElementById('uk-status-dot');
         if (dot) {
-            if (ukHour >= 8 && ukHour < 22) {
-                dot.style.background = '#34c759'; 
-                dot.style.boxShadow = '0 0 6px #34c759';
-            } else {
-                dot.style.background = '#ff3b30'; 
-                dot.style.boxShadow = '0 0 6px #ff3b30';
-            }
+            if (ukHour >= 8 && ukHour < 22) { dot.style.background = '#34c759'; dot.style.boxShadow = '0 0 6px #34c759'; }
+            else { dot.style.background = '#ff3b30'; dot.style.boxShadow = '0 0 6px #ff3b30'; }
         }
     } catch(e) {}
     renderUpNext();
@@ -123,10 +116,8 @@ export function renderUpNext() {
     const titleEl = document.getElementById('up-next-title'); const timeEl = document.getElementById('up-next-time');
     if (!titleEl || !timeEl) return;
     if (!state.itineraryData || state.itineraryData.length === 0) { titleEl.innerText = "No upcoming plans"; timeEl.innerText = "Add something to the sheet!"; return; }
-
     const now = new Date().getTime(); const filter = localStorage.getItem('appUser') || 'All';
     const leech = ['graeme', 'dawn', 'grace', 'leech']; const murray = ['david', 'sarah', 'bexs', 'murray'];
-
     let upcoming = [];
     state.itineraryData.forEach(cols => {
         if(!cols || cols.length < 5) return;
@@ -136,20 +127,16 @@ export function renderUpNext() {
         else if (whoL.includes(filterL) || filterL.includes(whoL)) isMatch = true;
         else if (leech.includes(filterL) && whoL.includes('leech')) isMatch = true;
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
-
         if (isMatch) {
             const taskTime = parseDateTime(d, time || '23:59');
             if (taskTime && taskTime > now) upcoming.push({ act, time: time || 'TBD', loc, timestamp: taskTime, date: d });
         }
     });
-
     if (upcoming.length > 0) {
         upcoming.sort((a, b) => a.timestamp - b.timestamp);
         const next = upcoming[0]; titleEl.innerText = next.act;
         const isToday = new Date(next.timestamp).toDateString() === new Date().toDateString();
         let locFormat = "📍 " + (next.loc.toLowerCase().includes('la') ? 'LA' : next.loc.toLowerCase().includes('utah') ? 'Utah' : next.loc.toLowerCase().includes('vegas') ? 'Vegas' : next.loc);
         timeEl.innerText = `${isToday ? "Today" : next.date} @ ${next.time} • ${locFormat}`;
-    } else {
-        titleEl.innerText = "Trip Complete!"; timeEl.innerText = "Time to go home ✈️";
-    }
+    } else { titleEl.innerText = "Trip Complete!"; timeEl.innerText = "Time to go home ✈️"; }
 }
