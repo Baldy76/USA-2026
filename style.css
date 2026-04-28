@@ -130,10 +130,17 @@ body.dark-mode .stay-card {
     background: none; border: none; color: #8e8e93;
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; font-size: 10px; font-weight: 600; flex: 1; cursor: pointer;
+    transition: all 0.2s ease;
 }
-.nav-btn.active { color: var(--accent); }
-.nav-icon { font-size: 24px; margin-bottom: 4px; transition: transform 0.2s; }
-.nav-btn.active .nav-icon { transform: scale(1.2); }
+.nav-icon { font-size: 24px; margin-bottom: 4px; transition: transform 0.2s ease, filter 0.2s ease; }
+
+/* THE FIX: Highly visible active tab highlight */
+.nav-btn.active { color: var(--accent); font-weight: 800; }
+.nav-btn.active .nav-icon { 
+    transform: scale(1.25) translateY(-2px); 
+    filter: drop-shadow(0 4px 6px rgba(0, 122, 255, 0.4)); 
+}
+
 
 /* --- ITINERARY TIMELINE & POSTCARD EFFECT --- */
 .timeline { border-left: 2px solid var(--ios-grey); margin-left: 10px; padding-left: 20px; position: relative; }
@@ -187,7 +194,6 @@ body.dark-mode .itin-card.completed::after {
 
 .day-group { margin-bottom: 20px; }
 
-/* REVISED: Centered and spaced Date Divider */
 .date-divider { 
     display: flex; 
     justify-content: center; 
@@ -200,7 +206,6 @@ body.dark-mode .itin-card.completed::after {
 }
 .date-divider::-webkit-details-marker { display: none; }
 
-/* REVISED: Sticky Date Base Style */
 .sticky-date { 
     padding: 6px 16px; 
     border-radius: 20px; 
@@ -213,7 +218,6 @@ body.dark-mode .itin-card.completed::after {
     box-shadow: 0 4px 10px var(--shadow);
 }
 
-/* REVISED: Location Specific Deep Colors for Dates */
 #la .sticky-date { background: #ffcc00; color: #000; border: none; }
 #utah .sticky-date { background: #ff3b30; color: #fff; border: none; }
 #vegas .sticky-date { background: #af52de; color: #fff; border: none; }
