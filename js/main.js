@@ -1,32 +1,38 @@
-import { state, getVal } from './store.js';
 import { loadAllData, initLiveCurrency, preCacheImages } from './api.js';
-import { applyTheme, updateMetaThemeColor } from './core/theme.js';
-import { updateTimeAndCountdown, renderUpNext } from './core/clock.js';
-import { triggerConfetti, triggerEmojiRain, triggerJackpotMode } from './core/animations.js';
+import { applyTheme } from './core/theme.js';
+import { updateTimeAndCountdown } from './core/clock.js';
 import { populateDropdown, updateFamilyFilter } from './ui.js';
 import { renderItinerary } from './features/itinerary.js';
-import { renderTravelVault, renderAccommodations, renderAnchor } from './features/travel.js';
-import { renderMeetupBoard } from './features/meetup.js';
-import { initWheel, renderScoreboard } from './features/roulette.js';
+import { renderTravelVault, renderAccommodations } from './features/travel.js';
 import { initWeatherPill } from './features/weather.js';
-import { checkMorningBriefing } from './features/briefing.js';
+import { checkMorningBriefing, closeMorningBriefing } from './features/briefing.js';
 
-function handleSplashLogic() {
+async function bootApp() {
+    applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
+    await loadAllData();
+    populateDropdown();
+    renderItinerary();
+    renderTravelVault();
+    renderAccommodations();
+    initWeatherPill();
+    updateTimeAndCountdown();
+    
+    // Splash Logic
     const splash = document.getElementById('splash');
     const loginSelector = document.getElementById('login-selector');
     const splashGoBtn = document.getElementById('splash-go-btn');
-    const savedUser = localStorage.getItem('appUser');
+    const saved = localStorage.getItem('appUser');
 
-    if (savedUser) {
+    if (saved) {
         loginSelector.style.display = 'none';
-        splashGoBtn.innerText = `Let's go, ${savedUser}! ✈️`;
+        splashGoBtn.innerText = `Let's go, ${saved}!`;
         splashGoBtn.style.display = 'block';
     }
 
     loginSelector.addEventListener('change', function() {
         localStorage.setItem('appUser', this.value);
         loginSelector.style.display = 'none';
-        splashGoBtn.innerText = `Let's go, ${this.value}! ✈️`;
+        splashGoBtn.innerText = `Let's go, ${this.value}!`;
         splashGoBtn.style.display = 'block';
         updateFamilyFilter();
     });
@@ -35,20 +41,19 @@ function handleSplashLogic() {
         splash.style.opacity = '0';
         setTimeout(() => { splash.style.display = 'none'; checkMorningBriefing(); }, 300);
     });
-}
 
-async function bootApp() {
-    handleSplashLogic();
-    if(!navigator.onLine) document.getElementById('offline-banner').classList.add('active');
-    applyTheme(localStorage.getItem('HolidayPlanner_Theme') === 'true');
-    
-    await loadAllData();
-    
-    populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); 
-    renderAnchor(); renderMeetupBoard(); renderUpNext(); 
-    initLiveCurrency(); initWeatherPill(); preCacheImages();
-    updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
-    if (document.getElementById('roulette-wheel')) { initWheel(); renderScoreboard(); }
+    // Navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = btn.id.replace('nav-btn-', '');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    document.getElementById('btn-close-briefing').addEventListener('click', closeMorningBriefing);
 }
 
 document.addEventListener('DOMContentLoaded', bootApp);
