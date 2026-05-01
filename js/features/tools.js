@@ -1,32 +1,54 @@
-import { state } from '../store.js';
-
-export let currentTipPercent = 18;
-
-export function convertCurrency() { 
+export function convertCurrency() {
     const usdInput = document.getElementById('usd-input');
-    const clearBtn = document.getElementById('clear-usd');
-    const usd = parseFloat(usdInput?.value);
-    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    if (clearBtn) clearBtn.style.display = usdInput?.value ? 'flex' : 'none';
-    if(document.getElementById('gbp-output')) {
-        if(!isNaN(usd)) document.getElementById('gbp-output').innerText = `£${(usd / rate).toFixed(2)}`;
-        else document.getElementById('gbp-output').innerText = `£0.00`;
+    const gbpOutput = document.getElementById('gbp-output');
+    
+    if (!usdInput || !gbpOutput) return;
+    
+    const usdVal = parseFloat(usdInput.value);
+    
+    // Grab the live rate, or default to 0.79 if the app has literally never been online
+    const rate = parseFloat(localStorage.getItem('usd_gbp_rate')) || 0.79; 
+    
+    if (isNaN(usdVal)) {
+        gbpOutput.innerText = '£0.00';
+    } else {
+        const gbpVal = (usdVal * rate).toFixed(2);
+        gbpOutput.innerText = `£${gbpVal}`;
     }
 }
 
-export function setTip(percent, btnElement) { 
-    currentTipPercent = percent; 
-    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active')); 
-    if(btnElement) btnElement.classList.add('active'); 
-    calculateTip(); 
+// Expose it so the API can trigger it automatically when it boots
+window.convertCurrency = convertCurrency;
+
+export function setTip(percent, btnElement) {
+    document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+    calculateTip();
 }
 
-export function calculateTip() { 
-    const b = parseFloat(document.getElementById('bill-total')?.value) || 0;
-    const splitBtn = document.querySelector('.split-btn.active');
-    const s = splitBtn ? parseInt(splitBtn.dataset.split) : 2;
-    const rate = window.liveExchangeRate || state.liveExchangeRate || 1.25; 
-    const t = b * (1 + (currentTipPercent / 100)), usd = t / s, gbp = usd / rate; 
-    if(document.getElementById('tip-usd')) document.getElementById('tip-usd').innerText = `$${usd.toFixed(2)}`;
-    if(document.getElementById('tip-gbp')) document.getElementById('tip-gbp').innerText = `£${gbp.toFixed(2)}`;
+export function calculateTip() {
+    const billTotalEl = document.getElementById('bill-total');
+    const tipUsdEl = document.getElementById('tip-usd');
+    const tipGbpEl = document.getElementById('tip-gbp');
+    
+    const activeTipBtn = document.querySelector('.tip-btn.active');
+    const activeSplitBtn = document.querySelector('.split-btn.active');
+    
+    if (!billTotalEl || !tipUsdEl || !tipGbpEl) return;
+
+    const billTotal = parseFloat(billTotalEl.value) || 0;
+    const tipPercent = activeTipBtn ? parseFloat(activeTipBtn.dataset.tip) / 100 : 0.20;
+    const splitWays = activeSplitBtn ? parseFloat(activeSplitBtn.dataset.split) : 2;
+    
+    // Grab the live rate here too!
+    const rate = parseFloat(localStorage.getItem('usd_gbp_rate')) || 0.79;
+
+    const totalWithTip = billTotal * (1 + tipPercent);
+    const perFamUsd = totalWithTip / splitWays;
+    const perFamGbp = perFamUsd * rate;
+
+    tipUsdEl.innerText = `$${perFamUsd.toFixed(2)}`;
+    tipGbpEl.innerText = `£${perFamGbp.toFixed(2)}`;
 }
+
+window.calculateTip = calculateTip;
