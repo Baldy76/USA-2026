@@ -314,3 +314,11 @@ body.dark-mode .stay-card.polaroid-effect { background: #f4f4f5 !important; }
 .confetti { width: 10px; height: 10px; border-radius: 2px; }
 .emoji-drop { font-size: 30px; }
 @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+/* --- OVERRIDE SPLASH LOGO SIZE --- */
+.splash-logo {
+    width: 85vw !important;       /* Makes it take up 85% of the phone's screen width */
+    max-width: 400px !important;  /* Stops it from getting comically huge on iPads/Desktop */
+    height: auto !important;      /* Keeps the image proportions perfect so it doesn't stretch */
+    margin-bottom: 25px !important; /* Adds a nice breathing gap before the title */
+}
