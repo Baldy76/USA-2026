@@ -68,6 +68,32 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
+// 🔴 INJECT THE RED DOT TRAP 🔴
+function injectDangerButton() {
+    const homeSection = document.getElementById('home');
+    if (!homeSection || document.getElementById('danger-prank-btn')) return;
+
+    const dangerContainer = document.createElement('div');
+    dangerContainer.id = 'danger-prank-btn';
+    dangerContainer.style.display = 'flex';
+    dangerContainer.style.alignItems = 'center';
+    dangerContainer.style.justifyContent = 'center';
+    dangerContainer.style.gap = '12px';
+    dangerContainer.style.marginTop = '50px';
+    dangerContainer.style.marginBottom = '30px';
+    dangerContainer.style.padding = '15px';
+    dangerContainer.style.cursor = 'pointer';
+    dangerContainer.style.opacity = '0.85';
+
+    dangerContainer.innerHTML = `
+        <div style="width: 18px; height: 18px; background-color: #ff3b30; border-radius: 50%; box-shadow: 0 0 15px #ff3b30; animation: dangerPulse 1.5s infinite;"></div>
+        <span style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Press this button at your own risk</span>
+        <style>@keyframes dangerPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }</style>
+    `;
+
+    homeSection.appendChild(dangerContainer);
+}
+
 function bindEvents() {
     document.getElementById('roulette-mode')?.addEventListener('change', initWheel);
     document.getElementById('family-selector')?.addEventListener('change', updateFamilyFilter);
@@ -82,27 +108,30 @@ function bindEvents() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
-    let clockClicks = 0; let clockTimer = null;
-
     document.body.addEventListener('click', async (e) => {
 
         // 🕵️ SECRET PRANK TRIGGERS 🕵️
 
-        // 1. The Rigged Roulette (Tap the "Good Morning/Evening" title 4 times)
+        // 1. The Red Dot Trap (Jackpot & Dinner Bill)
+        if (e.target.closest('#danger-prank-btn')) {
+            triggerJackpotMode();
+            return;
+        }
+
+        // 2. The Rigged Roulette (Tap the "Good Morning/Evening" title 4 times)
         if (e.target.closest('#greeting-title')) {
             window.rigClicks = (window.rigClicks || 0) + 1;
             clearTimeout(window.rigTimer);
             if (window.rigClicks >= 4) {
                 window.rigClicks = 0;
                 window.isRouletteRigged = !window.isRouletteRigged;
-                // Secret Haptic Feedback: 3 quick buzzes = RIGGED. 1 long buzz = NORMAL.
                 if (navigator.vibrate) navigator.vibrate(window.isRouletteRigged ? [50, 50, 50] : [200]); 
             } else {
                 window.rigTimer = setTimeout(() => window.rigClicks = 0, 1000);
             }
         }
 
-        // 2. Apple Pay Heart Attack (Tap the Days Countdown 4 times)
+        // 3. Apple Pay Heart Attack (Tap the Days Countdown 4 times)
         if (e.target.closest('#countdown-display')) {
             window.appleClicks = (window.appleClicks || 0) + 1;
             clearTimeout(window.appleTimer);
@@ -114,7 +143,7 @@ function bindEvents() {
             }
         }
 
-        // 3. Flight Divert & Drunk Mode (Tap the City Header Photos 3 times)
+        // 4. Flight Divert & Drunk Mode (Tap the City Header Photos 3 times)
         const heroTarget = e.target.closest('.city-hero');
         if (heroTarget) {
             if (heroTarget.parentElement.id === 'flights') {
@@ -131,19 +160,7 @@ function bindEvents() {
             }
         }
 
-        // 4. Konami Easter Egg - The Giftbox Jackpot (Tap Clocks 5 times)
-        if (e.target.closest('#dual-clocks')) {
-            clockClicks++;
-            clearTimeout(clockTimer);
-            if (clockClicks >= 5) {
-                clockClicks = 0;
-                triggerJackpotMode();
-            } else {
-                clockTimer = setTimeout(() => clockClicks = 0, 1000);
-            }
-        }
-
-        // NORMAL APP CLICK EVENTS 
+        // --- NORMAL APP CLICK EVENTS ---
         if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
         if (e.target.closest('.nav-trigger-btn')) {
@@ -341,6 +358,8 @@ async function bootApp() {
     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); preCacheImages(); renderWallet(); renderUpNext(); renderAnchor(); renderMeetupBoard();
     initLiveCurrency(); initWeatherPill();
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
+    
+    injectDangerButton(); // <-- Injects the red dot trap on load
     
     if (document.getElementById('roulette-wheel')) initWheel();
 
