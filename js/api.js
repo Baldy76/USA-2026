@@ -51,18 +51,37 @@ export async function fetchWeather(lat, lon) {
 
 export async function initLiveCurrency() {
     try {
-        const response = await fetch('https://api.frankfurter.dev/v1/latest?base=GBP&symbols=USD');
-        if (!response.ok) throw new Error("Offline");
+        // 1. Fetch the live exchange rate from a free, open API
+        const response = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await response.json();
-        state.liveExchangeRate = data.rates.USD; window.liveExchangeRate = data.rates.USD; 
-        localStorage.setItem('offline_exchange_rate', state.liveExchangeRate);
-        const tag = document.getElementById('live-rate-tag'); if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)}`;
-        const usdInput = document.getElementById('usd-input'); if (usdInput && usdInput.value) usdInput.dispatchEvent(new Event('input'));
-        const billInput = document.getElementById('bill-total'); if (billInput && billInput.value) billInput.dispatchEvent(new Event('input'));
-    } catch (error) {
-        state.liveExchangeRate = parseFloat(localStorage.getItem('offline_exchange_rate')) || 1.25; 
-        window.liveExchangeRate = state.liveExchangeRate;
-        const tag = document.getElementById('live-rate-tag'); if(tag) tag.innerText = `£1 = $${state.liveExchangeRate.toFixed(2)} (OFFLINE)`;
+        
+        if (data && data.rates && data.rates.GBP) {
+            const rate = data.rates.GBP;
+            
+            // 2. Save it to the phone so it works offline later
+            localStorage.setItem('usd_gbp_rate', rate);
+            
+            // 3. Update the little tag on the UI
+            const gbpToUsd = (1 / rate).toFixed(2);
+            const rateTag = document.getElementById('live-rate-tag');
+            if (rateTag) rateTag.innerText = `£1 = $${gbpToUsd}`;
+            
+            // 4. If you already typed a number in, re-calculate it instantly
+            if (window.convertCurrency) window.convertCurrency();
+            if (window.calculateTip) window.calculateTip();
+            
+            console.log("Live currency updated:", rate);
+        }
+    } catch (e) {
+        console.log("Offline mode: Using cached currency rate.");
+        
+        // If offline, just update the UI to show the last saved rate
+        const cachedRate = localStorage.getItem('usd_gbp_rate');
+        if (cachedRate) {
+            const gbpToUsd = (1 / parseFloat(cachedRate)).toFixed(2);
+            const rateTag = document.getElementById('live-rate-tag');
+            if (rateTag) rateTag.innerText = `£1 = $${gbpToUsd} (Offline)`;
+        }
     }
 }
 
