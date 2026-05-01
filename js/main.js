@@ -79,9 +79,9 @@ function injectDangerButton() {
     dangerContainer.style.alignItems = 'center';
     dangerContainer.style.justifyContent = 'center';
     dangerContainer.style.gap = '12px';
-    dangerContainer.style.marginTop = '50px';
-    dangerContainer.style.marginBottom = '30px';
-    dangerContainer.style.padding = '15px';
+    dangerContainer.style.marginTop = '25px';    // Adjusted to fit the gap perfectly
+    dangerContainer.style.marginBottom = '25px'; // Adjusted to fit the gap perfectly
+    dangerContainer.style.padding = '10px';
     dangerContainer.style.cursor = 'pointer';
     dangerContainer.style.opacity = '0.85';
 
@@ -91,7 +91,13 @@ function injectDangerButton() {
         <style>@keyframes dangerPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }</style>
     `;
 
-    homeSection.appendChild(dangerContainer);
+    // INJECT EXACTLY BETWEEN THE HERO CLOCKS AND THE WEATHER PILL
+    const weatherPill = document.getElementById('home-weather-pill');
+    if (weatherPill) {
+        homeSection.insertBefore(dangerContainer, weatherPill);
+    } else {
+        homeSection.appendChild(dangerContainer); // Fallback just in case
+    }
 }
 
 function bindEvents() {
