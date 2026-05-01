@@ -353,11 +353,22 @@ async function bootApp() {
 
 // 🎰 EPIC JACKPOT ENGINE 🎰
 function triggerJackpotMode() {
+    // 1. Inject some cheeky animations for the gift box
+    if (!document.getElementById('jackpot-animations')) {
+        const style = document.createElement('style');
+        style.id = 'jackpot-animations';
+        style.innerHTML = `
+            @keyframes jackpotPulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+            @keyframes giftWiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+        `;
+        document.head.appendChild(style);
+    }
+
     const overlay = document.createElement('div');
     overlay.id = 'jackpot-overlay';
     overlay.style.position = 'fixed';
     overlay.style.inset = '0';
-    overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.95)';
     overlay.style.zIndex = '20000';
     overlay.style.display = 'flex';
     overlay.style.flexDirection = 'column';
@@ -365,72 +376,60 @@ function triggerJackpotMode() {
     overlay.style.alignItems = 'center';
     overlay.style.color = '#ffd60a';
     overlay.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    overlay.style.textAlign = 'center';
+    overlay.style.padding = '20px';
     
+    // 2. Initial Gift Box Screen
     overlay.innerHTML = `
-        <div style="font-size: 80px; margin-bottom: 20px; animation: scalePulse 0.5s infinite alternate;">🎰</div>
-        <h1 style="font-size: 40px; font-weight: 900; margin: 0; text-transform: uppercase; text-shadow: 0 0 20px #ffd60a;">JACKPOT!</h1>
-        <div style="font-size: 20px; font-weight: 700; margin-top: 10px; color: white;">VEGAS MODE UNLOCKED</div>
-        <button id="close-jackpot" style="margin-top: 40px; padding: 15px 30px; font-size: 18px; font-weight: 900; background: #ff3b30; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);">COLLECT WINNINGS</button>
+        <div id="jackpot-content" style="display: flex; flex-direction: column; align-items: center; transition: all 0.4s ease;">
+            <div style="font-size: 80px; margin-bottom: 20px; animation: jackpotPulse 0.5s infinite alternate;">🎰</div>
+            <h1 style="font-size: 40px; font-weight: 900; margin: 0; text-transform: uppercase; text-shadow: 0 0 20px #ffd60a;">JACKPOT!</h1>
+            <div style="font-size: 20px; font-weight: 700; margin-top: 10px; color: white;">VEGAS MODE UNLOCKED</div>
+            
+            <button id="btn-open-prize" style="margin-top: 45px; padding: 20px 40px; font-size: 22px; font-weight: 900; background: linear-gradient(45deg, #ff3b30, #ff9500); color: white; border: none; border-radius: 15px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 59, 48, 0.5); display: flex; align-items: center; gap: 12px; animation: jackpotPulse 0.8s infinite alternate;">
+                <span style="font-size: 35px; animation: giftWiggle 2s infinite;">🎁</span> OPEN PRIZE
+            </button>
+        </div>
     `;
     
     document.body.appendChild(overlay);
-
-    document.getElementById('close-jackpot').addEventListener('click', () => {
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => overlay.remove(), 300);
-    });
-
-    if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
-    }
-
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
     dropEpicJackpotConfetti();
+
+    // 3. The "Gotcha" Reveal Logic
+    document.getElementById('btn-open-prize').addEventListener('click', () => {
+        const content = document.getElementById('jackpot-content');
+        
+        if (navigator.vibrate) navigator.vibrate([200, 100, 300]); // Big rumble for the reveal
+        
+        // Shrink and fade out the first screen
+        content.style.transform = 'scale(0.8)';
+        content.style.opacity = '0';
+        
+        // Wait half a second, then inject the joke
+        setTimeout(() => {
+            content.innerHTML = `
+                <div style="font-size: 90px; margin-bottom: 10px;">🍽️</div>
+                <h1 style="font-size: 38px; font-weight: 900; margin: 0; color: #ff3b30; text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);">SURPRISE!</h1>
+                <div style="font-size: 24px; font-weight: 800; margin-top: 25px; color: white; line-height: 1.4;">
+                    YOUR PRIZE IS...<br>
+                    <span style="color: #34c759; font-size: 32px; display: block; margin-top: 10px;">YOU'RE PAYING FOR DINNER! 💳💸</span>
+                </div>
+                <div style="font-size: 16px; margin-top: 20px; color: rgba(255,255,255,0.5); font-style: italic;">(We accept steak, sushi, or lobster)</div>
+                
+                <button id="close-jackpot" style="margin-top: 40px; padding: 15px 30px; font-size: 18px; font-weight: 900; background: #333; color: white; border: 2px solid #555; border-radius: 25px; cursor: pointer;">I ACCEPT MY FATE</button>
+            `;
+            
+            // Pop the new screen back in
+            content.style.transform = 'scale(1)';
+            content.style.opacity = '1';
+
+            // Bind the close button
+            document.getElementById('close-jackpot').addEventListener('click', () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            });
+            
+        }, 400); // 400ms transition time
+    });
 }
-
-function dropEpicJackpotConfetti() {
-    if (!document.getElementById('epic-confetti-style')) {
-        const style = document.createElement('style');
-        style.id = 'epic-confetti-style';
-        style.innerHTML = `
-            @keyframes epicConfettiFall {
-                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-                100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    const emojis = ['✈️', '🎲', '🎰', '⛰️', '🌴', '💵', '🍹'];
-    const colors = ['#ff3b30', '#34c759', '#007aff', '#ffcc00', '#af52de', '#ff9500'];
-    
-    for (let i = 0; i < 200; i++) {
-        const el = document.createElement('div');
-        
-        if (Math.random() > 0.5) {
-            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-            el.style.fontSize = Math.random() * 20 + 15 + 'px'; 
-            el.style.background = 'transparent';
-        } else {
-            el.style.background = colors[Math.floor(Math.random() * colors.length)];
-            el.style.width = Math.random() * 10 + 8 + 'px';
-            el.style.height = Math.random() * 20 + 10 + 'px';
-            el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0px'; 
-        }
-        
-        el.style.position = 'fixed';
-        el.style.left = Math.random() * 100 + 'vw';
-        el.style.top = '-10vh'; 
-        el.style.zIndex = '21000'; // Higher than the overlay z-index
-        el.style.pointerEvents = 'none'; 
-        
-        el.style.animation = `epicConfettiFall ${Math.random() * 3 + 2}s linear forwards`;
-        el.style.animationDelay = Math.random() * 1.5 + 's';
-        
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 6000);
-    }
-}
-
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
