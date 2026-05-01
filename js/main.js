@@ -87,7 +87,7 @@ function injectDangerButton() {
 
     dangerContainer.innerHTML = `
         <div style="width: 18px; height: 18px; background-color: #ff3b30; border-radius: 50%; box-shadow: 0 0 15px #ff3b30; animation: dangerPulse 1.5s infinite;"></div>
-        <span style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Press this button at your own risk</span>
+        <span style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">DO NOT PRESS THIS BUTTON</span>
         <style>@keyframes dangerPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }</style>
     `;
 
