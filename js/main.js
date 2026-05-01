@@ -23,7 +23,6 @@ import { openChecklistModal, closeChecklistModal, toggleChecklistItem, resetChec
 const tabOrder = ['la', 'utah', 'home', 'vegas', 'flights'];
 window.appCheckMorningBriefing = checkMorningBriefing;
 
-// FEATURE: The Cheeky Micro-Copy
 const cheekyMessages = ["Bribing the pit boss...", "Fueling the jet...", "Locating Dave's wallet...", "Checking trail maps...", "Mixing the margaritas...", "Packing the bags...", "Hiding from the paparazzi..."];
 
 export function openTab(pageId) {
@@ -56,9 +55,7 @@ function initPullToRefresh() {
     document.addEventListener('touchend', e => {
         if (window.scrollY === 0 && pStart > 0) {
             if (e.changedTouches[0].clientY - pStart > 150) {
-                // FEATURE: Injecting the cheeky text
                 document.getElementById('sync-text').innerText = cheekyMessages[Math.floor(Math.random() * cheekyMessages.length)];
-                
                 if(spinner) spinner.classList.add('refreshing'); if (navigator.vibrate) navigator.vibrate(50);
                 loadAllData().then(() => { 
                     populateDropdown(); renderItinerary(); renderTravelVault(); renderAccommodations(); 
@@ -85,12 +82,56 @@ function bindEvents() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
-    let clockClicks = 0;
-    let clockTimer = null;
+    let clockClicks = 0; let clockTimer = null;
 
     document.body.addEventListener('click', async (e) => {
 
-        // FEATURE: The Hidden Konami Easter Egg!
+        // 🕵️ SECRET PRANK TRIGGERS 🕵️
+
+        // 1. The Rigged Roulette (Tap the "Good Morning/Evening" title 4 times)
+        if (e.target.closest('#greeting-title')) {
+            window.rigClicks = (window.rigClicks || 0) + 1;
+            clearTimeout(window.rigTimer);
+            if (window.rigClicks >= 4) {
+                window.rigClicks = 0;
+                window.isRouletteRigged = !window.isRouletteRigged;
+                // Secret Haptic Feedback: 3 quick buzzes = RIGGED. 1 long buzz = NORMAL.
+                if (navigator.vibrate) navigator.vibrate(window.isRouletteRigged ? [50, 50, 50] : [200]); 
+            } else {
+                window.rigTimer = setTimeout(() => window.rigClicks = 0, 1000);
+            }
+        }
+
+        // 2. Apple Pay Heart Attack (Tap the Days Countdown 4 times)
+        if (e.target.closest('#countdown-display')) {
+            window.appleClicks = (window.appleClicks || 0) + 1;
+            clearTimeout(window.appleTimer);
+            if (window.appleClicks >= 4) {
+                window.appleClicks = 0;
+                triggerApplePayPrank();
+            } else {
+                window.appleTimer = setTimeout(() => window.appleClicks = 0, 1000);
+            }
+        }
+
+        // 3. Flight Divert & Drunk Mode (Tap the City Header Photos 3 times)
+        const heroTarget = e.target.closest('.city-hero');
+        if (heroTarget) {
+            if (heroTarget.parentElement.id === 'flights') {
+                window.flightClicks = (window.flightClicks || 0) + 1;
+                clearTimeout(window.flightTimer);
+                if (window.flightClicks >= 3) { window.flightClicks = 0; triggerFlightDivert(); }
+                else { window.flightTimer = setTimeout(() => window.flightClicks = 0, 1000); }
+            }
+            if (heroTarget.parentElement.id === 'vegas') {
+                window.drunkClicks = (window.drunkClicks || 0) + 1;
+                clearTimeout(window.drunkTimer);
+                if (window.drunkClicks >= 3) { window.drunkClicks = 0; triggerDrunkMode(); }
+                else { window.drunkTimer = setTimeout(() => window.drunkClicks = 0, 1000); }
+            }
+        }
+
+        // 4. Konami Easter Egg - The Giftbox Jackpot (Tap Clocks 5 times)
         if (e.target.closest('#dual-clocks')) {
             clockClicks++;
             clearTimeout(clockTimer);
@@ -102,59 +143,38 @@ function bindEvents() {
             }
         }
 
+        // NORMAL APP CLICK EVENTS 
         if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
-
         if (e.target.closest('#btn-close-nav-choice')) { closeNavChoiceModal(); return; }
-
         if (e.target.closest('.nav-trigger-btn')) {
             const btn = e.target.closest('.nav-trigger-btn');
-            openNavChoiceModal(btn.dataset.query, null, null, btn.dataset.loc || '');
-            return;
+            openNavChoiceModal(btn.dataset.query, null, null, btn.dataset.loc || ''); return;
         }
-
         if (e.target.closest('#btn-find-car')) {
             const btn = e.target.closest('#btn-find-car');
-            openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon, '');
-            return;
+            openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon, ''); return;
         }
-
         if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query; const lat = modal.dataset.lat; const lon = modal.dataset.lon;
-            let url = '';
-            const encodedQ = encodeURIComponent(q || '');
-
-            if (btnId === 'btn-nav-waze') {
-                if (lat && lon) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
-                else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`;
-            } else if (btnId === 'btn-nav-google') {
-                if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-                else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`;
-            } else if (btnId === 'btn-nav-uber') {
-                url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`;
-            } else if (btnId === 'btn-nav-alltrails') {
-                url = `https://www.alltrails.com/search?q=${encodedQ}`;
-            }
-
+            let url = ''; const encodedQ = encodeURIComponent(q || '');
+            if (btnId === 'btn-nav-waze') { if (lat && lon) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`; else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`; } 
+            else if (btnId === 'btn-nav-google') { if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`; else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`; } 
+            else if (btnId === 'btn-nav-uber') { url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; } 
+            else if (btnId === 'btn-nav-alltrails') { url = `https://www.alltrails.com/search?q=${encodedQ}`; }
             if (url) window.location.href = url;
-            closeNavChoiceModal();
-            return;
+            closeNavChoiceModal(); return;
         }
 
-        const linkBtn = e.target.closest('.link-btn');
-        if (linkBtn && linkBtn.dataset.url) { window.location.href = linkBtn.dataset.url; return; }
-        
+        const linkBtn = e.target.closest('.link-btn'); if (linkBtn && linkBtn.dataset.url) { window.location.href = linkBtn.dataset.url; return; }
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
-
         if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
         if (e.target.closest('#btn-close-vegas-food')) { closeVegasFoodModal(); return; }
+        
         const vfBtn = e.target.closest('.vegas-food-tab-btn');
-        if (vfBtn) { 
-            document.querySelectorAll('.vegas-food-tab-btn').forEach(b => b.classList.remove('active')); 
-            vfBtn.classList.add('active'); renderVegasFoodList(vfBtn.dataset.cat); return; 
-        }
+        if (vfBtn) { document.querySelectorAll('.vegas-food-tab-btn').forEach(b => b.classList.remove('active')); vfBtn.classList.add('active'); renderVegasFoodList(vfBtn.dataset.cat); return; }
 
         if (e.target.closest('.wallet-doc-link')) { e.preventDefault(); openLightbox(e.target.closest('.wallet-doc-link').dataset.src); return; }
         if (e.target.closest('#btn-close-lightbox') || e.target.id === 'lightbox-modal') { closeLightbox(); return; }
@@ -195,7 +215,6 @@ function bindEvents() {
         if (e.target.closest('.open-quote-btn')) { openQuoteModal(e.target.closest('.open-quote-btn').dataset.location); return; }
         if (e.target.closest('#btn-close-quote')) { closeQuoteModal(); return; }
         if (e.target.closest('#btn-save-quote')) { submitNewQuote(); return; }
-
         if (e.target.closest('#btn-manage-quotes')) { openManageQuotesModal(); return; }
         if (e.target.closest('#btn-close-manage-quotes')) { closeManageQuotesModal(); return; }
 
@@ -342,44 +361,29 @@ async function bootApp() {
                 });
             }
         }
-        if(navigator.onLine) { 
-            await loadAllData(); 
-            renderMeetupBoard(); 
-            renderScoreboard(); 
-        }
+        if(navigator.onLine) { await loadAllData(); renderMeetupBoard(); renderScoreboard(); }
         renderUpNext();
     }, 60000);
 }
 
-// 🎰 EPIC JACKPOT ENGINE 🎰
+
+// ------------------------------------------------------------------
+// 🎭 PRANK ENGINES
+// ------------------------------------------------------------------
+
 function triggerJackpotMode() {
-    // 1. Inject some cheeky animations for the gift box
     if (!document.getElementById('jackpot-animations')) {
-        const style = document.createElement('style');
-        style.id = 'jackpot-animations';
-        style.innerHTML = `
-            @keyframes jackpotPulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
-            @keyframes giftWiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
-        `;
+        const style = document.createElement('style'); style.id = 'jackpot-animations';
+        style.innerHTML = `@keyframes jackpotPulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } } @keyframes giftWiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }`;
         document.head.appendChild(style);
     }
 
     const overlay = document.createElement('div');
-    overlay.id = 'jackpot-overlay';
-    overlay.style.position = 'fixed';
-    overlay.style.inset = '0';
-    overlay.style.backgroundColor = 'rgba(0,0,0,0.95)';
-    overlay.style.zIndex = '20000';
-    overlay.style.display = 'flex';
-    overlay.style.flexDirection = 'column';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.color = '#ffd60a';
-    overlay.style.fontFamily = 'system-ui, -apple-system, sans-serif';
-    overlay.style.textAlign = 'center';
-    overlay.style.padding = '20px';
+    overlay.id = 'jackpot-overlay'; overlay.style.position = 'fixed'; overlay.style.inset = '0';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.95)'; overlay.style.zIndex = '20000';
+    overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center'; overlay.style.color = '#ffd60a'; overlay.style.fontFamily = 'system-ui, -apple-system, sans-serif'; overlay.style.textAlign = 'center'; overlay.style.padding = '20px';
     
-    // 2. Initial Gift Box Screen
     overlay.innerHTML = `
         <div id="jackpot-content" style="display: flex; flex-direction: column; align-items: center; transition: all 0.4s ease;">
             <div style="font-size: 80px; margin-bottom: 20px; animation: jackpotPulse 0.5s infinite alternate;">🎰</div>
@@ -396,40 +400,101 @@ function triggerJackpotMode() {
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
     dropEpicJackpotConfetti();
 
-    // 3. The "Gotcha" Reveal Logic
     document.getElementById('btn-open-prize').addEventListener('click', () => {
         const content = document.getElementById('jackpot-content');
+        if (navigator.vibrate) navigator.vibrate([200, 100, 300]); 
+        content.style.transform = 'scale(0.8)'; content.style.opacity = '0';
         
-        if (navigator.vibrate) navigator.vibrate([200, 100, 300]); // Big rumble for the reveal
-        
-        // Shrink and fade out the first screen
-        content.style.transform = 'scale(0.8)';
-        content.style.opacity = '0';
-        
-        // Wait half a second, then inject the joke
         setTimeout(() => {
             content.innerHTML = `
                 <div style="font-size: 90px; margin-bottom: 10px;">🍽️</div>
                 <h1 style="font-size: 38px; font-weight: 900; margin: 0; color: #ff3b30; text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);">SURPRISE!</h1>
-                <div style="font-size: 24px; font-weight: 800; margin-top: 25px; color: white; line-height: 1.4;">
-                    YOUR PRIZE IS...<br>
-                    <span style="color: #34c759; font-size: 32px; display: block; margin-top: 10px;">YOU'RE PAYING FOR DINNER! 💳💸</span>
-                </div>
+                <div style="font-size: 24px; font-weight: 800; margin-top: 25px; color: white; line-height: 1.4;">YOUR PRIZE IS...<br><span style="color: #34c759; font-size: 32px; display: block; margin-top: 10px;">YOU'RE PAYING FOR DINNER! 💳💸</span></div>
                 <div style="font-size: 16px; margin-top: 20px; color: rgba(255,255,255,0.5); font-style: italic;">(We accept steak, sushi, or lobster)</div>
-                
                 <button id="close-jackpot" style="margin-top: 40px; padding: 15px 30px; font-size: 18px; font-weight: 900; background: #333; color: white; border: 2px solid #555; border-radius: 25px; cursor: pointer;">I ACCEPT MY FATE</button>
             `;
-            
-            // Pop the new screen back in
-            content.style.transform = 'scale(1)';
-            content.style.opacity = '1';
-
-            // Bind the close button
-            document.getElementById('close-jackpot').addEventListener('click', () => {
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.remove(), 300);
-            });
-            
-        }, 400); // 400ms transition time
+            content.style.transform = 'scale(1)'; content.style.opacity = '1';
+            document.getElementById('close-jackpot').addEventListener('click', () => { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 300); });
+        }, 400); 
     });
 }
+
+function dropEpicJackpotConfetti() {
+    if (!document.getElementById('epic-confetti-style')) {
+        const style = document.createElement('style'); style.id = 'epic-confetti-style';
+        style.innerHTML = `@keyframes epicConfettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(120vh) rotate(720deg); opacity: 0; } }`;
+        document.head.appendChild(style);
+    }
+
+    const emojis = ['✈️', '🎲', '🎰', '⛰️', '🌴', '💵', '🍹']; const colors = ['#ff3b30', '#34c759', '#007aff', '#ffcc00', '#af52de', '#ff9500'];
+    
+    for (let i = 0; i < 200; i++) {
+        const el = document.createElement('div');
+        if (Math.random() > 0.5) { el.innerText = emojis[Math.floor(Math.random() * emojis.length)]; el.style.fontSize = Math.random() * 20 + 15 + 'px'; el.style.background = 'transparent'; } 
+        else { el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.width = Math.random() * 10 + 8 + 'px'; el.style.height = Math.random() * 20 + 10 + 'px'; el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0px'; }
+        
+        el.style.position = 'fixed'; el.style.left = Math.random() * 100 + 'vw'; el.style.top = '-10vh'; 
+        el.style.zIndex = '21000'; el.style.pointerEvents = 'none'; 
+        el.style.animation = `epicConfettiFall ${Math.random() * 3 + 2}s linear forwards`; el.style.animationDelay = Math.random() * 1.5 + 's';
+        document.body.appendChild(el); setTimeout(() => el.remove(), 6000);
+    }
+}
+
+function triggerFlightDivert() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.backgroundColor = '#ff3b30'; overlay.style.zIndex = '25000';
+    overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; overlay.style.justifyContent = 'center'; overlay.style.alignItems = 'center'; overlay.style.color = 'white'; overlay.style.padding = '30px'; overlay.style.textAlign = 'center'; overlay.style.fontFamily = 'system-ui, sans-serif';
+
+    overlay.innerHTML = `<div style="font-size: 80px; margin-bottom: 20px;">⚠️</div><h1 style="font-size: 30px; font-weight: 900; text-transform: uppercase;">CRITICAL ALERT</h1><p style="font-size: 20px; font-weight: 700; margin-top: 20px;">Flight routing modified by ATC.</p><p style="font-size: 18px; margin-top: 10px;">Diverting to: <br><b style="font-size:24px;">Tijuana, Mexico (TIJ)</b><br><br>ETA Delay: +14 Hours</p>`;
+    document.body.appendChild(overlay); if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+
+    setTimeout(() => {
+        overlay.style.backgroundColor = '#34c759';
+        overlay.innerHTML = `<div style="font-size: 80px; margin-bottom: 20px;">🍻</div><h1 style="font-size: 35px; font-weight: 900;">JUST KIDDING!</h1><p style="font-size: 20px; font-weight: 700; margin-top: 20px;">Go get a beer.</p>`;
+        setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease'; setTimeout(() => overlay.remove(), 500); }, 4000);
+    }, 6000);
+}
+
+function triggerDrunkMode() {
+    if (!document.getElementById('drunk-style')) {
+        const style = document.createElement('style'); style.id = 'drunk-style';
+        style.innerHTML = `.drunk { filter: blur(3px) contrast(1.2); transform: rotate(4deg) scale(1.05); transition: all 2s ease-in-out; overflow: hidden; pointer-events: none; }`;
+        document.head.appendChild(style);
+    }
+    document.body.classList.add('drunk'); if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
+
+    const banner = document.createElement('div');
+    banner.style.position = 'fixed'; banner.style.top = '50px'; banner.style.left = '50%'; banner.style.transform = 'translateX(-50%)'; banner.style.background = 'rgba(0,0,0,0.8)'; banner.style.color = 'white'; banner.style.padding = '15px 25px'; banner.style.borderRadius = '25px'; banner.style.fontWeight = 'bold'; banner.style.zIndex = '25000'; banner.innerText = 'Breathalyzer Failed. Cut off.';
+    document.body.appendChild(banner);
+
+    setTimeout(() => { document.body.classList.remove('drunk'); banner.remove(); }, 8000);
+}
+
+function triggerApplePayPrank() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.backgroundColor = 'rgba(0,0,0,0.6)'; overlay.style.zIndex = '25000';
+    overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; overlay.style.justifyContent = 'flex-end';
+    
+    overlay.innerHTML = `
+        <div style="background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 30px 20px; box-sizing: border-box; font-family: -apple-system, sans-serif; text-align: center; transform: translateY(100%); animation: slideUp 0.4s forwards ease-out;">
+            <div style="font-size: 24px; font-weight: 600; color: #000; margin-bottom: 5px;">Pay</div>
+            <div style="font-size: 16px; color: #888; margin-bottom: 30px;">Bellagio VIP • Bottle Service</div>
+            <div style="font-size: 45px; font-weight: 700; color: #000; margin-bottom: 40px;">$14,500.00</div>
+            <div id="ap-status" style="font-size: 60px; margin-bottom: 15px; animation: apPulse 1s infinite alternate;">📱</div>
+            <div id="ap-text" style="font-size: 18px; font-weight: 600; color: #000;">Processing Face ID...</div>
+        </div>
+        <style>@keyframes slideUp { to { transform: translateY(0); } } @keyframes apPulse { to { transform: scale(1.1); } }</style>
+    `;
+
+    document.body.appendChild(overlay); if (navigator.vibrate) navigator.vibrate([50]);
+
+    setTimeout(() => {
+        if (navigator.vibrate) navigator.vibrate([200]);
+        document.getElementById('ap-status').innerText = '✅'; document.getElementById('ap-status').style.animation = 'none';
+        document.getElementById('ap-text').innerHTML = 'Done<br><span style="font-size: 14px; color: #888; font-weight: normal; margin-top: 10px; display: block;">No refunds permitted.</span>';
+        setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.4s ease'; setTimeout(() => overlay.remove(), 400); }, 4000);
+    }, 2500);
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
