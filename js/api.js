@@ -61,8 +61,8 @@ export async function initLiveCurrency() {
             // 2. Save it to the phone so it works offline later
             localStorage.setItem('usd_gbp_rate', rate);
             
-            // 3. Update the little tag on the UI
-            const gbpToUsd = (1 / rate).toFixed(2);
+            // 3. Update the little tag on the UI to 4 DECIMAL PLACES
+            const gbpToUsd = (1 / rate).toFixed(4);
             const rateTag = document.getElementById('live-rate-tag');
             if (rateTag) rateTag.innerText = `£1 = $${gbpToUsd}`;
             
@@ -75,10 +75,10 @@ export async function initLiveCurrency() {
     } catch (e) {
         console.log("Offline mode: Using cached currency rate.");
         
-        // If offline, just update the UI to show the last saved rate
+        // If offline, just update the UI to show the last saved rate (also 4 decimals)
         const cachedRate = localStorage.getItem('usd_gbp_rate');
         if (cachedRate) {
-            const gbpToUsd = (1 / parseFloat(cachedRate)).toFixed(2);
+            const gbpToUsd = (1 / parseFloat(cachedRate)).toFixed(4);
             const rateTag = document.getElementById('live-rate-tag');
             if (rateTag) rateTag.innerText = `£1 = $${gbpToUsd} (Offline)`;
         }
