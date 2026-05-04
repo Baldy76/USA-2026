@@ -438,7 +438,6 @@ export function triggerJackpotMode() {
     }, 3500);
 }
 
-
 // ------------------------------------------------------------------
 // 💡 THE NEW TIPS & HINTS ENGINE (Reads from state.hintsData)
 // ------------------------------------------------------------------
@@ -476,7 +475,7 @@ export function renderTips(category) {
     
     const city = modal.dataset.city;
     const currentUser = localStorage.getItem('appUser') || 'All';
-    const data = state.hintsData || []; 
+    const data = window.state?.hintsData || []; 
     
     let html = '';
     
@@ -534,7 +533,14 @@ export function renderVegasFoodList(typeFilter) {
     if(!content) return;
     
     const currentUser = localStorage.getItem('appUser') || 'All';
-    const data = state.vegasFoodData || []; 
+    const data = window.state?.vegasFoodData || []; 
+    
+    // 🧹 SMART FILTER INTERCEPTOR 
+    // This catches old HTML buttons like "Relaxed 1" and maps them safely to the new sheet names
+    let cleanFilter = typeFilter.toLowerCase();
+    if (cleanFilter.includes('relaxed')) cleanFilter = 'relaxed';
+    if (cleanFilter.includes('off strip')) cleanFilter = 'off strip';
+    if (cleanFilter.includes('nice')) cleanFilter = 'nice';
     
     let html = '';
     
@@ -546,7 +552,7 @@ export function renderVegasFoodList(typeFilter) {
         const info1 = (row[3] || '').trim();
         const info2 = (row[4] || '').trim();
         
-        if (rowType !== typeFilter.toLowerCase()) return;
+        if (rowType !== cleanFilter) return;
         if (!matchUser(who, currentUser)) return;
         
         html += `
