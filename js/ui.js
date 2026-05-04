@@ -438,8 +438,9 @@ export function triggerJackpotMode() {
     }, 3500);
 }
 
+
 // ------------------------------------------------------------------
-// 💡 THE NEW TIPS & HINTS ENGINE (Reads from state.hintsData)
+// 💡 THE NEW TIPS & HINTS ENGINE
 // ------------------------------------------------------------------
 
 export function openTipsModal(city) {
@@ -475,7 +476,7 @@ export function renderTips(category) {
     
     const city = modal.dataset.city;
     const currentUser = localStorage.getItem('appUser') || 'All';
-    const data = window.state?.hintsData || []; 
+    const data = state.hintsData || []; 
     
     let html = '';
     
@@ -505,7 +506,7 @@ export function renderTips(category) {
 }
 
 // ------------------------------------------------------------------
-// 🍽️ THE NEW VEGAS FOOD ENGINE (Reads from state.vegasFoodData)
+// 🍽️ THE NEW VEGAS FOOD ENGINE
 // ------------------------------------------------------------------
 
 export function openVegasFoodModal() {
@@ -533,10 +534,9 @@ export function renderVegasFoodList(typeFilter) {
     if(!content) return;
     
     const currentUser = localStorage.getItem('appUser') || 'All';
-    const data = window.state?.vegasFoodData || []; 
+    const data = state.vegasFoodData || []; 
     
     // 🧹 SMART FILTER INTERCEPTOR 
-    // This catches old HTML buttons like "Relaxed 1" and maps them safely to the new sheet names
     let cleanFilter = typeFilter.toLowerCase();
     if (cleanFilter.includes('relaxed')) cleanFilter = 'relaxed';
     if (cleanFilter.includes('off strip')) cleanFilter = 'off strip';
