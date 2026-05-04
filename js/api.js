@@ -1,5 +1,39 @@
 import { state, setVal, getVal } from './store.js';
 
+// 🛡️ HEAVY-DUTY CSV PARSER (Handles line breaks and commas inside cells)
+function parseCSV(text) {
+    const result = [];
+    let row = [];
+    let inQuotes = false;
+    let currentValue = "";
+    
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"' && inQuotes && nextChar === '"') {
+            currentValue += '"';
+            i++; 
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            row.push(currentValue.trim());
+            currentValue = "";
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') i++; 
+            row.push(currentValue.trim());
+            result.push(row);
+            row = [];
+            currentValue = "";
+        } else {
+            currentValue += char;
+        }
+    }
+    row.push(currentValue.trim());
+    if (row.length > 0) result.push(row);
+    return result;
+}
+
 export async function loadAllData() {
     const urls = {
         itinerary: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-L-KclRByD76VfAnqX-uW1-Dksuun8Wv_Yl510_Ibe9Nq19R6D5_n8XjXf3VpA_m6n8pE7VlA7Fq3/pub?gid=0&single=true&output=csv',
@@ -11,20 +45,19 @@ export async function loadAllData() {
     };
 
     try {
-        const fetchCSV = async (url) => {
+        const fetchCSVData = async (url) => {
             const r = await fetch(url);
             const text = await r.text();
-            return text.split('\n').map(row => row.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+            return parseCSV(text); // Using the new safe parser!
         };
 
-        // Download all 6 tabs simultaneously 
         const [itin, vault, quotes, checklist, hints, vegasFood] = await Promise.all([
-            fetchCSV(urls.itinerary),
-            fetchCSV(urls.vault),
-            fetchCSV(urls.quotes),
-            fetchCSV(urls.checklist),
-            fetchCSV(urls.hints),
-            fetchCSV(urls.vegasFood)
+            fetchCSVData(urls.itinerary),
+            fetchCSVData(urls.vault),
+            fetchCSVData(urls.quotes),
+            fetchCSVData(urls.checklist),
+            fetchCSVData(urls.hints),
+            fetchCSVData(urls.vegasFood)
         ]);
 
         state.itineraryData = itin.slice(1);
@@ -34,7 +67,6 @@ export async function loadAllData() {
         state.hintsData = hints.slice(1);
         state.vegasFoodData = vegasFood.slice(1);
         
-        // Find custom families for the login dropdown
         state.sheetFamilies = [...new Set(state.vaultAndStaysData.map(r => r[0]).filter(f => f && f.toLowerCase() !== 'everyone'))];
 
         await Promise.all([
