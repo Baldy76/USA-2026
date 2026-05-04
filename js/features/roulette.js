@@ -7,7 +7,7 @@ export function initWheel() {
     const wheel = document.getElementById('roulette-wheel');
     if(!wheel) return;
     
-    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dave", "Dawn", "Grace", "Dave", "Sarah", "Bexs", "Dave", "Split it"];
+    let names = mode === 'driving' ? ["Graeme", "Dave"] : ["Graeme", "Dawn", "Grace", "Sarah", "Bexs", "Dave", "Split it"];
     wheel.dataset.names = JSON.stringify(names);
     
     let gradient = [];
