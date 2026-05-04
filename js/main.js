@@ -79,8 +79,8 @@ function injectDangerButton() {
     dangerContainer.style.alignItems = 'center';
     dangerContainer.style.justifyContent = 'center';
     dangerContainer.style.gap = '12px';
-    dangerContainer.style.marginTop = '25px';    // Adjusted to fit the gap perfectly
-    dangerContainer.style.marginBottom = '25px'; // Adjusted to fit the gap perfectly
+    dangerContainer.style.marginTop = '25px';
+    dangerContainer.style.marginBottom = '25px';
     dangerContainer.style.padding = '10px';
     dangerContainer.style.cursor = 'pointer';
     dangerContainer.style.opacity = '0.85';
@@ -91,12 +91,11 @@ function injectDangerButton() {
         <style>@keyframes dangerPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }</style>
     `;
 
-    // INJECT EXACTLY BETWEEN THE HERO CLOCKS AND THE WEATHER PILL
     const weatherPill = document.getElementById('home-weather-pill');
     if (weatherPill) {
         homeSection.insertBefore(dangerContainer, weatherPill);
     } else {
-        homeSection.appendChild(dangerContainer); // Fallback just in case
+        homeSection.appendChild(dangerContainer);
     }
 }
 
@@ -116,7 +115,7 @@ function bindEvents() {
 
     document.body.addEventListener('click', async (e) => {
 
-        // 🕵️ SECRET PRANK TRIGGERS 🕵️
+        // 🕵️ IRRESISTIBLE PRANK TRAPS 🕵️
 
         // 1. The Red Dot Trap (Jackpot & Dinner Bill)
         if (e.target.closest('#danger-prank-btn')) {
@@ -124,46 +123,22 @@ function bindEvents() {
             return;
         }
 
-        // 2. The Rigged Roulette (Tap the "Good Morning/Evening" title 4 times)
-        if (e.target.closest('#greeting-title')) {
-            window.rigClicks = (window.rigClicks || 0) + 1;
-            clearTimeout(window.rigTimer);
-            if (window.rigClicks >= 4) {
-                window.rigClicks = 0;
-                window.isRouletteRigged = !window.isRouletteRigged;
-                if (navigator.vibrate) navigator.vibrate(window.isRouletteRigged ? [50, 50, 50] : [200]); 
-            } else {
-                window.rigTimer = setTimeout(() => window.rigClicks = 0, 1000);
-            }
+        // 2. Apple Pay Heart Attack
+        if (e.target.closest('#btn-trap-vip')) {
+            triggerApplePayPrank();
+            return;
         }
 
-        // 3. Apple Pay Heart Attack (Tap the Days Countdown 4 times)
-        if (e.target.closest('#countdown-display')) {
-            window.appleClicks = (window.appleClicks || 0) + 1;
-            clearTimeout(window.appleTimer);
-            if (window.appleClicks >= 4) {
-                window.appleClicks = 0;
-                triggerApplePayPrank();
-            } else {
-                window.appleTimer = setTimeout(() => window.appleClicks = 0, 1000);
-            }
+        // 3. Flight Divert
+        if (e.target.closest('#btn-trap-upgrade')) {
+            triggerFlightDivert();
+            return;
         }
 
-        // 4. Flight Divert & Drunk Mode (Tap the City Header Photos 3 times)
-        const heroTarget = e.target.closest('.city-hero');
-        if (heroTarget) {
-            if (heroTarget.parentElement.id === 'flights') {
-                window.flightClicks = (window.flightClicks || 0) + 1;
-                clearTimeout(window.flightTimer);
-                if (window.flightClicks >= 3) { window.flightClicks = 0; triggerFlightDivert(); }
-                else { window.flightTimer = setTimeout(() => window.flightClicks = 0, 1000); }
-            }
-            if (heroTarget.parentElement.id === 'vegas') {
-                window.drunkClicks = (window.drunkClicks || 0) + 1;
-                clearTimeout(window.drunkTimer);
-                if (window.drunkClicks >= 3) { window.drunkClicks = 0; triggerDrunkMode(); }
-                else { window.drunkTimer = setTimeout(() => window.drunkClicks = 0, 1000); }
-            }
+        // 4. Drunk Mode
+        if (e.target.closest('#btn-trap-drinks')) {
+            triggerDrunkMode();
+            return;
         }
 
         // --- NORMAL APP CLICK EVENTS ---
@@ -365,7 +340,7 @@ async function bootApp() {
     initLiveCurrency(); initWeatherPill();
     updateTimeAndCountdown(); setInterval(updateTimeAndCountdown, 10000);
     
-    injectDangerButton(); // <-- Injects the red dot trap on load
+    injectDangerButton(); 
     
     if (document.getElementById('roulette-wheel')) initWheel();
 
