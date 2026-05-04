@@ -200,6 +200,7 @@
                 <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
             </div>
 
+            <button id="btn-trap-drinks" class="action-btn pulse-btn" style="background: linear-gradient(135deg, #ff2d55, #af52de); color: white; border: none; border-radius: 50px; margin-bottom: 20px; font-weight: 900; box-shadow: 0 8px 24px rgba(175, 82, 222, 0.4);">🍻 Unlock Free Welcome Drinks</button>
             <button id="btn-open-checklist" class="action-btn" style="background: linear-gradient(135deg, #ffd60a, #ffcc00); color: black; border: none; border-radius: 50px; margin-bottom: 20px; font-weight: 900; box-shadow: 0 8px 24px rgba(255, 214, 10, 0.4);">📋 Trip Checklist</button>
             <button id="btn-manual-briefing" class="action-btn" style="background: linear-gradient(135deg, #FF9500, #E67E22); color: white; border: none; border-radius: 50px; margin-bottom: 20px; font-weight: 900; box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);">☕ Today's Briefing</button>
             <button id="btn-open-admin" class="action-btn" style="background: #1c1c1e; color: #ffffff; border: none; margin-bottom: 20px;">⚙️ Settings & Setup</button>
@@ -215,6 +216,7 @@
                 <button class="action-btn open-quote-btn" data-location="vegas" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 Vegas Quote Vault</button>
             </div>
             
+            <button id="btn-trap-vip" class="action-btn pulse-btn" style="margin-bottom: 15px; background: #000; color: #D4AF37; border: 2px solid #D4AF37; font-weight: 900; font-size: 14px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">💎 Claim VIP Bottle Service</button>
             <button id="btn-vegas-food" class="action-btn pulse-btn" style="margin-bottom: 24px; background: linear-gradient(135deg, #ff9500, #ff3b30); box-shadow: 0 4px 15px rgba(255, 149, 0, 0.4); font-size: 14px;">🍔 Ultimate Vegas Food Guide</button>
 
             <div id="vegas-home-card"></div>
@@ -235,6 +237,8 @@
                 </div>
                 <div id="wallet-gallery" class="wallet-grid"></div>
             </div>
+            
+            <button id="btn-trap-upgrade" class="action-btn pulse-btn" style="margin-top: 20px; background: linear-gradient(135deg, #FFD700, #FFAA00); color: black; font-weight: 900; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); border-radius: 50px;">🎫 Check for Complimentary Seat Upgrade</button>
         </section>
 
         <section id="admin" class="page tab-content">
@@ -326,11 +330,11 @@
                         background: var(--ios-grey);
                     }
                     .vegas-food-tab-btn.active {
-                        background: #ff3b30 !important; /* Apple Red */
+                        background: #ff3b30 !important;
                         color: white !important;
                         box-shadow: 0 0 15px rgba(255, 59, 48, 0.6) !important;
                         border: 1px solid #ff3b30 !important;
-                        transform: scale(1.05); /* Makes it pop out slightly */
+                        transform: scale(1.05);
                         z-index: 10;
                     }
                 </style>
