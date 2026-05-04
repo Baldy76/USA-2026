@@ -429,18 +429,12 @@ export function triggerJackpotMode() {
     overlay.style.flexDirection = 'column';
     overlay.innerHTML = `<div style="font-size: 100px; animation: scalePulse 0.3s infinite alternate;">🎰</div><h1 style="color: #ffd60a; font-size: 50px; text-transform: uppercase; margin-top: 20px; font-weight: 900; text-shadow: 0 0 30px #ffd60a;">JACKPOT!</h1>`;
     document.body.appendChild(overlay);
-    triggerConfetti(); 
-    setTimeout(triggerConfetti, 500);
-    setTimeout(triggerConfetti, 1000);
-    setTimeout(() => {
-        overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease';
-        setTimeout(() => overlay.remove(), 500);
-    }, 3500);
+    triggerConfetti(); setTimeout(triggerConfetti, 500); setTimeout(triggerConfetti, 1000);
+    setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease'; setTimeout(() => overlay.remove(), 500); }, 3500);
 }
 
-
 // ------------------------------------------------------------------
-// 💡 THE NEW TIPS & HINTS ENGINE
+// 💡 THE NEW TIPS ENGINE (Reads from state.hintsData)
 // ------------------------------------------------------------------
 
 export function openTipsModal(city) {
@@ -455,18 +449,12 @@ export function openTipsModal(city) {
     
     renderTips('eating'); 
     
-    if (modal) {
-        modal.style.display = 'flex'; 
-        setTimeout(() => modal.classList.add('active'), 10);
-    }
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
 }
 
 export function closeTipsModal() { 
     const modal = document.getElementById('tips-modal');
-    if (modal) {
-        modal.classList.remove('active'); 
-        setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
-    }
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 }
 
 export function renderTips(category) {
@@ -479,7 +467,6 @@ export function renderTips(category) {
     const data = state.hintsData || []; 
     
     let html = '';
-    
     data.forEach(row => {
         if(row.length < 4) return;
         const who = (row[0] || '').trim();
@@ -492,13 +479,10 @@ export function renderTips(category) {
         if (!matchUser(who, currentUser)) return;
         
         const badge = who.toLowerCase() !== 'everyone' ? `<span style="background: var(--accent-gradient); padding: 4px 10px; border-radius: 12px; color: white; font-size: 11px; font-weight: 800; display: inline-block; margin-top: 8px;">👤 ${escapeHTML(who)}</span>` : '';
-        
-        html += `
-            <div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
+        html += `<div class="admin-card" style="padding: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.03); border: 2px solid var(--ios-grey);">
                 <div style="font-size: 15px; font-weight: 500; line-height: 1.6; white-space: pre-wrap; color: var(--text);">${escapeHTML(details)}</div>
                 ${badge ? badge : `<div style="font-size: 11px; font-weight: 800; opacity:0.6; margin-top: 10px;">👤 ${escapeHTML(who)}</div>`}
-            </div>
-        `;
+            </div>`;
     });
     
     if(html === '') html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👻</span><div class="empty-text" style="font-size: 16px;">No tips saved!</div></div>`;
@@ -506,27 +490,20 @@ export function renderTips(category) {
 }
 
 // ------------------------------------------------------------------
-// 🍽️ THE NEW VEGAS FOOD ENGINE
+// 🍽️ THE NEW VEGAS FOOD ENGINE (Reads from state.vegasFoodData)
 // ------------------------------------------------------------------
 
 export function openVegasFoodModal() {
     document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
     const modal = document.getElementById('vegas-food-modal');
     document.querySelectorAll('.vegas-food-tab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cat === 'Nice'); });
-    
     renderVegasFoodList('Nice');
-    
-    if (modal) {
-        modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-    }
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
 }
 
 export function closeVegasFoodModal() { 
     const modal = document.getElementById('vegas-food-modal');
-    if (modal) {
-        modal.classList.remove('active'); 
-        setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); 
-    }
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 }
 
 export function renderVegasFoodList(typeFilter) {
@@ -536,14 +513,12 @@ export function renderVegasFoodList(typeFilter) {
     const currentUser = localStorage.getItem('appUser') || 'All';
     const data = state.vegasFoodData || []; 
     
-    // 🧹 SMART FILTER INTERCEPTOR 
     let cleanFilter = typeFilter.toLowerCase();
     if (cleanFilter.includes('relaxed')) cleanFilter = 'relaxed';
     if (cleanFilter.includes('off strip')) cleanFilter = 'off strip';
     if (cleanFilter.includes('nice')) cleanFilter = 'nice';
     
     let html = '';
-    
     data.forEach(row => {
         if(row.length < 3) return;
         const who = (row[0] || '').trim();
@@ -555,40 +530,28 @@ export function renderVegasFoodList(typeFilter) {
         if (rowType !== cleanFilter) return;
         if (!matchUser(who, currentUser)) return;
         
-        html += `
-            <div style="background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+        html += `<div style="background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
                 <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">🍽️ ${escapeHTML(name)}</div>
                 <ul style="margin: 0; padding-left: 20px; color: var(--text); opacity: 0.8; font-size: 14px; line-height: 1.5;">
                     ${info1 ? `<li style="margin-bottom: 4px;">${escapeHTML(info1)}</li>` : ''}
                     ${info2 ? `<li>${escapeHTML(info2)}</li>` : ''}
                 </ul>
-            </div>
-        `;
+            </div>`;
     });
     
     if(html === '') html = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🍽️</span><div class="empty-text" style="font-size: 16px;">No suggestions for this category yet!</div></div>`;
     content.innerHTML = html;
 }
 
-// ------------------------------------------------------------------
-// 🎯 UNIVERSAL FILTER LOGIC
-// ------------------------------------------------------------------
-
 function matchUser(whoStr, userFilter) {
-    const w = whoStr.toLowerCase();
-    const u = userFilter.toLowerCase();
-    
+    const w = whoStr.toLowerCase(); const u = userFilter.toLowerCase();
     if (u === 'all' || w === 'everyone' || w === '') return true;
     if (w.includes(u) || u.includes(w)) return true;
-    
-    const leech = ['graeme', 'dawn', 'grace'];
-    const murray = ['david', 'sarah', 'bexs'];
-    
+    const leech = ['graeme', 'dawn', 'grace']; const murray = ['david', 'sarah', 'bexs'];
     if (u === 'leech family' && (w.includes('leech') || leech.some(n=>w.includes(n)))) return true;
     if (u === 'murray family' && (w.includes('murray') || murray.some(n=>w.includes(n)))) return true;
     if (leech.includes(u) && w.includes('leech')) return true;
     if (murray.includes(u) && w.includes('murray')) return true;
-    
     return false;
 }
 
