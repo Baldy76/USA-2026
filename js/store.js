@@ -1,27 +1,37 @@
 export const state = {
     itineraryData: null,
     vaultAndStaysData: null,
-    sheetFamilies: [],
-    quotesData: [],
+    quotesData: null,
+    checklistData: null,
+    hintsData: null,
+    vegasFoodData: null,
     gateOverrides: {},
-    liveExchangeRate: 1.25
+    sheetFamilies: []
 };
 
-export async function getVal(key) { 
-    try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : null; } catch(e) { return null; }
+export function setVal(key, val) { 
+    return window.localforage.setItem(key, val); 
 }
 
-export async function setVal(key, val) { 
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.error(e); }
+export function getVal(key) { 
+    return window.localforage.getItem(key); 
 }
 
 export function escapeHTML(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g, '\u0026').replace(/</g, '\u003C').replace(/>/g, '\u003E').replace(/"/g, '\u0022').replace(/'/g, '\u0027');
+    if (!str) return "";
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
 }
 
 export function parseDateTime(dateStr, timeStr) {
     if (!dateStr) return null;
-    const d = new Date(`${dateStr} ${timeStr || '00:00'}`);
+    let combined = dateStr;
+    if (timeStr && timeStr.toLowerCase() !== 'tbd') {
+        combined += ' ' + timeStr;
+    } else {
+        combined += ' 23:59';
+    }
+    const d = new Date(combined);
     return isNaN(d.getTime()) ? null : d.getTime();
 }
