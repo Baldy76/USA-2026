@@ -1,121 +1,93 @@
-import { state, getVal, setVal, escapeHTML } from '../store.js';
-import { triggerConfetti } from '../ui.js';
+import { state, getVal, setVal } from '../store.js';
 
-export async function renderChecklist() {
-    const content = document.getElementById('checklist-content');
-    if (!content) return;
-
-    const filter = localStorage.getItem('appUser') || 'All';
-    const leech = ['graeme', 'dawn', 'grace', 'leech'];
-    const murray = ['david', 'sarah', 'bexs', 'murray'];
-
-    let items = [];
-    (state.vaultAndStaysData || []).forEach(cols => {
-        if(!cols || cols.length < 5) return;
-        const fam = (cols[0] || '').trim();
-        const type = (cols[1] || '').trim().toLowerCase();
-        const itemText = (cols[4] || '').trim();
-
-        if (type === 'checklist' && itemText) {
-            let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-            if (filter === 'All' || famL === 'everyone') isMatch = true;
-            else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true;
-            else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true;
-            else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
-
-            if (isMatch) {
-                // Generate a safe unique ID based on the text
-                items.push({ id: btoa(encodeURIComponent(itemText)).substring(0, 20), text: itemText, fam: fam });
-            }
-        }
-    });
-
-    if (items.length === 0) {
-        content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🎒</span><div class="empty-text">No items to pack! Add some 'checklist' rows to your Vault sheet.</div></div>`;
-        return;
-    }
-
-    const completed = await getVal('packedItems') || [];
-    let pendingHtml = '';
-    let packedHtml = '';
-
-    items.forEach(item => {
-        const isDone = completed.includes(item.id);
-        const badge = item.fam.toLowerCase() !== 'everyone' ? `<span style="background: var(--ios-grey); color: var(--text); padding: 2px 6px; border-radius: 8px; font-size: 9px; font-weight: 800; margin-left: 8px; vertical-align: middle;">${escapeHTML(item.fam)}</span>` : '';
-        
-        const card = `
-            <div class="checklist-item admin-card" data-id="${item.id}" style="padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.2s ease; ${isDone ? 'opacity: 0.5; background: rgba(0,0,0,0.02);' : 'background: var(--bg);'} border: 1px solid var(--ios-grey);">
-                <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${isDone ? '#34c759' : 'var(--ios-grey)'}; background: ${isDone ? '#34c759' : 'transparent'}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; flex-shrink: 0;">
-                    ${isDone ? '✓' : ''}
-                </div>
-                <div style="flex: 1; font-size: 15px; font-weight: 600; text-decoration: ${isDone ? 'line-through' : 'none'};">${escapeHTML(item.text)}${badge}</div>
-            </div>
-        `;
-
-        if (isDone) packedHtml += card;
-        else pendingHtml += card;
-    });
-
-    let finalHtml = '';
-    if (pendingHtml) finalHtml += `<div style="font-size: 12px; font-weight: 900; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-left: 5px;">To Pack</div>${pendingHtml}`;
-    if (packedHtml) finalHtml += `<div style="font-size: 12px; font-weight: 900; text-transform: uppercase; color: #34c759; margin: 20px 0 10px; padding-left: 5px;">Packed ✅</div>${packedHtml}`;
-
-    content.innerHTML = finalHtml;
-}
-
-export async function toggleChecklistItem(id) {
-    let completed = await getVal('packedItems') || [];
-    if (completed.includes(id)) {
-        completed = completed.filter(i => i !== id);
-        if (navigator.vibrate) navigator.vibrate(10);
-    } else {
-        completed.push(id);
-        if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
-        
-        const filter = localStorage.getItem('appUser') || 'All';
-        const leech = ['graeme', 'dawn', 'grace', 'leech'];
-        const murray = ['david', 'sarah', 'bexs', 'murray'];
-        let totalItems = 0;
-        
-        (state.vaultAndStaysData || []).forEach(cols => {
-            if(!cols || cols.length < 5) return;
-            if((cols[1] || '').trim().toLowerCase() === 'checklist') {
-                const fam = (cols[0] || '').trim();
-                let isMatch = false; const famL = fam.toLowerCase(); const filterL = filter.toLowerCase();
-                if (filter === 'All' || famL === 'everyone') isMatch = true;
-                else if (famL.includes(filterL) || filterL.includes(famL)) isMatch = true;
-                else if (leech.includes(filterL) && famL.includes('leech')) isMatch = true;
-                else if (murray.includes(filterL) && famL.includes('murray')) isMatch = true;
-                if(isMatch && (cols[4] || '').trim()) totalItems++;
-            }
-        });
-        
-        if (completed.length === totalItems && totalItems > 0) {
-            setTimeout(triggerConfetti, 300);
-        }
-    }
-    await setVal('packedItems', completed);
-    renderChecklist();
-}
-
-export function openChecklistModal() {
-    document.body.classList.add('no-scroll');
+export async function openChecklistModal() {
     renderChecklist();
     const modal = document.getElementById('checklist-modal');
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+    if (modal) { 
+        modal.style.display = 'flex'; 
+        setTimeout(() => modal.classList.add('active'), 10); 
+    }
 }
 
 export function closeChecklistModal() {
     const modal = document.getElementById('checklist-modal');
-    modal.classList.remove('active'); 
-    setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
+    if (modal) { 
+        modal.classList.remove('active'); 
+        setTimeout(() => modal.style.display = 'none', 300); 
+    }
 }
 
-// NEW: Clear the checklist memory
-export async function resetChecklist() {
-    if(confirm("Uncheck all items and start over?")) {
-        await setVal('packedItems', []);
-        renderChecklist();
-        if (navigator.vibrate) navigator.vibrate(20);
+export async function renderChecklist() {
+    const listEl = document.getElementById('checklist-items');
+    if (!listEl) return;
+
+    const currentUser = localStorage.getItem('appUser') || 'All';
+    const doneItems = await getVal('checklist_done') || [];
+
+    let html = '';
+    const data = state.checklistData || [];
+
+    let itemCount = 0;
+    data.forEach(row => {
+        if(row.length < 2) return;
+        const who = (row[0] || '').trim();
+        const task = (row[1] || '').trim();
+        
+        if (!matchUser(who, currentUser)) return;
+
+        // Use base64 encoding to create a safe, unique ID for the task
+        const taskId = btoa(encodeURIComponent(task)).substring(0, 15);
+        const isChecked = doneItems.includes(taskId) ? 'checked' : '';
+        
+        html += `
+            <div class="checklist-item ${isChecked}" data-id="${taskId}" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s ease;">
+                <div class="check-circle" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${isChecked ? 'var(--accent)' : 'var(--ios-grey)'}; background: ${isChecked ? 'var(--accent)' : 'transparent'}; color: white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; flex-shrink: 0;">
+                    ${isChecked ? '✓' : ''}
+                </div>
+                <span style="${isChecked ? 'text-decoration: line-through; opacity: 0.5;' : ''} font-size: 16px; font-weight: 600;">${task}</span>
+            </div>
+        `;
+        itemCount++;
+    });
+
+    if(itemCount === 0) html = '<div style="opacity:0.5; padding: 20px; text-align:center; font-weight: bold;">All clear! Nothing to do.</div>';
+    listEl.innerHTML = html;
+}
+
+export async function toggleChecklistItem(id) {
+    let doneItems = await getVal('checklist_done') || [];
+    if (doneItems.includes(id)) {
+        doneItems = doneItems.filter(i => i !== id);
+    } else {
+        doneItems.push(id);
+        if(navigator.vibrate) navigator.vibrate(20);
     }
+    await setVal('checklist_done', doneItems);
+    renderChecklist();
+}
+
+export async function resetChecklist() {
+    if(confirm("Clear all checked items?")) {
+        await setVal('checklist_done', []);
+        renderChecklist();
+    }
+}
+
+// Universal Filter Logic
+function matchUser(whoStr, userFilter) {
+    const w = whoStr.toLowerCase();
+    const u = userFilter.toLowerCase();
+    
+    if (u === 'all' || w === 'everyone' || w === '') return true;
+    if (w.includes(u) || u.includes(w)) return true;
+    
+    const leech = ['graeme', 'dawn', 'grace'];
+    const murray = ['david', 'sarah', 'bexs'];
+    
+    if (u === 'leech family' && (w.includes('leech') || leech.some(n=>w.includes(n)))) return true;
+    if (u === 'murray family' && (w.includes('murray') || murray.some(n=>w.includes(n)))) return true;
+    if (leech.includes(u) && w.includes('leech')) return true;
+    if (murray.includes(u) && w.includes('murray')) return true;
+    
+    return false;
 }
