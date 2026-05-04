@@ -1,37 +1,37 @@
 import { state, setVal, getVal } from './store.js';
 
-// 🛡️ HEAVY-DUTY CSV PARSER (Handles line breaks and commas inside cells)
-function parseCSV(text) {
-    const result = [];
-    let row = [];
-    let inQuotes = false;
-    let currentValue = "";
-    
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
+// 🛡️ BULLETPROOF CSV PARSER (Perfectly handles line breaks and commas inside cells)
+function parseCSV(str) {
+    if (!str) return [];
+    let arr = [];
+    let quote = false;
+    let row = 0, col = 0;
+    for (let c = 0; c < str.length; c++) {
+        let cc = str[c], nc = str[c+1];
+        arr[row] = arr[row] || [];
+        arr[row][col] = arr[row][col] || '';
 
-        if (char === '"' && inQuotes && nextChar === '"') {
-            currentValue += '"';
-            i++; 
-        } else if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            row.push(currentValue.trim());
-            currentValue = "";
-        } else if ((char === '\n' || char === '\r') && !inQuotes) {
-            if (char === '\r' && nextChar === '\n') i++; 
-            row.push(currentValue.trim());
-            result.push(row);
-            row = [];
-            currentValue = "";
-        } else {
-            currentValue += char;
+        if (cc === '"' && quote && nc === '"') {
+            arr[row][col] += cc; ++c; continue;
         }
+        if (cc === '"') {
+            quote = !quote; continue;
+        }
+        if (cc === ',' && !quote) {
+            ++col; continue;
+        }
+        if (cc === '\r' && nc === '\n' && !quote) {
+            ++row; col = 0; ++c; continue;
+        }
+        if (cc === '\n' && !quote) {
+            ++row; col = 0; continue;
+        }
+        if (cc === '\r' && !quote) {
+            ++row; col = 0; continue;
+        }
+        arr[row][col] += cc;
     }
-    row.push(currentValue.trim());
-    if (row.length > 0) result.push(row);
-    return result;
+    return arr.map(r => r.map(c => c.trim()));
 }
 
 export async function loadAllData() {
@@ -47,8 +47,9 @@ export async function loadAllData() {
     try {
         const fetchCSVData = async (url) => {
             const r = await fetch(url);
+            if (!r.ok) throw new Error("HTTP error");
             const text = await r.text();
-            return parseCSV(text); // Using the new safe parser!
+            return parseCSV(text);
         };
 
         const [itin, vault, quotes, checklist, hints, vegasFood] = await Promise.all([
@@ -60,12 +61,12 @@ export async function loadAllData() {
             fetchCSVData(urls.vegasFood)
         ]);
 
-        state.itineraryData = itin.slice(1);
-        state.vaultAndStaysData = vault.slice(1);
-        state.quotesData = quotes.slice(1);
-        state.checklistData = checklist.slice(1);
-        state.hintsData = hints.slice(1);
-        state.vegasFoodData = vegasFood.slice(1);
+        state.itineraryData = itin.length > 1 ? itin.slice(1) : [];
+        state.vaultAndStaysData = vault.length > 1 ? vault.slice(1) : [];
+        state.quotesData = quotes.length > 1 ? quotes.slice(1) : [];
+        state.checklistData = checklist.length > 1 ? checklist.slice(1) : [];
+        state.hintsData = hints.length > 1 ? hints.slice(1) : [];
+        state.vegasFoodData = vegasFood.length > 1 ? vegasFood.slice(1) : [];
         
         state.sheetFamilies = [...new Set(state.vaultAndStaysData.map(r => r[0]).filter(f => f && f.toLowerCase() !== 'everyone'))];
 
@@ -78,13 +79,13 @@ export async function loadAllData() {
             setVal('vegasFood_cache', state.vegasFoodData)
         ]);
     } catch (e) {
-        console.warn("Using offline cached data");
-        state.itineraryData = await getVal('itin_cache');
-        state.vaultAndStaysData = await getVal('vault_cache');
-        state.quotesData = await getVal('quotes_cache');
-        state.checklistData = await getVal('checklist_cache');
-        state.hintsData = await getVal('hints_cache');
-        state.vegasFoodData = await getVal('vegasFood_cache');
+        console.warn("Network error or fetch failed. Using offline cached data");
+        state.itineraryData = await getVal('itin_cache') || [];
+        state.vaultAndStaysData = await getVal('vault_cache') || [];
+        state.quotesData = await getVal('quotes_cache') || [];
+        state.checklistData = await getVal('checklist_cache') || [];
+        state.hintsData = await getVal('hints_cache') || [];
+        state.vegasFoodData = await getVal('vegasFood_cache') || [];
     }
 }
 
