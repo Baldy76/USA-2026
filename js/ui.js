@@ -768,3 +768,90 @@ export function closeNavChoiceModal() {
     modal.classList.remove('active');
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
+
+// ------------------------------------------------------------------
+// 🗺️ THE NEW ROAD TRIP ENGINE (Reads from state.roadtripData)
+// ------------------------------------------------------------------
+
+export function openRoadtripModal() {
+    document.body.classList.add('no-scroll'); 
+    if(navigator.vibrate) navigator.vibrate(40);
+    
+    const selector = document.getElementById('roadtrip-route-selector');
+    const data = state.roadtripData || [];
+    
+    const routes = [...new Set(data.map(row => (row[0] || '').trim()).filter(r => r !== ''))];
+    
+    if (routes.length > 0) {
+        selector.innerHTML = routes.map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`).join('');
+        renderRoadtripList(routes[0]);
+    } else {
+        selector.innerHTML = '<option value="">No routes found</option>';
+        renderRoadtripList('');
+    }
+    
+    const modal = document.getElementById('roadtrip-modal');
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+}
+
+export function closeRoadtripModal() { 
+    const modal = document.getElementById('roadtrip-modal');
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+}
+
+export function renderRoadtripList(selectedRoute) {
+    const content = document.getElementById('roadtrip-content');
+    if (!state.roadtripData || state.roadtripData.length === 0) {
+        content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🗺️</span><div class="empty-text" style="font-size: 16px;">No road trip data loaded!</div></div>`;
+        return;
+    }
+    
+    let html = '';
+    state.roadtripData.forEach(cols => {
+        if(cols.length < 5) return;
+        
+        const route = (cols[0] || '').trim();
+        if (route !== selectedRoute) return;
+        
+        const time = (cols[1] || '').trim();
+        const clockStatus = (cols[2] || '').trim();
+        const activity = (cols[3] || '').trim();
+        const details = (cols[4] || '').trim();
+        const gps = (cols[5] || '').trim(); 
+        
+        if (!activity) return; 
+        
+        let icon = '📍';
+        const actLower = activity.toLowerCase() + ' ' + details.toLowerCase();
+        if (actLower.includes('fuel') || actLower.includes('gas') || actLower.includes('maverik')) icon = '⛽';
+        else if (actLower.includes('hike') || actLower.includes('walk') || actLower.includes('trail')) icon = '🥾';
+        else if (actLower.includes('view') || actLower.includes('lookout') || actLower.includes('photo')) icon = '📸';
+        else if (actLower.includes('food') || actLower.includes('lunch') || actLower.includes('dinner') || actLower.includes('eat')) icon = '🍔';
+        else if (actLower.includes('wheels up') || actLower.includes('drive') || actLower.includes('home')) icon = '🚗';
+        
+        let navBtn = '';
+        if (gps) {
+            let lat = '', lon = '';
+            if (gps.includes(',')) {
+                const parts = gps.split(',');
+                if(!isNaN(parseFloat(parts[0])) && !isNaN(parseFloat(parts[1]))) {
+                    lat = parts[0].trim(); lon = parts[1].trim();
+                }
+            }
+            navBtn = `<div class="nav-trigger-btn pulse-btn" data-query="${escapeHTML(gps)}" data-lat="${escapeHTML(lat)}" data-lon="${escapeHTML(lon)}" style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; background: #007aff; color: white; padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);">🧭 Send to GPS</div>`;
+        }
+        
+        html += `
+        <div class="admin-card" style="padding: 15px; margin-bottom: 15px; background: var(--card); border-left: 4px solid #2b7a0b; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <div style="font-size: 16px; font-weight: 900; color: var(--text);">${icon} ${escapeHTML(activity)}</div>
+                ${time ? `<div style="font-size: 13px; font-weight: 800; color: white; background: #2b7a0b; padding: 4px 8px; border-radius: 8px; white-space: nowrap;">${escapeHTML(time)}</div>` : ''}
+            </div>
+            ${clockStatus ? `<div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #ff9500; margin-bottom: 8px; letter-spacing: 0.5px;">🕒 ${escapeHTML(clockStatus)}</div>` : ''}
+            ${details ? `<div style="font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--text); opacity: 0.85;">${escapeHTML(details)}</div>` : ''}
+            ${navBtn}
+        </div>`;
+    });
+    
+    content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><div class="empty-text">No stops found for this route!</div></div>`;
+}
