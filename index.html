@@ -63,6 +63,9 @@
                 <button class="action-btn tips-btn" data-city="utah" style="flex: 1; margin: 0; background: var(--card); color: var(--accent); border: 2px solid var(--accent); font-weight: 900; font-size: 13px;">💡 Utah Tips</button>
                 <button class="action-btn open-quote-btn" data-location="utah" style="flex: 1.5; margin: 0; background: #1c1c1e; color: white; border-radius: 16px; font-size: 13px;">💬 Utah Quote Vault</button>
             </div>
+            
+            <button id="btn-open-roadtrips" class="action-btn pulse-btn" style="margin-bottom: 24px; background: linear-gradient(135deg, #2b7a0b, #558b2f); box-shadow: 0 4px 15px rgba(43, 122, 11, 0.4); font-size: 14px; color: white; border: none;">🗺️ Epic Road Trips & Trails</button>
+
             <div id="utah-home-card"></div>
             <div id="utah-itinerary"><div class="skel-card"><div class="skeleton skel-h"></div><div class="skeleton skel-p"></div></div></div>
             <div id="utah-completed-section" class="completed-section" style="display: none;"><div class="completed-divider"><span>✅ Completed</span></div><div id="utah-completed-list"></div></div>
@@ -281,7 +284,7 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v9.0.1</div>
+            <div class="version-control">v9.0.2</div>
         </section>
 
         <div id="nav-choice-modal" class="modal-overlay" style="z-index: 4000;">
@@ -457,6 +460,19 @@
                     <button class="segment weather-btn" id="btn-w-vegas">🎲 Vegas</button>
                 </div>
                 <div id="WTH-dashboard" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
+            </div>
+        </div>
+
+        <div id="roadtrip-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="display: flex; flex-direction: column; height: 90vh;">
+                <button id="btn-close-roadtrip" class="mac-close-btn">✕</button>
+                <h3 style="margin-top: 0; text-align: center; font-size: 20px; margin-bottom: 15px;">🗺️ Epic Road Trips</h3>
+                
+                <select id="roadtrip-route-selector" style="margin-bottom: 15px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: 1px solid var(--ios-grey); background: var(--bg); color: var(--text); outline: none; width: 100%; text-align: center; text-align-last: center;">
+                    <option value="">Loading routes...</option>
+                </select>
+                
+                <div id="roadtrip-content" style="overflow-y: auto; flex: 1; padding-right: 5px;"></div>
             </div>
         </div>
 
