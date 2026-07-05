@@ -6,6 +6,7 @@ export const state = {
     checklistData: [],
     hintsData: [],
     vegasFoodData: [],
+    roadtripData: [], // NEW: Roadtrip Database
     gateOverrides: {},
     liveExchangeRate: 1.25
 };
