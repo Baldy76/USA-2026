@@ -780,11 +780,15 @@ export function openRoadtripModal() {
     const selector = document.getElementById('roadtrip-route-selector');
     const data = state.roadtripData || [];
     
-    const routes = [...new Set(data.map(row => (row[0] || '').trim()).filter(r => r !== ''))];
+    // Get unique routes, ignoring blank spaces and the sheet's header row
+    const routes = [...new Set(data.map(row => (row[0] || '').trim()).filter(r => r !== '' && r.toLowerCase() !== 'national park'))];
     
     if (routes.length > 0) {
-        selector.innerHTML = routes.map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`).join('');
-        renderRoadtripList(routes[0]);
+        // Force the dropdown to start on a default, blank option
+        selector.innerHTML = `<option value="" disabled selected>🗺️ Select a Route...</option>` + 
+                             routes.map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`).join('');
+        // Tell the screen to render nothing yet
+        renderRoadtripList('');
     } else {
         selector.innerHTML = '<option value="">No routes found</option>';
         renderRoadtripList('');
@@ -801,6 +805,13 @@ export function closeRoadtripModal() {
 
 export function renderRoadtripList(selectedRoute) {
     const content = document.getElementById('roadtrip-content');
+    
+    // If no route is selected yet, show a friendly prompt!
+    if (!selectedRoute) {
+        content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👇</span><div class="empty-text" style="font-size: 16px;">Select a park above to view the route!</div></div>`;
+        return;
+    }
+    
     if (!state.roadtripData || state.roadtripData.length === 0) {
         content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🗺️</span><div class="empty-text" style="font-size: 16px;">No road trip data loaded!</div></div>`;
         return;
@@ -819,15 +830,17 @@ export function renderRoadtripList(selectedRoute) {
         const details = (cols[4] || '').trim();
         const gps = (cols[5] || '').trim(); 
         
-        if (!activity) return; 
+        // Ignore the header rows that just say "Location / Activity"
+        if (!activity || activity.toLowerCase() === 'location / activity') return; 
         
         let icon = '📍';
         const actLower = activity.toLowerCase() + ' ' + details.toLowerCase();
         if (actLower.includes('fuel') || actLower.includes('gas') || actLower.includes('maverik')) icon = '⛽';
         else if (actLower.includes('hike') || actLower.includes('walk') || actLower.includes('trail')) icon = '🥾';
-        else if (actLower.includes('view') || actLower.includes('lookout') || actLower.includes('photo')) icon = '📸';
-        else if (actLower.includes('food') || actLower.includes('lunch') || actLower.includes('dinner') || actLower.includes('eat')) icon = '🍔';
-        else if (actLower.includes('wheels up') || actLower.includes('drive') || actLower.includes('home')) icon = '🚗';
+        else if (actLower.includes('view') || actLower.includes('lookout') || actLower.includes('photo') || actLower.includes('hoodoo')) icon = '📸';
+        else if (actLower.includes('food') || actLower.includes('lunch') || actLower.includes('dinner') || actLower.includes('eat') || actLower.includes('burrito')) icon = '🍔';
+        else if (actLower.includes('wheels up') || actLower.includes('drive') || actLower.includes('home') || actLower.includes('road')) icon = '🚗';
+        else if (actLower.includes('park') || actLower.includes('enter')) icon = '🌲';
         
         let navBtn = '';
         if (gps) {
