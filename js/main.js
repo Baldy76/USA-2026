@@ -11,7 +11,8 @@ import {
     openLightbox, closeLightbox,
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
     checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
-    openNavChoiceModal, closeNavChoiceModal
+    openNavChoiceModal, closeNavChoiceModal,
+    openRoadtripModal, closeRoadtripModal, renderRoadtripList
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -109,6 +110,9 @@ function bindEvents() {
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
     
+    // ROAD TRIP SELECTOR
+    document.getElementById('roadtrip-route-selector')?.addEventListener('change', (e) => renderRoadtripList(e.target.value));
+    
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
@@ -117,29 +121,10 @@ function bindEvents() {
 
         // 🕵️ IRRESISTIBLE PRANK TRAPS 🕵️
 
-        // 1. The Red Dot Trap (Jackpot & Dinner Bill)
-        if (e.target.closest('#danger-prank-btn')) {
-            triggerJackpotMode();
-            return;
-        }
-
-        // 2. Apple Pay Heart Attack
-        if (e.target.closest('#btn-trap-vip')) {
-            triggerApplePayPrank();
-            return;
-        }
-
-        // 3. Flight Divert
-        if (e.target.closest('#btn-trap-upgrade')) {
-            triggerFlightDivert();
-            return;
-        }
-
-        // 4. Drunk Mode
-        if (e.target.closest('#btn-trap-drinks')) {
-            triggerDrunkMode();
-            return;
-        }
+        if (e.target.closest('#danger-prank-btn')) { triggerJackpotMode(); return; }
+        if (e.target.closest('#btn-trap-vip')) { triggerApplePayPrank(); return; }
+        if (e.target.closest('#btn-trap-upgrade')) { triggerFlightDivert(); return; }
+        if (e.target.closest('#btn-trap-drinks')) { triggerDrunkMode(); return; }
 
         // --- NORMAL APP CLICK EVENTS ---
         if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
@@ -168,6 +153,11 @@ function bindEvents() {
         const linkBtn = e.target.closest('.link-btn'); if (linkBtn && linkBtn.dataset.url) { window.location.href = linkBtn.dataset.url; return; }
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
+        
+        // ROAD TRIPS OPEN/CLOSE
+        if (e.target.closest('#btn-open-roadtrips')) { openRoadtripModal(); return; }
+        if (e.target.closest('#btn-close-roadtrip')) { closeRoadtripModal(); return; }
+        
         if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
         if (e.target.closest('#btn-close-vegas-food')) { closeVegasFoodModal(); return; }
         
@@ -365,7 +355,6 @@ async function bootApp() {
         renderUpNext();
     }, 60000);
 }
-
 
 // ------------------------------------------------------------------
 // 🎭 PRANK ENGINES
