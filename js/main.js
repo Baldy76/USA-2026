@@ -137,15 +137,28 @@ function bindEvents() {
             const btn = e.target.closest('#btn-find-car');
             openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon, ''); return;
         }
-        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
+     if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query; const lat = modal.dataset.lat; const lon = modal.dataset.lon;
             let url = ''; const encodedQ = encodeURIComponent(q || '');
-            if (btnId === 'btn-nav-waze') { if (lat && lon) url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`; else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`; } 
-            else if (btnId === 'btn-nav-google') { if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`; else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`; } 
-            else if (btnId === 'btn-nav-uber') { url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; } 
-            else if (btnId === 'btn-nav-alltrails') { url = `https://www.alltrails.com/search?q=${encodedQ}`; }
+            
+            if (btnId === 'btn-nav-waze') { 
+                // Waze prefers the comma between coordinates to be URL-encoded as %2C
+                if (lat && lon) url = `https://waze.com/ul?ll=${lat}%2C${lon}&navigate=yes`; 
+                else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`; 
+            } 
+            else if (btnId === 'btn-nav-google') { 
+                if (lat && lon) url = `https://maps.google.com/?q=${lat},${lon}`; 
+                else url = `https://maps.google.com/?q=${encodedQ}`; 
+            } 
+            else if (btnId === 'btn-nav-uber') { 
+                url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; 
+            } 
+            else if (btnId === 'btn-nav-alltrails') { 
+                url = `https://www.alltrails.com/search?q=${encodedQ}`; 
+            }
+            
             if (url) window.location.href = url;
             closeNavChoiceModal(); return;
         }
