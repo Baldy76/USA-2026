@@ -780,11 +780,11 @@ export function openRoadtripModal() {
     const selector = document.getElementById('roadtrip-route-selector');
     const data = state.roadtripData || [];
     
-    // 🛡️ THE FIX: Exact match filtering so we don't accidentally ban real National Parks!
+    // THE FIX: We must use !== instead of .includes() so we don't ban your actual parks!
     const routes = [...new Set(data.map(row => (row[0] || '').trim()).filter(r => 
         r !== '' && 
         r.toLowerCase() !== 'national park' && 
-        r.toLowerCase() !== 'route'
+        r.toLowerCase() !== 'location / activity'
     ))];
     
     if (routes.length > 0) {
