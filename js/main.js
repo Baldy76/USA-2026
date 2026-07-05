@@ -144,13 +144,21 @@ function bindEvents() {
             let url = ''; const encodedQ = encodeURIComponent(q || '');
             
             if (btnId === 'btn-nav-waze') { 
-                // Waze prefers the comma between coordinates to be URL-encoded as %2C
-                if (lat && lon) url = `https://waze.com/ul?ll=${lat}%2C${lon}&navigate=yes`; 
-                else url = `https://waze.com/ul?q=${encodedQ}&navigate=yes`; 
+                // Use Waze's native app scheme to bypass iOS web link scrambling
+                if (lat && lon) url = `waze://?ll=${lat},${lon}&navigate=yes`; 
+                else url = `waze://?q=${encodedQ}&navigate=yes`; 
+                
+                // Fallback to the web link if the user doesn't have the app installed
+                setTimeout(() => { 
+                    if (document.visibilityState === 'visible') { 
+                        window.location.href = (lat && lon) ? `https://waze.com/ul?ll=${lat},${lon}&navigate=yes` : `https://waze.com/ul?q=${encodedQ}&navigate=yes`; 
+                    } 
+                }, 800);
             } 
             else if (btnId === 'btn-nav-google') { 
-                if (lat && lon) url = `https://maps.google.com/?q=${lat},${lon}`; 
-                else url = `https://maps.google.com/?q=${encodedQ}`; 
+                // Use official Google Maps directional URLs
+                if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`; 
+                else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`; 
             } 
             else if (btnId === 'btn-nav-uber') { 
                 url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; 
