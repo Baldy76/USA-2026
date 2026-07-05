@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holiday-planner-v9.0.6'; // Bumping this forces all phones to update!
+const CACHE_NAME = 'holiday-planner-v9.0.7'; // Bumping this forces all phones to update!
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
