@@ -3,7 +3,7 @@ import { state, setVal, getVal } from './store.js';
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjyYf54mXK9y6RfeTn7gimNIwN5X0kBA4TqeymYc3WKhtOpprcpJ4xb51bbJQZ7wWh/exec"; 
 const WEATHER_API_KEY = "4c00e61833ea94d3c4a1bff9d2c32969"; 
 
-// 🛡️ BULLETPROOF CSV PARSER (Handles line breaks inside cells perfectly)
+// 🛡️ BULLETPROOF CSV PARSER
 function parseCSV(str) {
     if (!str) return [];
     let arr = []; let quote = false; let row = 0, col = 0;
@@ -28,7 +28,8 @@ export async function loadAllData() {
         quotes: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1357435334&single=true&output=csv',
         checklist: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1780052747&single=true&output=csv',
         hints: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1546389508&single=true&output=csv',
-        vegasFood: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1639469919&single=true&output=csv'
+        vegasFood: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=1639469919&single=true&output=csv',
+        roadtrip: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWEEJQf9mQweTGIWx78Nq4wa2v2WCUEcBrrnAGcs6VTK5d4xeog4BL-Q7FyXMh6Nj33o-ZG2r01vQ5/pub?gid=272130134&single=true&output=csv' // NEW
     };
 
     const stamp = '&t=' + Date.now();
@@ -41,9 +42,10 @@ export async function loadAllData() {
             return parseCSV(text);
         };
 
-        const [itin, vault, quotes, checklist, hints, vegasFood] = await Promise.all([
+        const [itin, vault, quotes, checklist, hints, vegasFood, roadtrip] = await Promise.all([
             fetchCSVData(urls.itinerary), fetchCSVData(urls.vault), fetchCSVData(urls.quotes),
-            fetchCSVData(urls.checklist), fetchCSVData(urls.hints), fetchCSVData(urls.vegasFood)
+            fetchCSVData(urls.checklist), fetchCSVData(urls.hints), fetchCSVData(urls.vegasFood),
+            fetchCSVData(urls.roadtrip) // NEW
         ]);
 
         state.itineraryData = itin.length > 1 ? itin.slice(1) : [];
@@ -52,19 +54,22 @@ export async function loadAllData() {
         state.checklistData = checklist.length > 1 ? checklist.slice(1) : [];
         state.hintsData = hints.length > 1 ? hints.slice(1) : [];
         state.vegasFoodData = vegasFood.length > 1 ? vegasFood.slice(1) : [];
+        state.roadtripData = roadtrip.length > 1 ? roadtrip.slice(1) : []; // NEW
         
         state.sheetFamilies = [...new Set(state.vaultAndStaysData.map(r => r[0]).filter(f => f && f.toLowerCase() !== 'everyone'))];
 
         await Promise.all([
             setVal('itin_cache', state.itineraryData), setVal('vault_cache', state.vaultAndStaysData),
             setVal('quotes_cache', state.quotesData), setVal('checklist_cache', state.checklistData),
-            setVal('hints_cache', state.hintsData), setVal('vegasFood_cache', state.vegasFoodData)
+            setVal('hints_cache', state.hintsData), setVal('vegasFood_cache', state.vegasFoodData),
+            setVal('roadtrip_cache', state.roadtripData) // NEW
         ]);
     } catch (e) {
         console.warn("Using offline cached data");
         state.itineraryData = await getVal('itin_cache') || []; state.vaultAndStaysData = await getVal('vault_cache') || [];
         state.quotesData = await getVal('quotes_cache') || []; state.checklistData = await getVal('checklist_cache') || [];
         state.hintsData = await getVal('hints_cache') || []; state.vegasFoodData = await getVal('vegasFood_cache') || [];
+        state.roadtripData = await getVal('roadtrip_cache') || []; // NEW
     }
 }
 
