@@ -12,7 +12,10 @@ import {
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
     checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
     openNavChoiceModal, closeNavChoiceModal,
-    openRoadtripModal, closeRoadtripModal
+    openRoadtripModal, closeRoadtripModal,
+    openConverterModal, closeConverterModal,
+    openTipModal, closeTipModal,
+    openRouletteModal, closeRouletteModal
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -118,6 +121,14 @@ function bindEvents() {
         // --- PRANKS ---
         if (e.target.closest('#danger-prank-btn')) { triggerJackpotMode(); return; }
         if (e.target.closest('#btn-trap-upgrade')) { triggerFlightDivert(); return; }
+
+        // --- TOOLBOX MODALS ---
+        if (e.target.closest('#btn-open-converter')) { openConverterModal(); return; }
+        if (e.target.closest('#btn-close-converter')) { closeConverterModal(); return; }
+        if (e.target.closest('#btn-open-tip')) { openTipModal(); return; }
+        if (e.target.closest('#btn-close-tip')) { closeTipModal(); return; }
+        if (e.target.closest('#btn-open-roulette')) { openRouletteModal(); return; }
+        if (e.target.closest('#btn-close-roulette')) { closeRouletteModal(); return; }
 
         // --- NORMAL APP CLICK EVENTS ---
         if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
