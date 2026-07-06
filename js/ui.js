@@ -210,8 +210,6 @@ export async function renderItinerary() {
         else if (murray.includes(filterL) && whoL.includes('murray')) isMatch = true;
 
         if (isMatch) {
-            const mapQuery = addr || `${act} ${loc}`;
-            
             const taskId = btoa(encodeURIComponent(`${d}-${loc}-${act}-${time}`)).replace(/=/g, ''); 
             const isCompleted = completedTasks.includes(taskId);
             
@@ -229,6 +227,7 @@ export async function renderItinerary() {
                 disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
             }
 
+            // THE FIX: Only show "Get Directions" if addr explicitly has a value
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -239,7 +238,7 @@ export async function renderItinerary() {
                         </div>
                         <div class="itin-title" style="font-size: 17px; font-weight: 900; line-height: 1.3;">${escapeHTML(act)}</div>
                         <div style="margin-top: 10px; display: flex; align-items: center;">
-                            ${addr || act ? `<div class="nav-trigger-btn" data-query="${escapeHTML(mapQuery)}" data-loc="${escapeHTML(loc.toLowerCase())}" style="font-size: 13px; font-weight: 800; opacity: 0.9; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
+                            ${addr ? `<div class="nav-trigger-btn" data-query="${escapeHTML(addr)}" data-loc="${escapeHTML(loc.toLowerCase())}" style="font-size: 13px; font-weight: 800; opacity: 0.9; color: var(--accent); cursor: pointer; display: inline-block;">📍 Get Directions ↗</div>` : ''}
                             ${disneyBtn}
                         </div>
                     </div>
@@ -765,7 +764,6 @@ export function openRoadtripModal(route) {
     document.body.classList.add('no-scroll'); 
     if(navigator.vibrate) navigator.vibrate(40);
     
-    // Set the modal title to the selected route name (without "National Park")
     const titleEl = document.getElementById('roadtrip-modal-title');
     if (titleEl) {
         titleEl.innerHTML = `🗺️ ${escapeHTML(route).replace(' National Park', '')}`;
@@ -795,7 +793,6 @@ export function renderRoadtripList(selectedRoute) {
         if(cols.length < 5) return;
         
         const route = (cols[0] || '').trim();
-        // Force exact match based on the button clicked!
         if (route !== selectedRoute) return;
         
         const time = (cols[1] || '').trim();
