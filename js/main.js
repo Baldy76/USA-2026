@@ -117,7 +117,6 @@ function bindEvents() {
 
         // --- PRANKS ---
         if (e.target.closest('#danger-prank-btn')) { triggerJackpotMode(); return; }
-        if (e.target.closest('#btn-trap-vip')) { triggerApplePayPrank(); return; }
         if (e.target.closest('#btn-trap-upgrade')) { triggerFlightDivert(); return; }
 
         // --- NORMAL APP CLICK EVENTS ---
@@ -446,32 +445,6 @@ function triggerFlightDivert() {
         overlay.innerHTML = `<div style="font-size: 80px; margin-bottom: 20px;">🍻</div><h1 style="font-size: 35px; font-weight: 900;">JUST KIDDING!</h1><p style="font-size: 20px; font-weight: 700; margin-top: 20px;">Go get a beer.</p>`;
         setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease'; setTimeout(() => overlay.remove(), 500); }, 4000);
     }, 6000);
-}
-
-function triggerApplePayPrank() {
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.backgroundColor = 'rgba(0,0,0,0.6)'; overlay.style.zIndex = '25000';
-    overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; overlay.style.justifyContent = 'flex-end';
-    
-    overlay.innerHTML = `
-        <div style="background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 30px 20px; box-sizing: border-box; font-family: -apple-system, sans-serif; text-align: center; transform: translateY(100%); animation: slideUp 0.4s forwards ease-out;">
-            <div style="font-size: 24px; font-weight: 600; color: #000; margin-bottom: 5px;">Pay</div>
-            <div style="font-size: 16px; color: #888; margin-bottom: 30px;">Bellagio VIP • Bottle Service</div>
-            <div style="font-size: 45px; font-weight: 700; color: #000; margin-bottom: 40px;">$14,500.00</div>
-            <div id="ap-status" style="font-size: 60px; margin-bottom: 15px; animation: apPulse 1s infinite alternate;">📱</div>
-            <div id="ap-text" style="font-size: 18px; font-weight: 600; color: #000;">Processing Face ID...</div>
-        </div>
-        <style>@keyframes slideUp { to { transform: translateY(0); } } @keyframes apPulse { to { transform: scale(1.1); } }</style>
-    `;
-
-    document.body.appendChild(overlay); if (navigator.vibrate) navigator.vibrate([50]);
-
-    setTimeout(() => {
-        if (navigator.vibrate) navigator.vibrate([200]);
-        document.getElementById('ap-status').innerText = '✅'; document.getElementById('ap-status').style.animation = 'none';
-        document.getElementById('ap-text').innerHTML = 'Done<br><span style="font-size: 14px; color: #888; font-weight: normal; margin-top: 10px; display: block;">No refunds permitted.</span>';
-        setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.4s ease'; setTimeout(() => overlay.remove(), 400); }, 4000);
-    }, 2500);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
