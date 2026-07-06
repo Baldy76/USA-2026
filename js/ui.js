@@ -761,27 +761,17 @@ export function closeNavChoiceModal() {
 // 🗺️ THE NEW ROAD TRIP ENGINE
 // ------------------------------------------------------------------
 
-export function openRoadtripModal() {
+export function openRoadtripModal(route) {
     document.body.classList.add('no-scroll'); 
     if(navigator.vibrate) navigator.vibrate(40);
     
-    const selector = document.getElementById('roadtrip-route-selector');
-    const data = state.roadtripData || [];
-    
-    const routes = [...new Set(data.map(row => (row[0] || '').trim()).filter(r => 
-        r !== '' && 
-        r.toLowerCase() !== 'national park' && 
-        r.toLowerCase() !== 'location / activity'
-    ))];
-    
-    if (routes.length > 0) {
-        selector.innerHTML = `<option value="" disabled selected>🗺️ Select a Route...</option>` + 
-                             routes.map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`).join('');
-        renderRoadtripList('');
-    } else {
-        selector.innerHTML = '<option value="">No routes found</option>';
-        renderRoadtripList('');
+    // Set the modal title to the selected route name (without "National Park")
+    const titleEl = document.getElementById('roadtrip-modal-title');
+    if (titleEl) {
+        titleEl.innerHTML = `🗺️ ${escapeHTML(route).replace(' National Park', '')}`;
     }
+    
+    renderRoadtripList(route);
     
     const modal = document.getElementById('roadtrip-modal');
     if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
@@ -795,11 +785,6 @@ export function closeRoadtripModal() {
 export function renderRoadtripList(selectedRoute) {
     const content = document.getElementById('roadtrip-content');
     
-    if (!selectedRoute) {
-        content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">👇</span><div class="empty-text" style="font-size: 16px;">Select a route above to view the itinerary!</div></div>`;
-        return;
-    }
-    
     if (!state.roadtripData || state.roadtripData.length === 0) {
         content.innerHTML = `<div class="empty-state" style="padding: 30px 10px;"><span class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🗺️</span><div class="empty-text" style="font-size: 16px;">No road trip data loaded!</div></div>`;
         return;
@@ -810,6 +795,7 @@ export function renderRoadtripList(selectedRoute) {
         if(cols.length < 5) return;
         
         const route = (cols[0] || '').trim();
+        // Force exact match based on the button clicked!
         if (route !== selectedRoute) return;
         
         const time = (cols[1] || '').trim();
