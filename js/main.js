@@ -12,7 +12,7 @@ import {
     openVegasFoodModal, closeVegasFoodModal, renderVegasFoodList,
     checkMorningBriefing, closeMorningBriefing, openMorningBriefing,
     openNavChoiceModal, closeNavChoiceModal,
-    openRoadtripModal, closeRoadtripModal, renderRoadtripList
+    openRoadtripModal, closeRoadtripModal
 } from './ui.js';
 
 import { convertCurrency, setTip, calculateTip } from './features/tools.js';
@@ -69,7 +69,6 @@ function initPullToRefresh() {
     }, {passive: true});
 }
 
-// 🔴 INJECT THE RED DOT TRAP 🔴
 function injectDangerButton() {
     const homeSection = document.getElementById('home');
     if (!homeSection || document.getElementById('danger-prank-btn')) return;
@@ -110,21 +109,16 @@ function bindEvents() {
     document.getElementById('trip-start-date')?.addEventListener('change', saveTripSettings);
     document.getElementById('trip-end-date')?.addEventListener('change', saveTripSettings);
     
-    // ROAD TRIP SELECTOR
-    document.getElementById('roadtrip-route-selector')?.addEventListener('change', (e) => renderRoadtripList(e.target.value));
-    
     document.getElementById('modal-checkbox')?.addEventListener('change', function() {
         const btn = document.getElementById('btn-confirm-modal'); btn.style.opacity = this.checked ? '1' : '0.5'; btn.style.pointerEvents = this.checked ? 'auto' : 'none';
     });
 
     document.body.addEventListener('click', async (e) => {
 
-        // 🕵️ IRRESISTIBLE PRANK TRAPS 🕵️
-
+        // --- PRANKS ---
         if (e.target.closest('#danger-prank-btn')) { triggerJackpotMode(); return; }
         if (e.target.closest('#btn-trap-vip')) { triggerApplePayPrank(); return; }
         if (e.target.closest('#btn-trap-upgrade')) { triggerFlightDivert(); return; }
-        if (e.target.closest('#btn-trap-drinks')) { triggerDrunkMode(); return; }
 
         // --- NORMAL APP CLICK EVENTS ---
         if (e.target.closest('.disney-app-btn')) { window.location.href = 'https://disneyland.disney.go.com/'; return; }
@@ -137,36 +131,24 @@ function bindEvents() {
             const btn = e.target.closest('#btn-find-car');
             openNavChoiceModal(null, btn.dataset.lat, btn.dataset.lon, ''); return;
         }
-     if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
+        
+        if (e.target.closest('#btn-nav-google') || e.target.closest('#btn-nav-waze') || e.target.closest('#btn-nav-uber') || e.target.closest('#btn-nav-alltrails')) {
             const btnId = e.target.closest('button').id;
             const modal = document.getElementById('nav-choice-modal');
             const q = modal.dataset.query; const lat = modal.dataset.lat; const lon = modal.dataset.lon;
             let url = ''; const encodedQ = encodeURIComponent(q || '');
             
             if (btnId === 'btn-nav-waze') { 
-                // Use Waze's native app scheme to bypass iOS web link scrambling
                 if (lat && lon) url = `waze://?ll=${lat},${lon}&navigate=yes`; 
                 else url = `waze://?q=${encodedQ}&navigate=yes`; 
-                
-                // Fallback to the web link if the user doesn't have the app installed
-                setTimeout(() => { 
-                    if (document.visibilityState === 'visible') { 
-                        window.location.href = (lat && lon) ? `https://waze.com/ul?ll=${lat},${lon}&navigate=yes` : `https://waze.com/ul?q=${encodedQ}&navigate=yes`; 
-                    } 
-                }, 800);
+                setTimeout(() => { if (document.visibilityState === 'visible') { window.location.href = (lat && lon) ? `https://waze.com/ul?ll=${lat},${lon}&navigate=yes` : `https://waze.com/ul?q=${encodedQ}&navigate=yes`; } }, 800);
             } 
             else if (btnId === 'btn-nav-google') { 
-                // Use official Google Maps directional URLs
                 if (lat && lon) url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`; 
                 else url = `https://www.google.com/maps/dir/?api=1&destination=${encodedQ}`; 
             } 
-            else if (btnId === 'btn-nav-uber') { 
-                url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; 
-            } 
-            else if (btnId === 'btn-nav-alltrails') { 
-                url = `https://www.alltrails.com/search?q=${encodedQ}`; 
-            }
-            
+            else if (btnId === 'btn-nav-uber') { url = `https://m.uber.com/ul/?action=setPickup&dropoff[query]=${encodedQ}`; } 
+            else if (btnId === 'btn-nav-alltrails') { url = `https://www.alltrails.com/search?q=${encodedQ}`; }
             if (url) window.location.href = url;
             closeNavChoiceModal(); return;
         }
@@ -175,8 +157,9 @@ function bindEvents() {
         if (e.target.closest('#btn-manual-briefing')) { openMorningBriefing(); return; }
         if (e.target.closest('#btn-close-briefing')) { closeMorningBriefing(); return; }
         
-        // ROAD TRIPS OPEN/CLOSE
-        if (e.target.closest('#btn-open-roadtrips')) { openRoadtripModal(); return; }
+        // ROAD TRIPS
+        const rtBtn = e.target.closest('.rt-btn');
+        if (rtBtn) { openRoadtripModal(rtBtn.dataset.route); return; }
         if (e.target.closest('#btn-close-roadtrip')) { closeRoadtripModal(); return; }
         
         if (e.target.closest('#btn-vegas-food')) { openVegasFoodModal(); return; }
@@ -463,21 +446,6 @@ function triggerFlightDivert() {
         overlay.innerHTML = `<div style="font-size: 80px; margin-bottom: 20px;">🍻</div><h1 style="font-size: 35px; font-weight: 900;">JUST KIDDING!</h1><p style="font-size: 20px; font-weight: 700; margin-top: 20px;">Go get a beer.</p>`;
         setTimeout(() => { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s ease'; setTimeout(() => overlay.remove(), 500); }, 4000);
     }, 6000);
-}
-
-function triggerDrunkMode() {
-    if (!document.getElementById('drunk-style')) {
-        const style = document.createElement('style'); style.id = 'drunk-style';
-        style.innerHTML = `.drunk { filter: blur(3px) contrast(1.2); transform: rotate(4deg) scale(1.05); transition: all 2s ease-in-out; overflow: hidden; pointer-events: none; }`;
-        document.head.appendChild(style);
-    }
-    document.body.classList.add('drunk'); if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
-
-    const banner = document.createElement('div');
-    banner.style.position = 'fixed'; banner.style.top = '50px'; banner.style.left = '50%'; banner.style.transform = 'translateX(-50%)'; banner.style.background = 'rgba(0,0,0,0.8)'; banner.style.color = 'white'; banner.style.padding = '15px 25px'; banner.style.borderRadius = '25px'; banner.style.fontWeight = 'bold'; banner.style.zIndex = '25000'; banner.innerText = 'Breathalyzer Failed. Cut off.';
-    document.body.appendChild(banner);
-
-    setTimeout(() => { document.body.classList.remove('drunk'); banner.remove(); }, 8000);
 }
 
 function triggerApplePayPrank() {
