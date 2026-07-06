@@ -224,7 +224,7 @@ export async function renderItinerary() {
 
             let disneyBtn = '';
             if (act.toLowerCase().includes('disney')) {
-                disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
+                disneyBtn = `<div class="disney-app-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
             }
 
             const cardHtml = `
@@ -614,7 +614,7 @@ export function renderAnchor() {
     const saved = localStorage.getItem('carAnchor');
     if (saved) {
         const data = JSON.parse(saved);
-        container.innerHTML = `<div class="admin-card pulse-btn" style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #34c759, #28a745); border:none; box-shadow: 0 8px 24px rgba(52, 199, 89, 0.4); display: flex; align-items: center; justify-content: space-between; border-radius: 50px;"><div id="btn-find-car" data-lat="${data.lat}" data-lon="${data.lon}" style="cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1;"><span style="font-size: 20px;">🧭</span><span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: 0.5px;">Dude where's my car?</span></div><button id="btn-clear-anchor" style="background: #ff3b30; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3); z-index: 10; margin-left: 10px;">Found it</button></div>`;
+        container.innerHTML = `<div class="admin-card" style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #34c759, #28a745); border:none; box-shadow: 0 8px 24px rgba(52, 199, 89, 0.4); display: flex; align-items: center; justify-content: space-between; border-radius: 50px;"><div id="btn-find-car" data-lat="${data.lat}" data-lon="${data.lon}" style="cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1;"><span style="font-size: 20px;">🧭</span><span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: 0.5px;">Dude where's my car?</span></div><button id="btn-clear-anchor" style="background: #ff3b30; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3); z-index: 10; margin-left: 10px;">Found it</button></div>`;
     } else {
         container.innerHTML = `<div class="admin-card" style="margin-bottom: 20px; padding: 12px 20px; background: linear-gradient(135deg, #0ea5e9, #2563eb); border:none; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3); text-align: center; border-radius: 50px;"><div id="btn-drop-anchor" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;"><span style="font-size: 20px;">⚓🚗</span><span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: 0.5px;">Drop Car Anchor</span></div></div>`;
     }
@@ -816,7 +816,7 @@ export function renderRoadtripList(selectedRoute) {
                     lat = parts[0].trim(); lon = parts[1].trim();
                 }
             }
-            navBtn = `<div class="nav-trigger-btn pulse-btn" data-query="${escapeHTML(gps)}" data-lat="${escapeHTML(lat)}" data-lon="${escapeHTML(lon)}" style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; background: #007aff; color: white; padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);">🧭 Send to GPS</div>`;
+            navBtn = `<div class="nav-trigger-btn" data-query="${escapeHTML(gps)}" data-lat="${escapeHTML(lat)}" data-lon="${escapeHTML(lon)}" style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; background: #007aff; color: white; padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);">🧭 Send to GPS</div>`;
         }
         
         html += `
@@ -833,8 +833,6 @@ export function renderRoadtripList(selectedRoute) {
     
     content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><div class="empty-text">No stops found for this route!</div></div>`;
 }
-
-// --- NEW TOOLBOX MODALS ---
 
 export function openConverterModal() {
     document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
