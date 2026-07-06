@@ -227,7 +227,6 @@ export async function renderItinerary() {
                 disneyBtn = `<div class="disney-app-btn pulse-btn" style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); margin-left: 10px;">🏰 Park App</div>`;
             }
 
-            // THE FIX: Only show "Get Directions" if addr explicitly has a value
             const cardHtml = `
                 <div class="timeline-card-wrapper ${isCompleted ? 'completed' : ''}">
                     <div class="timeline-dot"></div>
@@ -756,10 +755,6 @@ export function closeNavChoiceModal() {
     setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300);
 }
 
-// ------------------------------------------------------------------
-// 🗺️ THE NEW ROAD TRIP ENGINE
-// ------------------------------------------------------------------
-
 export function openRoadtripModal(route) {
     document.body.classList.add('no-scroll'); 
     if(navigator.vibrate) navigator.vibrate(40);
@@ -837,4 +832,36 @@ export function renderRoadtripList(selectedRoute) {
     });
     
     content.innerHTML = html || `<div class="empty-state" style="padding: 30px 10px;"><div class="empty-text">No stops found for this route!</div></div>`;
+}
+
+// --- NEW TOOLBOX MODALS ---
+
+export function openConverterModal() {
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('converter-modal');
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+}
+export function closeConverterModal() { 
+    const modal = document.getElementById('converter-modal');
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+}
+
+export function openTipModal() {
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('tip-modal');
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+}
+export function closeTipModal() { 
+    const modal = document.getElementById('tip-modal');
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
+}
+
+export function openRouletteModal() {
+    document.body.classList.add('no-scroll'); if(navigator.vibrate) navigator.vibrate(40);
+    const modal = document.getElementById('roulette-modal');
+    if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); }
+}
+export function closeRouletteModal() { 
+    const modal = document.getElementById('roulette-modal');
+    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }, 300); }
 }
