@@ -33,7 +33,7 @@
                 <h1 class="splash-title">USA 2026</h1>
                 <select id="login-selector" class="settings-input" style="margin-bottom: 20px; text-align: center; text-align-last: center;">
                     <option value="" disabled selected>Who is logging in?</option>
-                    <optgroup label="Leech Family"><option value="Graeme">Dawn</option><option value="Grace">Grace</option></optgroup>
+                    <optgroup label="Leech Family"><option value="Graeme">Graeme</option><option value="Dawn">Dawn</option><option value="Grace">Grace</option></optgroup>
                     <optgroup label="Murray Family"><option value="David">David</option><option value="Sarah">Sarah</option><option value="Bexs">Bexs</option></optgroup>
                 </select>
                 <button id="splash-go-btn" class="action-btn pulse-btn" style="display: none; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);">Let's go!</button>
@@ -150,65 +150,13 @@
                 <div class="w-col"><span class="w-lbl">Vegas</span><div class="w-val" id="wp-vegas">⏳</div></div>
             </div>
 
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #34c759, #28a745); box-shadow: 0 8px 24px rgba(52, 199, 89, 0.3);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-size: 11px; font-weight: 900; text-transform: uppercase;">Converter</div>
-                    <div id="live-rate-tag" style="font-size: 9px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px;">£1 = $--.--</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="position: relative;">
-                        <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 12px; width: 110px; font-size: 18px; font-weight: 800; background: #1c1c1e; border-radius: 12px; border: none; color: white; outline: none;">
-                        <button id="clear-usd" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.4); border: none; border-radius: 50%; width: 20px; height: 20px; color: black; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer;">✕</button>
-                    </div>
-                    <span style="font-weight: 900;">=</span>
-                    <strong id="gbp-output" style="font-size: 20px; font-weight: 900; background: #1c1c1e; color: white; padding: 12px 15px; border-radius: 12px; min-width: 70px;">£0.00</strong>
-                </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                <button id="btn-open-converter" class="action-btn" style="margin: 0; background: linear-gradient(135deg, #34c759, #28a745); box-shadow: 0 4px 10px rgba(52, 199, 89, 0.3); font-size: 15px; font-weight: 900; color: white; border: none; padding: 20px 10px; border-radius: 16px;">💷 Converter</button>
+                <button id="btn-open-tip" class="action-btn" style="margin: 0; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 4px 10px rgba(255, 149, 0, 0.3); font-size: 15px; font-weight: 900; color: white; border: none; padding: 20px 10px; border-radius: 16px;">🍽️ Tip & Split</button>
+                <button id="btn-open-roulette" class="action-btn" style="margin: 0; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 4px 10px rgba(175, 82, 222, 0.3); font-size: 15px; font-weight: 900; color: white; border: none; padding: 20px 10px; border-radius: 16px;">🎰 Decider</button>
+                <button id="btn-open-checklist" class="action-btn" style="margin: 0; background: linear-gradient(135deg, #ffd60a, #ffcc00); box-shadow: 0 4px 10px rgba(255, 214, 10, 0.3); font-size: 15px; font-weight: 900; color: black; border: none; padding: 20px 10px; border-radius: 16px;">📋 Checklist</button>
             </div>
 
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, #ff9500, #e67e22); box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);">
-                <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🍽️ Tip & Split</div>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
-                    <div style="flex: 0.8;">
-                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
-                        <input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
-                    </div>
-                    <div style="flex: 1.2;">
-                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
-                        <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px; height: 50px; display: flex;">
-                            <button class="segment split-btn" data-split="1" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">1 Fam</button>
-                            <button class="segment split-btn active" data-split="2" style="display: flex; align-items: center; justify-content: center; border-radius: 8px; white-space: nowrap;">2 Fams</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); margin-bottom: 15px;">
-                    <button class="segment tip-btn" data-tip="15">15%</button>
-                    <button class="segment tip-btn active" data-tip="20">20%</button>
-                    <button class="segment tip-btn" data-tip="25">25%</button>
-                </div>
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between;">
-                    <div><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">Per Fam ($)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900;">$0.00</div></div>
-                    <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900;">£0.00</div></div>
-                </div>
-            </div>
-
-            <div class="admin-card color-card" style="padding: 20px; margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, #af52de, #5e5ce6); box-shadow: 0 8px 24px rgba(175, 82, 222, 0.3);">
-                <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px;">🎰 The Decider</div>
-                <select id="roulette-mode" style="margin-bottom: 20px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center;">
-                    <option value="bill" style="color: black;">Who is picking up the bill?</option>
-                    <option value="driving" style="color: black;">Who is driving?</option>
-                </select>
-                <div style="position: relative; margin: 0 auto 20px; width: 220px; height: 220px;">
-                    <div class="roulette-pointer-container"><div class="roulette-pointer"></div></div>
-                    <div id="roulette-wheel" class="roulette-wheel"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #fff; border-radius: 50%; border: 4px solid #af52de; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"></div>
-                </div>
-                <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px; transition: transform 0.2s ease;">Tap to Spin!</div>
-                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px;">Spin the Wheel</button>
-                <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; min-height: 26px;"></div>
-                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;">Reset Scores</div>
-            </div>
-
-            <button id="btn-open-checklist" class="action-btn" style="background: linear-gradient(135deg, #ffd60a, #ffcc00); color: black; border: none; border-radius: 50px; margin-bottom: 20px; font-weight: 900; box-shadow: 0 8px 24px rgba(255, 214, 10, 0.4);">📋 Trip Checklist</button>
             <button id="btn-manual-briefing" class="action-btn" style="background: linear-gradient(135deg, #FF9500, #E67E22); color: white; border: none; border-radius: 50px; margin-bottom: 20px; font-weight: 900; box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);">☕ Today's Briefing</button>
             <button id="btn-open-admin" class="action-btn" style="background: #1c1c1e; color: #ffffff; border: none; margin-bottom: 20px;">⚙️ Settings & Setup</button>
             
@@ -287,8 +235,75 @@
                 <button id="btn-force-sync" class="action-btn">☁️ Sync Data</button>
                 <button id="btn-update-version" class="action-btn">🔄 Update App</button>
             </div>
-            <div class="version-control">v9.1.2</div>
+            <div class="version-control">v9.2.0</div>
         </section>
+
+        <div id="converter-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="background: linear-gradient(135deg, #34c759, #28a745); color: white;">
+                <button id="btn-close-converter" class="mac-close-btn" style="background: rgba(0,0,0,0.2); color: white; border: none; box-shadow: none;">✕</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="font-size: 14px; font-weight: 900; text-transform: uppercase;">💷 Converter</div>
+                    <div id="live-rate-tag" style="font-size: 10px; font-weight: 900; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px;">£1 = $--.--</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="position: relative; flex: 1;">
+                        <input type="number" id="usd-input" placeholder="$ USD" style="margin: 0; padding: 16px; width: 100%; font-size: 20px; font-weight: 800; background: rgba(0,0,0,0.2); border-radius: 12px; border: none; color: white; outline: none;">
+                        <button id="clear-usd" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.4); border: none; border-radius: 50%; width: 24px; height: 24px; color: black; display: none; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; cursor: pointer;">✕</button>
+                    </div>
+                    <span style="font-weight: 900; font-size: 24px;">=</span>
+                    <strong id="gbp-output" style="font-size: 24px; font-weight: 900; background: rgba(0,0,0,0.2); color: white; padding: 16px; border-radius: 12px; min-width: 90px; text-align: center;">£0.00</strong>
+                </div>
+            </div>
+        </div>
+
+        <div id="tip-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="background: linear-gradient(135deg, #ff9500, #e67e22); color: white;">
+                <button id="btn-close-tip" class="mac-close-btn" style="background: rgba(0,0,0,0.2); color: white; border: none; box-shadow: none;">✕</button>
+                <div style="font-size: 14px; font-weight: 900; text-transform: uppercase; margin-bottom: 20px;">🍽️ Tip & Split</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
+                    <div style="flex: 0.8;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Bill Total ($):</label>
+                        <input type="number" id="bill-total" placeholder="0.00" style="margin: 0; padding: 14px 10px; font-size: 18px; width: 100%; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none;">
+                    </div>
+                    <div style="flex: 1.2;">
+                        <label style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 5px;">Split By:</label>
+                        <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px; height: 50px; display: flex;">
+                            <button class="segment split-btn" data-split="1" style="display: flex; align-items: center; justify-content: center; border-radius: 8px;">1 Fam</button>
+                            <button class="segment split-btn active" data-split="2" style="display: flex; align-items: center; justify-content: center; border-radius: 8px; white-space: nowrap;">2 Fams</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-segmented-control" style="background: rgba(0,0,0,0.2); margin-bottom: 15px;">
+                    <button class="segment tip-btn" data-tip="15">15%</button>
+                    <button class="segment tip-btn active" data-tip="20">20%</button>
+                    <button class="segment tip-btn" data-tip="25">25%</button>
+                </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between;">
+                    <div><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">Per Fam ($)</div><div id="tip-usd" style="font-size: 24px; font-weight: 900;">$0.00</div></div>
+                    <div style="text-align: right;"><div style="font-size: 10px; opacity: 0.8; font-weight: 800;">In GBP</div><div id="tip-gbp" style="font-size: 24px; font-weight: 900;">£0.00</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="roulette-modal" class="modal-overlay">
+            <div class="modal-content admin-card" style="background: linear-gradient(135deg, #af52de, #5e5ce6); text-align: center;">
+                <button id="btn-close-roulette" class="mac-close-btn" style="background: rgba(0,0,0,0.2); color: white; border: none; box-shadow: none;">✕</button>
+                <div style="font-size: 14px; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; color: white;">🎰 The Decider</div>
+                <select id="roulette-mode" style="margin-bottom: 20px; padding: 12px; font-size: 16px; font-weight: 800; border-radius: 12px; border: none; background: rgba(0,0,0,0.2); color: white; outline: none; width: 100%; text-align: center; text-align-last: center;">
+                    <option value="bill" style="color: black;">Who is picking up the bill?</option>
+                    <option value="driving" style="color: black;">Who is driving?</option>
+                </select>
+                <div style="position: relative; margin: 0 auto 20px; width: 220px; height: 220px;">
+                    <div class="roulette-pointer-container"><div class="roulette-pointer"></div></div>
+                    <div id="roulette-wheel" class="roulette-wheel"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #fff; border-radius: 50%; border: 4px solid #af52de; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"></div>
+                </div>
+                <div id="roulette-result-text" style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 15px; height: 30px; transition: transform 0.2s ease;">Tap to Spin!</div>
+                <button id="btn-spin-roulette" class="action-btn" style="background: white; color: #5e5ce6; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 15px;">Spin the Wheel</button>
+                <div id="roulette-scoreboard" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; min-height: 26px;"></div>
+                <div id="btn-reset-tally" style="font-size: 10px; opacity: 0.5; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block; color: white;">Reset Scores</div>
+            </div>
+        </div>
 
         <div id="nav-choice-modal" class="modal-overlay" style="z-index: 4000;">
             <div class="modal-content admin-card" style="padding: 30px 20px; text-align: center;">
